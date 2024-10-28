@@ -10,7 +10,7 @@
             if (App::isLocale('en')) {
                 $formattedDate = $date->format('l, F d, Y h:i A'); // Lunes, Enero 01, 2024 03:04 PM
             } else {
-                $dias_semana_esp = array(
+                $dias_esp_largo = array(
                     'Monday' => 'Lunes',
                     'Tuesday' => 'Martes',
                     'Wednesday' => 'Miércoles',
@@ -19,12 +19,24 @@
                     'Saturday' => 'Sábado',
                     'Sunday' => 'Domingo'
                 );
-                
+                $dias_eso_corto = array(
+                    'Monday' => 'Lun',
+                    'Tuesday' => 'Mar',
+                    'Wednesday' => 'Mie',
+                    'Thursday' => 'Jue',
+                    'Friday' => 'Vie',
+                    'Saturday' => 'Sab',
+                    'Sunday' => 'Dom'
+                );
+                $meses_esp_largo = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+                $meses_esp_corto = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
                 $dia = date('l');
-                $dia_semana_esp = $dias_semana_esp[$dia];
-                $mes = $numero_mes = date('m');
-                dd($dia_semana_esp,$mes);
-                $formattedDate = $date->format('l, d F, Y H:i'); // Lunes, 01 Enero, 2024 15:04
+                $mes = date('m');
+                $nombre_mes = $meses_esp_largo[$mes-1];
+                $nombre_dia = $dias_esp_largo[$dia];
+                $dia = $date->format('d');
+
+                $formattedDate =  $nombre_dia . ' ' . $dia . ' de ' . $nombre_mes . ' de ' .$date->format('Y') . ' ' . $date->format('h:i A');
             }
        @endphp
         <p class="text-sm text-gray-400">{{ __('Today is') .':' . $formattedDate }}</p>
