@@ -2,23 +2,26 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
-use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\User;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Auth;
+use Filament\Resources\Resource;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Support\Htmlable;
+use App\Filament\Resources\UserResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\UserResource\RelationManagers;
+use App\Filament\Resources\UserResource\RelationManagers\RolesRelationManager;
 
 class UserResource extends Resource
 {
@@ -29,16 +32,19 @@ class UserResource extends Resource
     {
         return 'heroicon-o-users';
     }
+
+    public static function getModelLabel(): string
+    {
+        return __('User');
+    }
+
     public static function getNavigationGroup(): string
     {
         return   __('Security');
     }
 
-    // protected static ?int $navigationSort = 6;
-    public static function getNavigationSort(): ?int
-    {
-        return 1;
-    }
+     protected static ?int $navigationSort = 1;
+
     public static function getNavigationLabel(): string
     {
         return __('Users');
@@ -85,10 +91,13 @@ class UserResource extends Resource
                     ->minLength(10),
                 TextInput::make('password')
                     ->password()
-                    ->required()
+                    ->revealable()
                     ->translateLabel()
                     ->maxLength(30)
-                    ->minLength(8),
+                    ->minLength(8)
+                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                    ->dehydrated(fn($state) => filled($state))
+                    ->required(fn(string $context): bool => $context === 'create'),
                 Select::make('role_id')
                     ->relationship(
                         name: 'roles',
@@ -98,8 +107,13 @@ class UserResource extends Resource
                     ->multiple()
                     ->translateLabel()
                     ->preload()
-                    ->required()
-
+                    ->required(fn ($state, $record) => $record ? false : true)
+                    ->visible(fn ($state, $record) => $record ? false : true),
+                Select::make('permissions')
+                    ->label('Permisos')
+                    ->multiple()
+                    ->preload()
+                    ->relationship('permissions', 'name'),
             ]);
     }
 
@@ -139,7 +153,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+             RelationManagers\RolesRelationManager::class,
         ];
     }
 

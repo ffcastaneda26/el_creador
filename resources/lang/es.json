@@ -73,7 +73,10 @@
     "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": "¿Olvidaste tu contraseña? Ningún problema. Simplemente háganos saber su dirección de correo electrónico y le enviaremos un enlace para restablecer su contraseña que le permitirá elegir una nueva.",
     "Email Password Reset Link": "Enlace para Restablecer Clave",
     "All rights reserved": "Todos los derechos reservados",
-    "Today is": "Hoy es: "
+    "Today is": "Hoy es: ",
+    "Create Role": "Crear Rol",
+    "Attach Role": "Asignar Rol"
+
 
 
 }
