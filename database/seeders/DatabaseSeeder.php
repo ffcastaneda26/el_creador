@@ -28,12 +28,15 @@ class DatabaseSeeder extends Seeder
             'roles',
             'permissions',
             'countries',
+            'states'
         ]);
 
         $this->call(RoleAndPermissionSeeder::class);
         $this->call(UsersTableSeeder::class);
         $this->call(UsersSeeder::class);
         $this->call(CountriesSeeder::class);
+        $this->call(StatesSeeder::class);
+        $this->call(MuniciaplitiesSeeder::class);
     }
 
     protected function truncateTables(array $tables) {
