@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\PermissionResource\Pages;
+namespace App\Filament\Resources\CountryResource\Pages;
 
-use App\Filament\Resources\PermissionResource;
+use App\Filament\Resources\CountryResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Container\Attributes\Auth;
+use Illuminate\Support\Facades\Auth;
 
-class EditPermission extends EditRecord
+class EditCountry extends EditRecord
 {
-    protected static string $resource = PermissionResource::class;
+    protected static string $resource = CountryResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -18,6 +18,7 @@ class EditPermission extends EditRecord
             ->visible(Auth::user()->isSuperAdmin())
             ->disabled(!Auth::user()->isSuperAdmin()),
         ];
+
     }
     protected function getRedirectUrl(): string
     {

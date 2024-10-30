@@ -1,5 +1,10 @@
 {
+    "Geographic": "Geográficos",
+    "Country": "País",
+    "Code": "Código",
+    "Countries": "Países",
     "Loading...": "Cargando...",
+    "Include?": "¿Incluir?",
     "Update": "Actualizar",
     "Last login": "Último Acceso",
     "Profile Information": "Información del Perfil",

@@ -26,12 +26,14 @@ class DatabaseSeeder extends Seeder
             'user_permissions',
             'users',
             'roles',
-            'permissions'
+            'permissions',
+            'countries',
         ]);
 
         $this->call(RoleAndPermissionSeeder::class);
         $this->call(UsersTableSeeder::class);
         $this->call(UsersSeeder::class);
+        $this->call(CountriesSeeder::class);
     }
 
     protected function truncateTables(array $tables) {
