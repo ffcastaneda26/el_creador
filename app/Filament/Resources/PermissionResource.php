@@ -13,9 +13,11 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
 
 class PermissionResource extends Resource
@@ -50,6 +52,10 @@ class PermissionResource extends Resource
         return __('Permissions');
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
     // public static function getNavigationGroup(): string {
     //     return __('Security');
     // }
@@ -83,15 +89,19 @@ class PermissionResource extends Resource
                 TextColumn::make('roles.name')->label('Roles'),
             ])
             ->filters([
-                //
+                SelectFilter::make(__('Users'))
+                    ->relationship('users', 'name')
+                    ->translateLabel()
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make(__('Roles'))
+                        ->relationship('roles', 'name')
+                        ->translateLabel()
+                        ->searchable()
+                        ->preload(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\EditAction::make()->visible(Auth::user()->isSuperAdmin())
             ]);
     }
 

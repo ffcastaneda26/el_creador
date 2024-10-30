@@ -5,6 +5,7 @@ namespace App\Filament\Resources\PermissionResource\Pages;
 use App\Filament\Resources\PermissionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ListPermissions extends ListRecords
 {
@@ -13,7 +14,9 @@ class ListPermissions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->visible(Auth::user()->isSuperAdmin())
+            ->disabled(!Auth::user()->isSuperAdmin()),
         ];
     }
 }
