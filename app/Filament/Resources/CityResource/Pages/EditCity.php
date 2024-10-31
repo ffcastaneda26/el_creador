@@ -15,11 +15,8 @@ class EditCity extends EditRecord
        
         return [
             Actions\DeleteAction::make()
-            ->visible(auth()->user()->isSuperAdmin() || auth()->user()->isAdministrador() )
-            ->disabled(! (auth()->user()->isSuperAdmin() || auth()->user()->isAdministrador())),
         ];
-    
-    }
+        }
 
     protected function getRedirectUrl(): string
     {

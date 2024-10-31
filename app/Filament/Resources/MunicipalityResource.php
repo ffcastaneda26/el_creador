@@ -74,10 +74,7 @@ class MunicipalityResource extends Resource
                     ->relationship('state', 'name')
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                ->visible(Auth::user()->isSuperAdmin())
-                ->disabled(!Auth::user()->isSuperAdmin())
-
+                Tables\Actions\EditAction::make(),
             ]);
     }
 

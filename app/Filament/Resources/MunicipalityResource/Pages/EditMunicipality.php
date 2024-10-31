@@ -15,8 +15,6 @@ class EditMunicipality extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-            ->visible(Auth::user()->isSuperAdmin())
-            ->disabled(!Auth::user()->isSuperAdmin()),
         ];
     }
 

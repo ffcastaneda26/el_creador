@@ -101,7 +101,7 @@ class PermissionResource extends Resource
                         ->preload(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->visible(Auth::user()->isSuperAdmin())
+                Tables\Actions\EditAction::make()
             ]);
     }
 

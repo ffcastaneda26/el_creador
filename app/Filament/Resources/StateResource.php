@@ -93,9 +93,7 @@ class StateResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->visible(Auth::user()->isSuperAdmin())
-                    ->disabled(!Auth::user()->isSuperAdmin())
+                Tables\Actions\EditAction::make(),
             ]);
     }
 

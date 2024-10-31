@@ -15,8 +15,6 @@ class ListCountries extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->visible(auth()->user()->isSuperAdmin() || auth()->user()->isAdministrador())
-                ->disabled(!(auth()->user()->isSuperAdmin() || auth()->user()->isAdministrador())),
         ];
     }
 }

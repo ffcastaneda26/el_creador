@@ -14,9 +14,7 @@ class ListPermissions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-            ->visible(Auth::user()->isSuperAdmin())
-            ->disabled(!Auth::user()->isSuperAdmin()),
+            Actions\CreateAction::make(),
         ];
     }
 }

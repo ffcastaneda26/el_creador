@@ -14,9 +14,7 @@ class EditCountry extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
-            ->visible(Auth::user()->isSuperAdmin())
-            ->disabled(!Auth::user()->isSuperAdmin()),
+            Actions\DeleteAction::make(),
         ];
 
     }
