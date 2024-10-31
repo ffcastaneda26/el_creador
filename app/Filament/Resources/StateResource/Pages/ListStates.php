@@ -13,7 +13,9 @@ class ListStates extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->visible(auth()->user()->isSuperAdmin() || auth()->user()->isAdministrador())
+                ->disabled(!(auth()->user()->isSuperAdmin() || auth()->user()->isAdministrador())),
         ];
     }
 }

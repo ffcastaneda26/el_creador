@@ -1,21 +1,19 @@
 <?php
 
-namespace App\Filament\Resources\StateResource\Pages;
+namespace App\Filament\Resources\CityResource\Pages;
 
-use App\Filament\Resources\StateResource;
+use App\Filament\Resources\CityResource;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
-class CreateState extends CreateRecord
+class CreateCity extends CreateRecord
 {
-    protected static string $resource = StateResource::class;
-
+    protected static string $resource = CityResource::class;
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
     }
 
-    
     protected function beforeCreate(): void
     {
         if (! (auth()->user()->isSuperAdmin() || auth()->user()->isAdministrador() )) {

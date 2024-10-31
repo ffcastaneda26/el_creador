@@ -4,23 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Municipality extends Model
+class City extends Model
 {
-    protected $table = 'municipalities';
+    protected $table = 'cities';
     public $timestamps = false;
     protected $fillable =  [
+        'country_id',
         'state_id',
+        'municipality_id',
         'name',
     ];
-    public function cities(): HasMany
+
+    public function country(): BelongsTo
     {
-        return $this->hasMany(City::class);
+        return $this->belongsTo(Country::class);
     }
 
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
+    }
+
+    public function municipality(): BelongsTo
+    {
+        return $this->belongsTo(Municipality::class);
     }
 }

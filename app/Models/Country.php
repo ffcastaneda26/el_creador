@@ -15,6 +15,10 @@ class Country extends Model
         'include',
     ];
 
+    public function cities(): HasMany
+    {
+        return $this->hasMany(City::class);
+    }
     public function states(): HasMany
     {
         return $this->hasMany(State::class);

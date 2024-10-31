@@ -2,19 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\MunicipalityResource\Pages;
-use App\Filament\Resources\MunicipalityResource\RelationManagers;
-use App\Models\Municipality;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\Municipality;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\MunicipalityResource\Pages;
+use App\Filament\Resources\MunicipalityResource\RelationManagers;
 
 class MunicipalityResource extends Resource
 {
@@ -58,11 +59,11 @@ class MunicipalityResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('state.name')
+                TextColumn::make('state.name')
                     ->translateLabel()
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label(__('Municipality'))
                     ->sortable()
                     ->searchable(),

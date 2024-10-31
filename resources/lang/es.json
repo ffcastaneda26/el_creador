@@ -1,17 +1,25 @@
 {
     "Geographic": "Geográficos",
-    "Country": "País",
+
     "Code": "Código",
-    "Countries": "Países",
+
     "Table": "Tabla",
+    "Countries": "Países",
+    "Country": "País",
     "States": "Entidades Fedeartivas",
     "State": "Entidad Federativa",
+    "State id": "Entidad Federativa",
+    "Municipality": "Municipio",
+    "Municipalities": "Municipios",
+    "Municipality id": "Municipio",
+    "Cities": "Ciudades",
+    "City": "Ciudad",
     "Creating": "Creando",
     "Abbreviated": "Abreviado",
     "States Table": "Tabla de Entidades Federativas",
     "Municipalities Table": "Tabla de Municipios",
-    "Municipality": "Municipio",
-    "Municipalities": "Municipios",
+    "Cities Table": "Tabla de Ciudades",
+
     "Loading...": "Cargando...",
     "Include?": "¿Incluir?",
     "Update": "Actualizar",
@@ -89,8 +97,8 @@
     "All rights reserved": "Todos los derechos reservados",
     "Today is": "Hoy es: ",
     "Create Role": "Crear Rol",
-    "Attach Role": "Asignar Rol"
-
-
+    "Attach Role": "Asignar Rol",
+    "You are not authorized to create new records, please consult your administrator": "No está autorizado a crear nuevos registros, consulte a su administrador",
+    "Restricted Action": "Acción Restringida"
 
 }
