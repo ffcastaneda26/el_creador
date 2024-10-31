@@ -30,7 +30,8 @@ class DatabaseSeeder extends Seeder
             'countries',
             'states',
             'cities',
-            'type_zipcodes'
+            'type_zipcodes',
+            'zipcodes'
         ]);
 
         $this->call(RoleAndPermissionSeeder::class);
@@ -41,6 +42,7 @@ class DatabaseSeeder extends Seeder
         $this->call(MuniciaplitiesSeeder::class);
         $this->call(CitySeeder::class);
         $this->call(TypeZipcodeSeeder::class);
+        $this->call(ZipcodeSeeder::class);
 
     }
 
