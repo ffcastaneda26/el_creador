@@ -23,4 +23,9 @@ class Country extends Model
     {
         return $this->hasMany(State::class);
     }
+
+    public function zipcodes(): HasMany
+    {
+        return $this->hasMany(Zipcode::class);
+    }
 }

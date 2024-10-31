@@ -23,4 +23,9 @@ class Municipality extends Model
     {
         return $this->belongsTo(State::class);
     }
+
+    public function zipcodes(): HasMany
+    {
+        return $this->hasMany(Zipcode::class);
+    }
 }

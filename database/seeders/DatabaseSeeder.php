@@ -28,7 +28,9 @@ class DatabaseSeeder extends Seeder
             'roles',
             'permissions',
             'countries',
-            'states'
+            'states',
+            'cities',
+            'type_zipcodes'
         ]);
 
         $this->call(RoleAndPermissionSeeder::class);
@@ -37,6 +39,9 @@ class DatabaseSeeder extends Seeder
         $this->call(CountriesSeeder::class);
         $this->call(StatesSeeder::class);
         $this->call(MuniciaplitiesSeeder::class);
+        $this->call(CitySeeder::class);
+        $this->call(TypeZipcodeSeeder::class);
+
     }
 
     protected function truncateTables(array $tables) {

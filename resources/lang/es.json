@@ -1,8 +1,6 @@
 {
     "Geographic": "Geográficos",
-
     "Code": "Código",
-
     "Table": "Tabla",
     "Countries": "Países",
     "Country": "País",
@@ -14,12 +12,19 @@
     "Municipality id": "Municipio",
     "Cities": "Ciudades",
     "City": "Ciudad",
+    "Type Zipcode": "Tipo Código Postal",
+    "Types Zipcode": "Tipos de Código Postal",
+    "Zipcode": "Código Postal",
+    "Zipcodes": "Códigos Postales",
+    "City id": "Ciudad",
+    
     "Creating": "Creando",
     "Abbreviated": "Abreviado",
     "States Table": "Tabla de Entidades Federativas",
     "Municipalities Table": "Tabla de Municipios",
     "Cities Table": "Tabla de Ciudades",
-
+    "Zipcodes Table": "Tabla de Códigos Postales",
+    "Zipcode Types Table": "Tabla de tipos de Códigos Postales",
     "Loading...": "Cargando...",
     "Include?": "¿Incluir?",
     "Update": "Actualizar",
