@@ -22,7 +22,7 @@ class StatesSeeder extends Seeder
             (2, 'Baja California', 'BC', 135),
             (3, 'Baja California Sur', 'BCS', 135),
             (4, 'Campeche', 'Camp', 135),
-            (5, 'Coahuila de Zaragoza', 'Coah', 135),
+            (5, 'Coahuila', 'Coah', 135),
             (6, 'Colima', 'Col', 135),
             (7, 'Chiapas', 'Chis', 135),
             (8, 'Chihuahua', 'Chih', 135),
@@ -33,7 +33,7 @@ class StatesSeeder extends Seeder
             (13, 'Hidalgo', 'Hgo', 135),
             (14, 'Jalisco', 'Jal', 135),
             (15, 'México', 'Mex', 135),
-            (16, 'Michoacán de Ocampo', 'Mich', 135),
+            (16, 'Michoacán', 'Mich', 135),
             (17, 'Morelos', 'Mor', 135),
             (18, 'Nayarit', 'Nay', 135),
             (19, 'Nuevo León', 'NL', 135),
@@ -47,7 +47,7 @@ class StatesSeeder extends Seeder
             (27, 'Tabasco', 'Tab', 135),
             (28, 'Tamaulipas', 'Tamps', 135),
             (29, 'Tlaxcala', 'Tlax', 135),
-            (30, 'Veracruz de Ignacio de la Llav', 'Ver', 135),
+            (30, 'Veracruz', 'Ver', 135),
             (31, 'Yucatán', 'Yuc', 135),
             (32, 'Zacatecas', 'Zac', 135)";
         DB::update($sql);
