@@ -54,7 +54,7 @@ class RoleResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         if(Auth::user()->hasrole('Super Admin')){
-            return parent::getEloquentQuery();
+            return static::getModel()::count();
         }
         return parent::getEloquentQuery()
             ->where('name','not like','%super%')

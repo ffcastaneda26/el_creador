@@ -55,9 +55,7 @@ class UserResource extends Resource
         if(Auth::user()->hasrole('Super Admin')){
             return static::getModel()::count();
         }
-
-        
-        
+           
         return parent::getEloquentQuery()
             ->whereHas('roles',function($query){
                 $query->where('name','not like','%super%');
