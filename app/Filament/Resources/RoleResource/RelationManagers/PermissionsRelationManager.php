@@ -27,10 +27,11 @@ class PermissionsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->heading(__('Roles'))
-            ->recordTitleAttribute('name')
+            ->heading(__('Permissions'))
+            ->recordTitleAttribute(__('Permission'))
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('name')
+                    ->label(__('Permission')),
             ])
             ->filters([
                 //

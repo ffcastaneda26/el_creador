@@ -66,13 +66,17 @@ class PermissionResource extends Resource
             ->schema([
                 Group::make()
                 ->schema([
-                    TextInput::make('name')->required()->unique(ignoreRecord: true),
+                    TextInput::make('name')
+                        ->required()
+                        ->unique(ignoreRecord: true)
+                        ->minLength(5)
+                        ->translateLabel(),
                     Select::make('roles')
                         ->multiple()
                         ->relationship(titleAttribute:'name')
                         ->preload()
                         ->createOptionForm([
-                            Forms\Components\TextInput::make('name')
+                            TextInput::make('name')
                                 ->required()
                                 ->unique()
                         ]),

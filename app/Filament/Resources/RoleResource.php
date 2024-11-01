@@ -53,8 +53,22 @@ class RoleResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        if(Auth::user()->hasrole('Super Admin')){
+            return parent::getEloquentQuery();
+        }
+        return parent::getEloquentQuery()
+            ->where('name','not like','%super%')
+            ->count();
     }
+    public static function getEloquentQuery(): Builder
+    {
+        if(Auth::user()->hasrole('Super Admin')){
+            return parent::getEloquentQuery();
+        }
+        return parent::getEloquentQuery()->where('name','not like','%super%');
+
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -64,6 +78,7 @@ class RoleResource extends Resource
                         TextInput::make('name')
                             ->required()
                             ->unique(ignoreRecord: true)
+                            ->minLength(5)
                             ->translateLabel(),
                     ])->columns(2)
             ]);

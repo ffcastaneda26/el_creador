@@ -52,7 +52,16 @@ class UserResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        if(Auth::user()->hasrole('Super Admin')){
+            return static::getModel()::count();
+        }
+
+        
+        
+        return parent::getEloquentQuery()
+            ->whereHas('roles',function($query){
+                $query->where('name','not like','%super%');
+        })->count();
 
     }
 
@@ -67,7 +76,7 @@ class UserResource extends Resource
             return parent::getEloquentQuery();
         }
 
-        return parent::getEloquentQuery()
+            return parent::getEloquentQuery()
             ->whereHas('roles',function($query){
                 $query->where('name','not like','%super%');
         });
@@ -148,7 +157,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-             RelationManagers\RolesRelationManager::class,
+            RelationManagers\RolesRelationManager::class,
         ];
     }
 
