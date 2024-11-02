@@ -19,6 +19,10 @@ class Country extends Model
     {
         return $this->hasMany(City::class);
     }
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class);
+    }
     public function states(): HasMany
     {
         return $this->hasMany(State::class);

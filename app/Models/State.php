@@ -20,6 +20,10 @@ class State extends Model
     {
         return $this->hasMany(City::class);
     }
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class);
+    }
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);

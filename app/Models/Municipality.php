@@ -19,6 +19,11 @@ class Municipality extends Model
         return $this->hasMany(City::class);
     }
 
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class);
+    }
+    
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);

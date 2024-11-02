@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Zipcode extends Model
 {
@@ -27,6 +28,11 @@ class Zipcode extends Model
     {
         return $this->belongsTo(City::class);
     }
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class);
+    }
+    
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
