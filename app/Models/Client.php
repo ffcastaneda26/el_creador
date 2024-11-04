@@ -14,6 +14,7 @@ class Client extends Model
         'name',
         'email',
         'phone',
+        'mobile',
         'rfc',
         'address',
         'num_int',

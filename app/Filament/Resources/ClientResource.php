@@ -60,35 +60,42 @@ class ClientResource extends Resource
                     TextInput::make('name')
                         ->required()
                         ->label(__('Full Name'))
-                        ->maxLength(100)
-                        ->columnSpan(3),
+                        ->maxLength(100),
                     TextInput::make('email')
                         ->translateLabel()
-                        ->maxLength(100)
-                        ->columnSpan(2),
-                    TextInput::make('phone')
-                        ->translateLabel()
-                        ->maxLength(15),
+                        ->maxLength(100),
                     TextInput::make('rfc')
                         ->translateLabel()
                         ->maxLength(13)
                         ->minLength(13),
                     Radio::make('type')
+                        ->inline()
                         ->options([
                             'Física'=> 'Física',
                             'Moral' => 'Moral',
                         ])->label(__('Type Person')),
-
+                    Section::make()->schema([
+                        TextInput::make('phone')
+                        ->translateLabel()
+                        ->maxLength(15),
+                    TextInput::make('mobile')
+                        ->translateLabel()
+                        ->nullable()
+                        ->maxLength(15),
                     TextInput::make('zipcode')
                         ->translateLabel()
                         ->numeric()
                         ->maxLength(5)
                         ->minLength(5),
+                    ])->columns(3),
+                    MarkdownEditor::make('notes')
+                    ->translateLabel()
+                    ->columnSpan(2),
 
-                ])->columns(3),
+
+                ])->columns(2),
 
                 Group::make()->schema([
-                    
                         Select::make('country_id')
                             ->relationship(
                                     name: 'country',
@@ -140,27 +147,16 @@ class ClientResource extends Resource
                             TextInput::make('address')
                             ->translateLabel()
                             ->required()
-                            ->maxLength(100)
-                            ->columnSpan(2)
-                            ->columns(2),
+                            ->maxLength(100),
                         TextInput::make('colony')
                                 ->translateLabel()
                                 ->required()
-                                ->maxLength(100)
+                                ->maxLength(100),
+                        MarkdownEditor::make('references')
+                                ->translateLabel()
                                 ->columnSpan(2),
-              
-                ])->columns(2),
 
-                 Group::make()->schema([
-                    MarkdownEditor::make('notes')
-                    ->translateLabel()
-                    ->columnSpan(3),
-                 ]),
-                 Group::make()->schema([
-                    MarkdownEditor::make('references')
-                    ->translateLabel()
-                    ->columnSpan(3),
-                 ]),
+                ])->columns(2),
 
             ]);
     }
@@ -178,6 +174,10 @@ class ClientResource extends Resource
                         ->sortable()
                         ->translateLabel(),
                 TextColumn::make('phone')
+                        ->searchable()
+                        ->sortable()
+                        ->translateLabel(),
+                    TextColumn::make('mobile')
                         ->searchable()
                         ->sortable()
                         ->translateLabel(),
