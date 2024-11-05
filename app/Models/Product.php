@@ -13,12 +13,23 @@ class Product extends Model
     public $timestamps = false;
     protected $fillable =  [
         'name',
-        'sku',
+        'code',
         'unit_id',
         'description',
+        'price',
+        'last_purchase_price',
+        'stock',
+        'stock_available',
+        'stock_min',
+        'stock_max',
+        'stock_reorder',
+        'average_cost',
         'image',
-        'user_id',
+        'user_id'
     ];
+
+
+
 
     public function unit(): BelongsTo
     {

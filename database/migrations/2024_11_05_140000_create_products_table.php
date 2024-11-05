@@ -16,12 +16,18 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name',150)->unique()->comment('Nombre');
-            $table->string('sku',30)->nullable()->default(null)->comment('Código de Barras');
+            $table->string('code',30)->nullable()->default(null)->comment('Código');
             $table->foreignIdFor(Unit::class)->nullable()->default(null)->comment('Unidad de Medida');
             $table->mediumText('description')->nullable()->comment('Descripción');
+            $table->decimal('price',8,2)->default(0.00)->comment('Precio Unitario');
+            $table->decimal('last_purchase_price',11,6)->default(0.00)->comment('Precio última compra');
+            $table->integer('stock')->default(0)->comment('Existencia Total');
+            $table->integer('stock_min')->default(0)->comment('Existencia Mínima');
+            $table->integer('stock_max')->default(0)->comment('Existencia máxima');
+            $table->integer('stock_reorder')->default(0)->comment('Punto de reorden');
+            $table->decimal('average_cost',11,6)->default(0.00)->comment('Costo Promedio');
             $table->string('image')->nullable()->comment('Imagen');
             $table->foreignIdFor(User::class)->comment('Usuario que creó o modificó');
-            $table->boolean('active')->default(1)->comment('¿Activo?');
         });
     }
 
