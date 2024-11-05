@@ -15,6 +15,8 @@ class Client extends Model
         'email',
         'phone',
         'mobile',
+        'curp',
+        'ine',
         'rfc',
         'address',
         'num_int',
@@ -36,6 +38,9 @@ class Client extends Model
             set: fn (string $value) => strtoupper($value),
         );
     }
+
+
+
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);

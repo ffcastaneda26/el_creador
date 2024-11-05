@@ -88,12 +88,23 @@ class ClientResource extends Resource
                         ->maxLength(5)
                         ->minLength(5),
                     ])->columns(3),
-                    MarkdownEditor::make('notes')
-                    ->translateLabel()
-                    ->columnSpan(2),
-
+                    Section::make()->schema([
+                        TextInput::make('curp')
+                            ->translateLabel()
+                            ->nullable()
+                            ->minLength(18)
+                            ->maxLength(18)
+                            ->alphaNum()
+                        ->regex('/^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$/'),
+                        TextInput::make('ine')
+                            ->translateLabel()
+                            ->nullable()
+                            ->minLength(13)
+                            ->maxLength(13),
+                        ])->columns(2),
 
                 ])->columns(2),
+
 
                 Group::make()->schema([
                         Select::make('country_id')
@@ -152,12 +163,18 @@ class ClientResource extends Resource
                                 ->translateLabel()
                                 ->required()
                                 ->maxLength(100),
-                        MarkdownEditor::make('references')
-                                ->translateLabel()
-                                ->columnSpan(2),
-
                 ])->columns(2),
 
+                Group::make()->schema([
+                    MarkdownEditor::make('notes')
+                    ->translateLabel()
+                    ->columnSpan(2),
+                ]),
+                Group::make()->schema([
+                    MarkdownEditor::make('references')
+                    ->translateLabel()
+                    ->columnSpan(2),
+                ])
             ]);
     }
 
