@@ -206,7 +206,17 @@ class ClientResource extends Resource
                         ->searchable()
                         ->sortable()
                         ->label('RFC')
-                        ->toggleable(),
+                        ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('curp')
+                        ->searchable()
+                        ->sortable()
+                        ->label('CURP')
+                         ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('ine')
+                        ->searchable()
+                        ->sortable()
+                        ->label('INE')
+                        ->toggleable(isToggledHiddenByDefault: true)
 
             ])
             // TODO:: Hacer los select depndientes
