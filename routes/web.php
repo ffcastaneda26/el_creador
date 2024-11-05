@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\TestController;
+use App\Livewire\TestingPdfs;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/probando',[TestController::class, 'index'])->name('probando');
+Route::get('/testing-pdfs',TestingPdfs::class)->name('testing-pdfs');
 Route::get('/', function () {
     return view('welcome');
 });
