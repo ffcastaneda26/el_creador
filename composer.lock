@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9d134028a34914018a223d3d6780e2e6",
+    "content-hash": "4c6a50a8588a799105b7486b2ff98125",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2121,6 +2121,55 @@
                 }
             ],
             "time": "2023-12-03T19:50:20+00:00"
+        },
+        {
+            "name": "jmencoder/numero-a-letras",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jmencoder/numero-a-letras.git",
+                "reference": "987afa27f44214b5a61e495e352838503fef63aa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jmencoder/numero-a-letras/zipball/987afa27f44214b5a61e495e352838503fef63aa",
+                "reference": "987afa27f44214b5a61e495e352838503fef63aa",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "jmencoder\\NumerosALetras\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jean Michael",
+                    "homepage": "https://github.com/jmencoder/numero-a-letras"
+                }
+            ],
+            "description": "Convierte un número en letras en formatos planos, financieros, bancarios, contables.",
+            "homepage": "https://github.com/jmencoder/numero-a-letras",
+            "keywords": [
+                "DEI",
+                "convertir",
+                "facturacion",
+                "letras",
+                "numero",
+                "sat"
+            ],
+            "support": {
+                "issues": "https://github.com/jmencoder/numero-a-letras/issues",
+                "source": "https://github.com/jmencoder/numero-a-letras/tree/v1.0.1"
+            },
+            "time": "2021-11-16T02:08:59+00:00"
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",

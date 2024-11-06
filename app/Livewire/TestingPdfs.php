@@ -74,6 +74,10 @@ class TestingPdfs extends Component
 
     public function aviso_privacidad()
     {
+        // $number =4444444.44;
+        // $texto = GeneralHelp:: number_to_letters($number);
+        // dd('Número=' . number_format($number,2,'.',',') . '-->' . $texto);
+
         $filePath = public_path("aviso de privacidad.pdf");
         $outputFilePath = public_path("sample_output.pdf");
         $data = Client::first();
