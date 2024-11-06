@@ -5,8 +5,6 @@ use jmencoder\NumerosALetras\NumerosALetras;
 
 class GeneralHelp
 {
-
-
     /**
      * Sustituye carácteres acentuados por no acentuados asi también la Ñ
      * @param string $original_text
