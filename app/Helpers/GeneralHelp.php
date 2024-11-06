@@ -75,7 +75,6 @@ class GeneralHelp
 
 
     }
-
     /**
      * Regresa el número convertido a letras
      * @return string
@@ -87,8 +86,6 @@ class GeneralHelp
         $converter = new NumerosALetras();
         $converter->anexar = null;
         return ucwords(strtolower($converter->toInvoice($number,$decimals,$text))) . 'M/N';
-
     }
-
-
+    
 }
