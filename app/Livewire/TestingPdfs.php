@@ -96,10 +96,9 @@ class TestingPdfs extends Component
             $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
             $fpdi->useTemplate($template);
             $fpdi->SetXY(134,22);
-            $spanish_month = GeneralHelp::spanish_day(now(),'l');
-            dd($spanish_month);
-            $fpdi->Write(0,now()->format('D'));
-            $fpdi->Text(152,23,now()->format('M'));
+
+            $fpdi->Write(0,now()->format('d'));
+            $fpdi->Text(152,23,GeneralHelp::spanish_month(now(),'s'));
 
             if($data){
                 $standard_name = GeneralHelp::normalize_text($data->name);
