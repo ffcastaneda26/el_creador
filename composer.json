@@ -9,6 +9,7 @@
         "elibyy/tcpdf-laravel": "^11.1",
         "filament/filament": "^3.2",
         "jmencoder/numero-a-letras": "^1.0",
+        "joaopaulolndev/filament-pdf-viewer": "^1.0",
         "laravel/framework": "^11.9",
         "laravel/jetstream": "^5.3",
         "laravel/sanctum": "^4.0",

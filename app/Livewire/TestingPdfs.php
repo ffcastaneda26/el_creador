@@ -6,12 +6,14 @@ use TCPDF;
 use App\Models\Client;
 use Livewire\Component;
 use setasign\Fpdi\Fpdi;
-use Illuminate\Support\Str;
-use App\Helpers\GeneralHelp;
+ use App\Helpers\GeneralHelp;
 
 class TestingPdfs extends Component
 {
-    public function mount(){
+
+    public $client;
+    public function mount(Client $client){
+
         $this->aviso_privacidad();
         // $this->ejemplo();
     }
