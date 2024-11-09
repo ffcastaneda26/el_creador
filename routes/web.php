@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PrivateNotice;
 use App\Http\Controllers\TestController;
+use App\Livewire\Clients\Clients;
 use App\Livewire\TestingPdfs;
 use Illuminate\Support\Facades\Route;
 Route::get('/probando',[TestController::class, 'index'])->name('probando');
@@ -18,4 +19,5 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+    Route::get('clients',Clients::class)->name('clients');
 });

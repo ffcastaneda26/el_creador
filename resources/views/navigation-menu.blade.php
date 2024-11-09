@@ -15,6 +15,12 @@
                     <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(Route::has('clients'))
+                        <x-nav-link href="{{ route('clients') }}" :active="request()->routeIs('clients')">
+                            {{ __('Clients') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
