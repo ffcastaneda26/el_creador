@@ -28,10 +28,10 @@ class AsesorPanelProvider extends PanelProvider
             ->id('asesor')
             ->path('asesor')
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::Lime,
             ])
             ->brandLogo(asset('images/logo.png'))
-            ->brandLogoHeight('5rem')
+            ->brandLogoHeight('4rem')
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Asesor/Resources'), for: 'App\\Filament\\Asesor\\Resources')
             ->discoverPages(in: app_path('Filament/Asesor/Pages'), for: 'App\\Filament\\Asesor\\Pages')

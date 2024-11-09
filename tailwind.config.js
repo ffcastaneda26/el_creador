@@ -1,7 +1,7 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
 import typography from '@tailwindcss/typography';
-
+import laravel, { refreshPaths } from 'laravel-vite-plugin'
 /** @type {import('tailwindcss').Config} */
 export default {
     content: [
@@ -19,5 +19,14 @@ export default {
         },
     },
 
-    plugins: [forms, typography],
+    plugins: [
+        forms, typography,
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.js'],
+            refresh: [
+                ...refreshPaths,
+                'app/Livewire/**',
+            ],
+        }),
+    ],
 };
