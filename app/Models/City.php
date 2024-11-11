@@ -40,4 +40,9 @@ class City extends Model
     {
         return $this->hasMany(Zipcode::class);
     }
+    
+    public function colonies(): HasMany
+    {
+        return $this->hasMany(Zipcode::class,'zipcode');
+    }
 }

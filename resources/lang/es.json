@@ -43,7 +43,9 @@
     "Phone": "Teléfono",
     "Mobile": "Celular",
     "Type Person": "Tipo de Persona",
-    "Address": "Dirección (Calle y Número -Int)",
+    "Address": "Dirección",
+    "Full Address": "Dirección (Calle y Número -Int)",
+
     "References": "Referencias",
     "Notes": "Notas",
     "Colony": "Colonia",

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -61,4 +62,16 @@ class Client extends Model
         return $this->belongsTo(City::class);
     }
 
+    /**
+     * Busca clientes
+     */
+    public function scopeSearch(Builder $query,$search): void
+    {
+        $search = trim($search);
+        $query->where('name', 'like', "%{$this->search}%")
+                ->orwhere('email', 'like', "%{$this->search}%")
+                ->orwhere('phone', 'like', "%{$this->search}%")
+                ->orwhere('mobile', 'like', "%{$this->search}%");
+  
+    }
 }

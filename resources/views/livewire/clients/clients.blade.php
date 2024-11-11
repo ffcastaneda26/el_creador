@@ -1,6 +1,5 @@
 <div class="container">
-
-    
+    {{-- Listado de clientes --}}
     <x-app-layout>
         <x-slot name="header">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -19,14 +18,14 @@
                             <div class="flex justify-between items-center mb-2 ">
                                 <div>
                                     <div class="w-80 space-y-3">
-                                        <input type="text" 
+                                        <input type="text"
                                                 wire:model.live.debounce.150ms="search"
                                                 class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" placeholder="{{ __('Name,Email or Phone') }}">
                                     </div>
                                 </div>
                                 <div>
                                     <x-button wire:click="$toggle('showModal')"
-                                            class="w-50 bg-blue-500 hover:bg-blue-700 text-white rounded-md p-2 text-center">
+                                            class="w-50 bg-green-500 hover:bg-green-700 text-white rounded-md p-2 text-center">
                                             {{ __('New Client')}}
                                     </x-button>
                                 </div>
@@ -66,75 +65,22 @@
                                                 <td colspan="7" class="text-2xl text-center text-red-500">{{ __('No records found') }}</td>
                                             </tr>
                                         @endforelse
-            
+
                                     </tbody>
                                 </table>
                             </div>
                             <div class="mt-4">
                                 {{ $records->links() }}
-                            </div>  
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </x-app-layout>
- 
 
-    <x-confirmation-modal wire:modelwire:model.live="showModal">
-        
-        <x-slot name="title">
-            {{ __('New Client') }}
-        </x-slot>
-        <x-slot name="content">
-            <div class="flex">
-                <div>1</div>
-                <div>2</div>
-            </div>
-            <div class="max-w-sm space-y-3">
-                <div>
-                  <div class="flex rounded-lg shadow-sm">
-                    <span class="px-2 inline-flex items-center min-w-fit rounded-s-md border border-e-0 border-gray-200 bg-gray-50 text-sm text-gray-500 dark:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-400">{{__('Name')}}</span>
-                    <input type="text" class="py-2 px-3 pe-11 block w-full border-gray-200 shadow-sm rounded-e-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
-                  </div>
-                </div>
-              
-                <div>
-                  <div class="flex rounded-lg shadow-sm">
-                    <span class="px-2 inline-flex items-center min-w-fit rounded-s-md border border-e-0 border-gray-200 bg-gray-50 text-sm text-gray-500 dark:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-400">{{ __('Email') }}</span>
-                    <input type="text" class="py-3 px-2 pe-11 block w-full border-gray-200 shadow-sm rounded-e-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
-                  </div>
-                </div>
-              
-                <div>
-                  <div class="flex rounded-lg shadow-sm">
-                    <span class="px-2 inline-flex items-center min-w-fit rounded-s-md border border-e-0 border-gray-200 bg-gray-50 text-sm text-gray-500 dark:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-400">{{ __('Phone') }}</span>
-                    <input type="text" class="py-3 px-2 pe-11 block w-full border-gray-200 shadow-sm rounded-e-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 sm:p-5">
-                  </div>
-                </div>
+    {{-- Formulario Modal --}}
+    @include('livewire.clients.form')
 
-                <div>
-                    <div class="flex rounded-lg shadow-sm">
-                      <span class="px-2 inline-flex items-center min-w-fit rounded-s-md border border-e-0 border-gray-200 bg-gray-50 text-sm text-gray-500 dark:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-400">{{ __('Mobile') }}</span>
-                      <input type="text" class="py-3 px-2 pe-11 block w-full border-gray-200 shadow-sm rounded-e-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 sm:p-5">
-                    </div>
-                  </div>
-              </div>
-              
-        </x-slot>
-
-        <x-slot name="footer">
-
-            <x-danger-button wire:click="$toggle('showModal')" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
-            </x-danger-button>
-
-            <x-secondary-button class="ms-3 bg-green-400 hover:bg-blue-800" wire:click="store" wire:loading.attr="disabled">
-                {{ __('Save') }}
-            </x-secondary-button>
-        </x-slot>
-    </x-confirmation-modal>
-
- 
 
 </div>

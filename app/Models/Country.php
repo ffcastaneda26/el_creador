@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Country extends Model
@@ -31,5 +32,12 @@ class Country extends Model
     public function zipcodes(): HasMany
     {
         return $this->hasMany(Zipcode::class);
+    }
+    
+    /** Solo registros con include = 1  */
+    
+    public function scopeInclude(Builder $query): void
+    {
+        $query->where('include', 1)->orderBy('country');
     }
 }
