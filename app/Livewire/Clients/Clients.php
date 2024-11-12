@@ -2,14 +2,15 @@
 
 namespace App\Livewire\Clients;
 
+use App\Models\City;
+use App\Models\State;
 use App\Models\Client;
 use App\Models\Country;
-use App\Models\State;
-use App\Models\Municipality;
-use App\Models\City;
 use App\Models\Zipcode;
 use Livewire\Component;
+use App\Models\Municipality;
 use Livewire\WithPagination;
+use Livewire\Attributes\Validate;
 
 class Clients extends Component
 {
@@ -20,8 +21,18 @@ class Clients extends Component
  
     public $countries,$states,$municipalities,$cities,$colonies;
     public $country_id,$state_id,$municipality_id,$city_id,$colony_id;
-    public $name,$email,$phone,$rfc,$type,$address,$colony,$references,$zipcode,$notes;
-   
+    public $mobile,$curp,$ine,$rfc,$address,$colony,$references,$zipcode,$notes;
+
+
+    #[Validate('required|min:3')] 
+    public $name;
+    #[Validate('required|email:3')] 
+    public $email;
+    
+    #[Validate('required|min:10|max:15|numeric')]   
+    public $phone;
+    #[Validate('required')] 
+    public $type;
     public function mount(){
         $this->countries = Country::Include()->pluck('id','country');
         $this->country_id = 135;
@@ -44,16 +55,6 @@ class Clients extends Component
     public function getClients()
     {
         return Client::Search($this->search)->paginate($this->pagination);
-
-        // $qry  = Client::query();
-        // $qry = $qry->when($this->search, function ($query) {
-        //     return $query->where('name', 'like', "%{$this->search}%")
-        //                  ->orwhere('email', 'like', "%{$this->search}%")
-        //                  ->orwhere('phone', 'like', "%{$this->search}%");
-        // });
-        
-        // return  $qry->paginate($this->pagination);
- 
     }
 
     /** Lee Entidades Federativas */
@@ -164,7 +165,35 @@ class Clients extends Component
      * Valida y en su caso guarda los datos
      */
     public function store(){
-        dd('Aqui vamos a guardar los datos');
+        $this->resetErrorBag();
+        $this->validate();
+
+        Client::updateOrCreate(
+            ['id' => $this->record_id],
+            [
+                    'name'          => $this->name,
+                    'email'         => $this->email,
+                    'phone'         => $this->phone,
+                    'mobile'        => $this->mobile,
+                    'curp'          => $this->curp,
+                    'ine'           => $this->ine,
+                    'rfc'           => $this->rfc,
+                    'type'          => $this->type,
+                    'address'       => $this->address,
+                    'colony'        => $this->colony,
+                    'references'    => $this->references,
+                    'zipcode'       => $this->zipcode,
+                    'country_id'     => $this->country_id,
+                    'state_id'       => $this->state_id,
+                    'municipality_id'=> $this->municipality_id,
+                    'city_id'        => $this->city_id ,
+                    'notes '        => $this->notes,
+            ]
+
+        );
+        $this->dispatch('toast', msg: $this->product_id == null ? 'Cliente Creado' : 'Cliente Actualizado');
+        $this->resetInputFields();
+        $this->dispatch('closemodal');
     }
 
  
@@ -179,6 +208,9 @@ class Clients extends Component
         $this->name     = $record->name;
         $this->email    = $record->email;
         $this->phone    = $record->phone;
+        $this->mobile   = $record->mobile;
+        $this->curp     = $record->curp;
+        $this->ine      = $record->ine;
         $this->rfc      = $record->rfc;
         $this->type     = $record->type;
         $this->address  = $record->address;
@@ -190,13 +222,9 @@ class Clients extends Component
         $this->municipality_id= $record->municipality_id;
         $this->city_id  = $record->city_id ;
         $this->notes    = $record->notes;
-        $this->country_id = $record->country_id;
-        $this->state_id     = $record->state_id;
-        $this->municipality_id= $record->municipality_id;
-        $this->city_id      = $record->city_id;
         $this->read_zipcode();
         $this->asign_colony();
-        $this->showModel = true;
+        $this->showModal = true;
     }
 
     /**
@@ -205,11 +233,10 @@ class Clients extends Component
      */
     private function resetInputFields()
     {
-        $this->reset('name','email','phone','rfc','type','address','colony','references','zipcode','notes');
+        $this->reset('name','email','phone','mobile','curp','ine','rfc','type','address','colony','references','zipcode','notes');
         $this->reset('country_id','state_id','municipality_id','city_id');
         $this->reset('states','municipalities','cities','colonies');
         $this->read_states();
-
     }
     
     /**
