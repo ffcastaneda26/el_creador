@@ -3,15 +3,16 @@
       <!-- Columna Izquierda -->
       <div class="space-y-4 w-full p-4 border-2 border-black">
           <!-- Nombre -->
-          <div class="flex gap-2 text-justify items-center">
-              <label class="bg-gray-100">{{ __('Name') }}</label>
-                <div class="flex flex-col justify-start gap-2">
+
+        <div class="flex gap-2 text-justify items-center">
+            <label class="bg-gray-100">{{ __('Name') }}</label>
+                <div class="flex flex-col justify-start gap-2 w-full">
                     <div class="w-full">
                         <input type="text" 
                             wire:model="name" 
                             id="name"
                             name="name"
-                            class="w-full rounded-md border border-gray-300 @error('name') is-invalid @enderror"
+                            class="w-full rounded-md border border-gray-300 @error('name') border-2 border-red-500 @enderror"
                             required
                             placeholder="{{ __('Name') }}">
                     </div>
@@ -21,15 +22,15 @@
                         </div>
                     @enderror
                 </div>
-          </div>
+        </div>
           <!-- Correo -->
           <div class="flex gap-2 text-justify items-center">
                 <label class="bg-gray-100">{{ __('Email') }}</label>
-                <div class="flex flex-col justify-start gap-2">
+                <div class="flex flex-col justify-start gap-2 w-full">
                     <div>
                         <input type="text" 
                                 wire:model="email" 
-                                class="w-full rounded-md border border-gray-300 @error('email') is-invalid @enderror"
+                                class="w-full rounded-md border border-gray-300 @error('email') border-2 border-red-500 @enderror"
                                 required
                                 placeholder="{{('Email')}}">
                     </div>
@@ -44,13 +45,13 @@
           <!-- Teléfono -->
             <div class="flex gap-2 text-justify items-center">
                 <label class="bg-gray-100">{{ __('Phone') }}</label>
-                <div class="flex flex-col justify-start gap-2">
+                <div class="flex flex-col justify-start gap-2 w-full">
                     <div>
                         <input type="text" 
                                 wire:model="phone"
                                 pattern="[0-9]" 
                                 maxlength="15"
-                                class="w-full rounded-md border border-gray-300 @error('phone') is-invalid @enderror" 
+                                class="w-full rounded-md border border-gray-300 @error('phone') border-2 border-red-500 @enderror" 
                                 required
                                 placeholder="{{__('Phone')}}">
                     </div>
@@ -98,10 +99,10 @@
           <!-- Tipo de Persona-->
             <div class="flex gap-2 w-full"> 
                 <label for="type">{{__('Type')}}</label>
-                <div class="flex flex-col justify-start gap-2">
+                <div class="flex flex-col justify-start gap-2 w-full">
                     <div>
                         <select wire:model="type"
-                                class="w-full rounded-md border border-gray-300 @error('type') is-invalid @enderror"
+                                class="w-full rounded-md border border-gray-300 @error('type') border-2 border-red-500 @enderror"
                                 required>
                             <option value="">{{(__('Type'))}}</option>
                             <option value="Física">{{(__('Física'))}}</option>
