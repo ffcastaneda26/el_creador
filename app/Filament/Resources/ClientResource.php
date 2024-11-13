@@ -36,7 +36,7 @@ class ClientResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 11;
 
     // protected static ?string $cluster = Geographics::class;
     public static function getNavigationGroup(): string
