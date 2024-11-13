@@ -12,9 +12,6 @@
                 <div class="flex flex-col">
                     <div class="-m-1.5 overflow-x-auto">
                         <div class="p-1.5 min-w-full inline-block align-middle">
-                            <div>
-                                {{  $showModal  ? 'Encendida' : 'Apagada'}}
-                            </div>
                             <div class="flex justify-between items-center mb-2 ">
                                 <div>
                                     <div class="w-80 space-y-3">
@@ -55,9 +52,16 @@
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">{{$record->ine}}</td>
 
                                                 <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
-                                                <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 focus:outline-none focus:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400 dark:focus:text-blue-400">
-                                                    Editar
-                                                    </button>
+                                                    <x-button wire:click="edit({{ $record->id }})"
+                                                        class="h-6 w-auto text-white bg-orange-500 hover:bg-orange-700 text-center">
+                                                        {{ __('Edit') }}
+                                                    </x-button>
+
+                                                    {{-- <button wire:click="edit({{ $record->id }})"
+                                                        type="button"
+                                                        class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 focus:outline-none focus:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400 dark:focus:text-blue-400">
+                                                        {{ __('Edit') }}
+                                                    </button> --}}
                                                 </td>
                                             </tr>
                                         @empty
@@ -81,6 +85,5 @@
 
     {{-- Formulario Modal --}}
     @include('livewire.clients.form')
-
-
 </div>
+

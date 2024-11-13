@@ -40,6 +40,16 @@ class Client extends Model
         );
     }
 
+    protected function curp(): Attribute
+    {
+
+        return Attribute::make(
+            get: fn (string $value) => strtoupper($value),
+            set: fn (string $value) => strtoupper($value),
+        );
+    }
+
+
 
 
     public function country(): BelongsTo
@@ -72,6 +82,6 @@ class Client extends Model
                 ->orwhere('email', 'like', "%{$this->search}%")
                 ->orwhere('phone', 'like', "%{$this->search}%")
                 ->orwhere('mobile', 'like', "%{$this->search}%");
-  
+
     }
 }
