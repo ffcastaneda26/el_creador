@@ -8,7 +8,6 @@
         "php": "^8.2",
         "elibyy/tcpdf-laravel": "^11.1",
         "filament/filament": "^3.2",
-        "filament/spatie-laravel-media-library-plugin": "^3.2",
         "jmencoder/numero-a-letras": "^1.0",
         "joaopaulolndev/filament-pdf-viewer": "^1.0",
         "laravel/framework": "^11.9",
