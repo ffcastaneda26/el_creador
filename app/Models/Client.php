@@ -33,6 +33,14 @@ class Client extends Model
         'references'
     ];
 
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value) => ucfirst($value),
+            set: fn (string $value) => ucfirst($value),
+        );
+    }
+
     protected function rfc(): Attribute
     {
         return Attribute::make(

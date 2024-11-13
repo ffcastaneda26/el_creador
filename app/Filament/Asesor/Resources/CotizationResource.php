@@ -10,6 +10,7 @@ use App\Models\Cotization;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Group;
+use App\Helpers\ManagementCotization;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
@@ -23,6 +24,9 @@ use Filament\Forms\Components\MarkdownEditor;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Asesor\Resources\CotizationResource\Pages;
 use App\Filament\Asesor\Resources\CotizationResource\RelationManagers;
+use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\CommentsRelationManager;
+use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\ImagesRelationManager;
+use Filament\Tables\Columns\ImageColumn;
 
 class CotizationResource extends Resource
 {
@@ -50,17 +54,6 @@ class CotizationResource extends Resource
 
     public static function form(Form $form): Form
     {
-
-
-        // 'aprobada',
-        // 'fecha_aprobada',
-
-        // 'subtotal',
-        // 'iva',
-        // 'descuento',
-        // 'total',
-        // 'fecha_entrega',
-        // 'user_id'
         return $form
             ->schema([
                 Group::make()->schema([
@@ -163,6 +156,7 @@ class CotizationResource extends Resource
                         ->date('D d M y'),
 
                 IconColumn::make('aprobada')->translateLabel()->boolean(),
+                ImageColumn::make('images.image')->circular()->stacked()
             ])
             ->filters([
                 SelectFilter::make('client')
@@ -184,7 +178,8 @@ class CotizationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            // ImagesRelationManager::class,
+           ImagesRelationManager::class,
         ];
     }
 
