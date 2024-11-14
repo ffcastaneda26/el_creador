@@ -10,7 +10,6 @@ use setasign\Fpdi\Fpdi;
 
 class PdfController extends Controller
 {
-    public $source_file;
 
     public function index($record,string $document="aviso")
     {
