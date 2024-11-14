@@ -26,12 +26,14 @@ use App\Filament\Asesor\Resources\CotizationResource\Pages;
 use App\Filament\Asesor\Resources\CotizationResource\RelationManagers;
 use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\CommentsRelationManager;
 use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\ImagesRelationManager;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Get;
 use Filament\Tables\Columns\ImageColumn;
 
 class CotizationResource extends Resource
 {
     protected static ?string $model = Cotization::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-currency-dollar';
 
 
     protected static ?int $navigationSort = 20;
@@ -72,55 +74,86 @@ class CotizationResource extends Resource
                             ->translateLabel()
                             ->columnSpan(2),
                     ]),
-                    Group::make()->schema([
-                        DatePicker::make('fecha')
+                Group::make()->schema([
+                    DatePicker::make('fecha')
                             ->required()
                             ->default(now())
                             ->format('Y-m-d'),
-                        DatePicker::make('vigencia')
+                    DatePicker::make('vigencia')
                             ->required()
                             ->format('Y-m-d')
                             ->after('fecha'),
-                        TextInput::make('subtotal')
-                            ->default(0.00)
-                        	->required()
-                            ->translateLabel()
-                            ->live(onBlur:true)
-                            ->inlinelabel()
-                            ->inputMode('decimal')
-                            ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                $descuento= $get('descuento');
-                                $iva= round($state*0.16,2);
-                                $set('iva',$iva);
-                                $total = round($state + $iva + $descuento,2);
-                                $set('total',$total);
-                            }),
-                        TextInput::make('descuento')
-                        	->default(0.00)
-                            ->translateLabel()
-                            ->live(onBlur:true)
-                            ->inputMode('decimal')
-                            ->inlinelabel()
-                            ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                $subtotal= $get('subtotal');
-                                $iva = $get('iva');
-                                $total = round($state + $iva + $subtotal,2);
-                                $set('total',$total);
-                            }),
-                        TextInput::make('iva')
-                        	->required()
-                            ->translateLabel()
-                            ->inputMode('decimal')
-                            ->disabled()
-                            ->inlinelabel(),
+                    Section::make()->schema([
+                            Select::make('tax')
+                                ->options([
+                                    true => __('Yes'),
+                                    false => 'No',
+                                    ])
+                                ->live(onBlur:true)
+                                ->reactive()
+                                ->label('¿Incluir Iva?')
+                                ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
+                                        $descuento= $get('descuento');
+                                        $subtotal= $get('subtotal');
+                                        $iva= 00.00;
+                                        $tax = $get('tax');
+                                        if($tax){
+                                            $iva= round($subtotal*0.16,2);
+                                        }
+                                        $set('iva',$iva);
+                                        $total = round($subtotal + $iva - $descuento,2);
+                                        $set('total',$total);
 
-                        TextInput::make('total')
-                        	->required()
-                            ->disabled()
-                            ->translateLabel()
-                            ->inputMode('decimal')
-                            ->inlinelabel(),
-                        Section::make()->schema([
+                                    })
+                                ->columnSpan(2),
+
+                            TextInput::make('subtotal')
+                                ->default(0.00)
+                                ->required()
+                                ->translateLabel()
+                                ->live(onBlur:true)
+                                ->inlinelabel()
+                                ->inputMode('decimal')
+                                ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
+                                    $descuento= $get('descuento');
+                                    $iva= 0.00;
+                                    $tax = $get('tax');
+                                    if($tax){
+                                        $iva= round($state*0.16,2);
+                                    }
+                                    $set('iva',$iva);
+                                    $total = round($state + $iva - $descuento,2);
+                                    $set('total',$total);
+                            }),
+                            TextInput::make('descuento')
+                                ->default(0.00)
+                                ->translateLabel()
+                                ->live(onBlur:true)
+                                ->inputMode('decimal')
+                                ->inlinelabel()
+                                ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
+                                    $subtotal= $get('subtotal');
+                                    $iva = $get('iva');
+                                    $total = round($state + $iva + $subtotal,2);
+                                    $set('total',$total);
+                            }),
+                            TextInput::make('iva')
+                                ->required()
+                                ->translateLabel()
+                                ->inputMode('decimal')
+                                ->disabled()
+                                ->inlinelabel(),
+
+                            TextInput::make('total')
+                                ->required()
+                                ->disabled()
+                                ->translateLabel()
+                                ->inputMode('decimal')
+                                ->inlinelabel(),
+
+                        ])->columns(2),
+
+                    Section::make()->schema([
                             Toggle::make('aprobada'),
                             DatePicker::make('fecha_aprobada')
                                 ->requiredIfAccepted('aprobada')
@@ -131,7 +164,7 @@ class CotizationResource extends Resource
                                 ->format('Y-m-d'),
 
                         ])->columns(3)
-                    ])->columns(2),
+                ])->columns(2),
             ]);
     }
 
@@ -149,6 +182,7 @@ class CotizationResource extends Resource
                         ->searchable()
                         ->sortable()
                         ->date('D d M y'),
+
                 TextColumn::make('vigencia')
                         ->translateLabel()
                         ->searchable()
@@ -156,7 +190,12 @@ class CotizationResource extends Resource
                         ->date('D d M y'),
 
                 IconColumn::make('aprobada')->translateLabel()->boolean(),
-                ImageColumn::make('images.image')->circular()->stacked()
+                ImageColumn::make('images.image')->circular()->stacked(),
+                TextColumn::make('total')
+                    ->formatStateUsing(fn (string $state): string => number_format($state))
+                    ->alignEnd()
+                    // ->money('MXP',1,'locale')
+                    // ->alignEnd()
             ])
             ->filters([
                 SelectFilter::make('client')
@@ -167,6 +206,10 @@ class CotizationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make(__('Cotization'))
+                    ->icon('heroicon-o-document-currency-dollar')
+                    ->url(fn (Cotization $record) => route('pdf-document',[ $record,'cotizacion']))
+                    ->openUrlInNewTab()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -191,4 +234,6 @@ class CotizationResource extends Resource
             'edit' => Pages\EditCotization::route('/{record}/edit'),
         ];
     }
+
+
 }

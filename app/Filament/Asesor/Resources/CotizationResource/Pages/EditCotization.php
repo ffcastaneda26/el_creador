@@ -5,6 +5,7 @@ namespace App\Filament\Asesor\Resources\CotizationResource\Pages;
 use App\Filament\Asesor\Resources\CotizationResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 
 class EditCotization extends EditRecord
 {
@@ -20,5 +21,22 @@ class EditCotization extends EditRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $subtotal = round($data['subtotal'],2);
+        $descuento = round($data['descuento'],2);
+        $iva = 0;
+        if($data['tax']){
+            $iva = round($subtotal * 0.16,2);
+        }
+        $total = round($subtotal + $iva - $descuento,2);
+        $data['subtotal']   = $subtotal;
+        $data['descuento']  = $descuento;
+        $data['iva']        = $iva;
+        $data['total']      = $total;
+        $data['user_id'] = Auth::user()->id;
+        return $data;
     }
 }

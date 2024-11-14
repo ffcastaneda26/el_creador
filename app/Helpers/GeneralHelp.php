@@ -24,7 +24,7 @@ class GeneralHelp
      * @return string
      * TODO:: Agregar el orden o formato de regreso
      */
-    static public function spanish_date($date,string $m_format='n',string $d_format='n'){
+    static public function spanish_date($date,string $m_format='n',string $d_format='n',$return_format=null){
 
         if(!$date){
             $date = now();
@@ -33,7 +33,11 @@ class GeneralHelp
         $day = GeneralHelp::spanish_day($date,$d_format);
         $month = GeneralHelp::spanish_month($date,$m_format);
 
-        return $day . ' '. $date->format('d') . ' de ' . $month . ' del ' . $date->format('Y');
+        if($return_format == 'dmy'){
+            $day_name = GeneralHelp::spanish_day($date,'l');
+            return $day_name . ' '. $date->format('d') . ' de ' . GeneralHelp::spanish_month($date,'l') . ' del ' . $date->format('Y');
+        }
+        return $day . ' '  . ' de ' . $month . ' del ' . $date->format('Y');
 
       }
 
@@ -50,7 +54,7 @@ class GeneralHelp
         if(!$date){
             $date = now();
         }
-        if($format == 'n')      return $date->format('d');
+        if($format == 'n')     return $date->format('d');
 
         return $format == 's' ? $dias_corto[$date->format('w')-1] : $dias_largo[$date->format('w')-1];
     }
@@ -87,5 +91,5 @@ class GeneralHelp
         $converter->anexar = null;
         return ucwords(strtolower($converter->toInvoice($number,$decimals,$text))) . 'M/N';
     }
-    
+
 }

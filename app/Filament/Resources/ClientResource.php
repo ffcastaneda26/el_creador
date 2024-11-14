@@ -235,10 +235,11 @@ class ClientResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make(__('Private Notice'))
-                ->icon('heroicon-o-document')
-                ->url(fn (Client $record) => route('student.pdf.download', $record))
-                ->openUrlInNewTab()
+                Tables\Actions\Action::make(__('Notice'))
+                    ->icon('heroicon-o-document')
+                    ->url(fn (Client $record) => route('pdf-document',[ $record,'aviso']))
+                    ->openUrlInNewTab(),
+
             ]);
     }
 
