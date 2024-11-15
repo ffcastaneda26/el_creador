@@ -29,6 +29,7 @@ use Filament\Tables\Columns\ImageColumn;
 class CotizationResource extends Resource
 {
     protected static ?string $model = Cotization::class;
+    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
 
     protected static ?int $navigationSort = 20;
