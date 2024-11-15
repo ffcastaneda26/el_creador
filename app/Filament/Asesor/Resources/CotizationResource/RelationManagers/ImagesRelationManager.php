@@ -3,12 +3,13 @@
 namespace App\Filament\Asesor\Resources\CotizationResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Set;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ImagesRelationManager extends RelationManager
@@ -23,7 +24,15 @@ class ImagesRelationManager extends RelationManager
                 Forms\Components\Group::make()->schema([
                     Forms\Components\TextInput::make('name')
                         ->required()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->live(onBlur:true)
+                        ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
+                            $description = $get('description');
+                            if(!$description || strlen($description)){
+                                 $set('description',$state);
+                            }
+
+                        }),
                     Forms\Components\FileUpload::make('image')
                         ->required()
                         ->translateLabel()
@@ -35,7 +44,6 @@ class ImagesRelationManager extends RelationManager
                 ]),
                 Forms\Components\Group::make()->schema([
                     Forms\Components\MarkdownEditor::make('description')
-                        ->required()
                         ->translateLabel(),
                 ]),
 

@@ -10,7 +10,6 @@ use App\Models\Cotization;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Group;
-use App\Helpers\ManagementCotization;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
@@ -23,11 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\MarkdownEditor;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Asesor\Resources\CotizationResource\Pages;
-use App\Filament\Asesor\Resources\CotizationResource\RelationManagers;
-use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\CommentsRelationManager;
 use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\ImagesRelationManager;
-use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Get;
 use Filament\Tables\Columns\ImageColumn;
 
@@ -93,50 +88,65 @@ class CotizationResource extends Resource
                                 ->reactive()
                                 ->label('¿Incluir Iva?')
                                 ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                        $descuento= $get('descuento');
                                         $subtotal= $get('subtotal');
+                                        $descuento= $get('descuento');
+                                        $envio = $get('envio');
                                         $iva= 00.00;
                                         $tax = $get('tax');
                                         if($tax){
                                             $iva= round($subtotal*0.16,2);
                                         }
                                         $set('iva',$iva);
-                                        $total = round($subtotal + $iva - $descuento,2);
+                                        $total = round($subtotal + $iva - $descuento +$envio,2);
                                         $set('total',$total);
 
                                     })
                                 ->columnSpan(2),
+                            Section::make()->schema([
+                                TextInput::make('subtotal')
+                                    ->default(0.00)
+                                    ->required()
+                                    ->translateLabel()
+                                    ->live(onBlur:true)
+                                    ->inputMode('decimal')
+                                    ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
+                                        $descuento= $get('descuento');
+                                        $envio= $get('envio');
+                                        $iva= 0.00;
+                                        $tax = $get('tax');
+                                        if($tax){
+                                            $iva= round($state*0.16,2);
+                                        }
+                                        $set('iva',$iva);
+                                        $total = round($state + $iva - $descuento + $envio,2);
+                                        $set('total',$total);
+                                }),
+                                TextInput::make('descuento')
+                                    ->default(0.00)
+                                    ->translateLabel()
+                                    ->live(onBlur:true)
+                                    ->inputMode('decimal')
+                                    ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
+                                        $subtotal= $get('subtotal');
+                                        $envio = $get('envio');
+                                        $iva = $get('iva');
+                                        $total = round($subtotal +  $iva - $state + $envio,2);
+                                        $set('total',$total);
+                                }),
+                                TextInput::make('envio')
+                                    ->default(0.00)
+                                    ->translateLabel()
+                                    ->live(onBlur:true)
+                                    ->inputMode('decimal')
+                                    ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
+                                        $subtotal= $get('subtotal');
+                                        $descuento = $get('descuento');
+                                        $iva = $get('iva');
+                                        $total = round($subtotal +  $iva - $descuento + $state,2);
+                                        $set('total',$total);
+                                }),
+                            ])->columns(3),
 
-                            TextInput::make('subtotal')
-                                ->default(0.00)
-                                ->required()
-                                ->translateLabel()
-                                ->live(onBlur:true)
-                                ->inlinelabel()
-                                ->inputMode('decimal')
-                                ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                    $descuento= $get('descuento');
-                                    $iva= 0.00;
-                                    $tax = $get('tax');
-                                    if($tax){
-                                        $iva= round($state*0.16,2);
-                                    }
-                                    $set('iva',$iva);
-                                    $total = round($state + $iva - $descuento,2);
-                                    $set('total',$total);
-                            }),
-                            TextInput::make('descuento')
-                                ->default(0.00)
-                                ->translateLabel()
-                                ->live(onBlur:true)
-                                ->inputMode('decimal')
-                                ->inlinelabel()
-                                ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                    $subtotal= $get('subtotal');
-                                    $iva = $get('iva');
-                                    $total = round($state + $iva + $subtotal,2);
-                                    $set('total',$total);
-                            }),
                             TextInput::make('iva')
                                 ->required()
                                 ->translateLabel()
@@ -181,21 +191,31 @@ class CotizationResource extends Resource
                         ->translateLabel()
                         ->searchable()
                         ->sortable()
-                        ->date('D d M y'),
+                        ->date('d M y'),
 
                 TextColumn::make('vigencia')
                         ->translateLabel()
                         ->searchable()
                         ->sortable()
-                        ->date('D d M y'),
+                        ->date('d M y'),
 
                 IconColumn::make('aprobada')->translateLabel()->boolean(),
-                ImageColumn::make('images.image')->circular()->stacked(),
-                TextColumn::make('total')
+                // ImageColumn::make('images.image')->circular()->stacked(),
+                TextColumn::make('subtotal')
                     ->formatStateUsing(fn (string $state): string => number_format($state))
-                    ->alignEnd()
-                    // ->money('MXP',1,'locale')
-                    // ->alignEnd()
+                    ->alignEnd(),
+                TextColumn::make('iva')
+                    ->formatStateUsing(fn (string $state): string => number_format($state,2))
+                    ->alignEnd(),
+                TextColumn::make('descuento')
+                    ->formatStateUsing(fn (string $state): string => number_format($state,2))
+                    ->alignEnd(),
+                TextColumn::make('envio')
+                    ->formatStateUsing(fn (string $state): string => number_format($state,2))
+                    ->alignEnd(),
+                TextColumn::make('total')
+                        ->formatStateUsing(fn (string $state): string => number_format($state,2))
+                        ->alignEnd()
             ])
             ->filters([
                 SelectFilter::make('client')

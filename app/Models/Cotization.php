@@ -21,6 +21,7 @@ class Cotization extends Model
         'subtotal',
         'iva',
         'descuento',
+        'envio',
         'total',
         'fecha_entrega',
         'user_id'
