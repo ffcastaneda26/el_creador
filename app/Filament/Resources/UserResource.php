@@ -22,6 +22,10 @@ use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Filament\Resources\UserResource\RelationManagers\RolesRelationManager;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\IconColumn;
 
 class UserResource extends Resource
 {
@@ -40,10 +44,10 @@ class UserResource extends Resource
 
     public static function getNavigationGroup(): string
     {
-        return   __('Security');
+        return __('Security');
     }
 
-     protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 1;
 
     public static function getNavigationLabel(): string
     {
@@ -52,14 +56,14 @@ class UserResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        if(Auth::user()->hasrole('Super Admin')){
+        if (Auth::user()->hasrole('Super Admin')) {
             return static::getModel()::count();
         }
-           
+
         return parent::getEloquentQuery()
-            ->whereHas('roles',function($query){
-                $query->where('name','not like','%super%');
-        })->count();
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'not like', '%super%');
+            })->count();
 
     }
 
@@ -70,14 +74,14 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        if(Auth::user()->hasrole('Super Admin')){
+        if (Auth::user()->hasrole('Super Admin')) {
             return parent::getEloquentQuery();
         }
 
-            return parent::getEloquentQuery()
-            ->whereHas('roles',function($query){
-                $query->where('name','not like','%super%');
-        });
+        return parent::getEloquentQuery()
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'not like', '%super%');
+            });
 
     }
 
@@ -85,42 +89,51 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->required()
-                    ->minLength(10)
-                    ->maxLength(100)
-                    ->translateLabel(),
-                TextInput::make('email')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->translateLabel()
-                    ->maxLength(100)
-                    ->minLength(10),
-                TextInput::make('password')
-                    ->password()
-                    ->revealable()
-                    ->translateLabel()
-                    ->maxLength(30)
-                    ->minLength(8)
-                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
-                    ->dehydrated(fn($state) => filled($state))
-                    ->required(fn(string $context): bool => $context === 'create'),
-                Select::make('role_id')
-                    ->relationship(
-                        name: 'roles',
-                        titleAttribute: 'name',
-                        modifyQueryUsing: fn(Builder $query) => $query->whereNotIn('name', ['Super Admin'])
-                    )
-                    ->multiple()
-                    ->translateLabel()
-                    ->preload()
-                    ->required(fn ($state, $record) => $record ? false : true)
-                    ->visible(fn ($state, $record) => $record ? false : true),
-                Select::make('permissions')
-                    ->label('Permisos')
-                    ->multiple()
-                    ->preload()
-                    ->relationship('permissions', 'name'),
+                Group::make()->schema([
+                    Section::make()->schema([
+                        TextInput::make('name')
+                            ->required()
+                            ->minLength(10)
+                            ->maxLength(100)
+                            ->translateLabel(),
+                        TextInput::make('email')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->translateLabel()
+                            ->maxLength(100)
+                            ->minLength(10),
+                        TextInput::make('password')
+                            ->password()
+                            ->revealable()
+                            ->translateLabel()
+                            ->maxLength(30)
+                            ->minLength(8)
+                            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                            ->dehydrated(fn($state) => filled($state))
+                            ->required(fn(string $context): bool => $context === 'create'),
+                        Toggle::make('active'),
+                    ])->columns(2),
+
+
+                ]),
+                Group::make()->schema([
+                    Select::make('role_id')
+                        ->relationship(
+                            name: 'roles',
+                            titleAttribute: 'name',
+                            modifyQueryUsing: fn(Builder $query) => $query->whereNotIn('name', ['Super Admin'])
+                        )
+                        ->multiple()
+                        ->translateLabel()
+                        ->preload()
+                        ->required(fn($state, $record) => $record ? false : true)
+                        ->visible(fn($state, $record) => $record ? false : true),
+                    Select::make('permissions')
+                        ->label('Permisos')
+                        ->multiple()
+                        ->preload()
+                        ->relationship('permissions', 'name'),
+                ]),
             ]);
     }
 
@@ -138,13 +151,15 @@ class UserResource extends Resource
                 TextColumn::make('roles.name')->label('Roles')
                     ->sortable()
                     ->searchable(),
+                IconColumn::make('active')->translateLabel()->boolean(),
+
             ])
             ->filters([
                 SelectFilter::make(__('Role'))
-                ->relationship('roles', 'name')
-                ->translateLabel()
-                ->searchable()
-                ->preload(),
+                    ->relationship('roles', 'name')
+                    ->translateLabel()
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
