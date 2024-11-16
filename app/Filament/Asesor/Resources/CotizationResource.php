@@ -198,10 +198,11 @@ class CotizationResource extends Resource
                         ->translateLabel()
                         ->searchable()
                         ->sortable()
-                        ->date('d M y'),
+                        ->date('d M y')
+                        ->toggleable(isToggledHiddenByDefault: true),
 
                 IconColumn::make('aprobada')->translateLabel()->boolean(),
-                // ImageColumn::make('images.image')->circular()->stacked(),
+                ImageColumn::make('images.image')->circular()->stacked()->translateLabel(),
                 TextColumn::make('subtotal')
                     ->formatStateUsing(fn (string $state): string => number_format($state))
                     ->alignEnd(),
@@ -210,10 +211,12 @@ class CotizationResource extends Resource
                     ->alignEnd(),
                 TextColumn::make('descuento')
                     ->formatStateUsing(fn (string $state): string => number_format($state,2))
-                    ->alignEnd(),
+                    ->alignEnd()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('envio')
                     ->formatStateUsing(fn (string $state): string => number_format($state,2))
-                    ->alignEnd(),
+                    ->alignEnd()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('total')
                         ->formatStateUsing(fn (string $state): string => number_format($state,2))
                         ->alignEnd()

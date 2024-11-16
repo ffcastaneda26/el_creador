@@ -69,6 +69,11 @@ class Client extends Model
         return $this->belongsTo(Country::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
@@ -82,6 +87,11 @@ class Client extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function zipcode():BelongsTo
+    {
+        return $this->belongsTo(Zipcode::class,'zipcode');
     }
 
     /**

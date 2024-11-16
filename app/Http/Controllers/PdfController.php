@@ -119,7 +119,7 @@ class PdfController extends Controller
                 $standar_description = GeneralHelp::normalize_text($data->description);
                 $arrayDescripcion = explode("\n", $standar_description);
                 $posx= 52;
-                $posy= 85;
+                $posy= 90;
 
                 // Descripción
                 foreach ($arrayDescripcion as $linea) {
@@ -176,8 +176,9 @@ class PdfController extends Controller
                 // Totales
                 $fpdi->SetFontSize(11);
 
-                $fpdi->text(194-strlen(number_format($data->envio,2,'.',',')),195,number_format($data->envio,2,'.',','));
-
+                if($data->envio > 0){
+                    $fpdi->text(194-strlen(number_format($data->envio,2,'.',',')),195,number_format($data->envio,2,'.',','));
+                }
 
                 $fpdi->text(194-strlen(number_format($data->subtotal,2,'.',',')),200,number_format($data->subtotal,2,'.',','));
 

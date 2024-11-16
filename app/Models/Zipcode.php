@@ -30,9 +30,9 @@ class Zipcode extends Model
     }
     public function clients(): HasMany
     {
-        return $this->hasMany(Client::class);
+        return $this->hasMany(Client::class,'zipcode');
     }
-    
+
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
@@ -40,6 +40,11 @@ class Zipcode extends Model
     public function municipality(): BelongsTo
     {
         return $this->belongsTo(Municipality::class);
+    }
+
+    public function orders():HasMany
+    {
+        return $this->hasMany(Order::class,'zipcode');
     }
 
     public function state(): BelongsTo

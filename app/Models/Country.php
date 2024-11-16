@@ -24,6 +24,11 @@ class Country extends Model
     {
         return $this->hasMany(Client::class);
     }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
     public function states(): HasMany
     {
         return $this->hasMany(State::class);
@@ -33,9 +38,9 @@ class Country extends Model
     {
         return $this->hasMany(Zipcode::class);
     }
-    
+
     /** Solo registros con include = 1  */
-    
+
     public function scopeInclude(Builder $query): void
     {
         $query->where('include', 1)->orderBy('country');

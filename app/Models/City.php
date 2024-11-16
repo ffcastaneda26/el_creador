@@ -25,7 +25,10 @@ class City extends Model
     {
         return $this->hasMany(Client::class);
     }
-    
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
@@ -40,7 +43,7 @@ class City extends Model
     {
         return $this->hasMany(Zipcode::class);
     }
-    
+
     public function colonies(): HasMany
     {
         return $this->hasMany(Zipcode::class,'zipcode');

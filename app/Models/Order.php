@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Order extends Model
+{
+    protected $table = 'orders';
+
+    protected $fillable =  [
+        'client_id',
+        'date',
+        'approved',
+        'date_approved',
+        'advance',
+        'pending_balance',
+        'subtotal',
+        'tax',
+        'discount',
+        'total',
+        'delivery_date',
+        'address',
+        'colony',
+        'references',
+        'zipcode',
+        'country_id',
+        'state_id',
+        'municipality_id',
+        'city_id',
+        'notes',
+        'require_invoice',
+        'payment_promise_date',
+        'user_id'
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'date'                  => 'datetime',
+            'date_approved'         => 'datetime',
+            'delivery_date'         => 'datetime',
+            'payment_promise_date'  => 'datetime',
+        ];
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function state(): BelongsTo
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function municipality(): BelongsTo
+    {
+        return $this->belongsTo(Municipality::class);
+    }
+
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function zipcode():BelongsTo
+    {
+        return $this->belongsTo(Zipcode::class,'zipcode');
+    }
+
+
+}
