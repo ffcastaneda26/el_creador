@@ -1,4 +1,20 @@
 {
+    "Generals": "Generales",
+    "Delivery": "Entrega",
+    "Pending": "Pendiente",
+
+    "Approved": "¿Aprobada?",
+    "Date approved": "Fecha de Aprobación",
+    "Advance": "Anticipo",
+    "Pending balance": "Saldo Pendiente",
+    "Purchase Orders": "Órdenes de Compra",
+    "Tax": "IVA",
+    "Discount": "Descuento",
+    "Delivery date": "Fecha de Entrega",
+    "Require invoice": "¿Requiere Factura?",
+    "Payment promise date": "Fecha Promesa de Pago",
+    "Purchase Order": "Órden de Compra",
+
     "Add Image": "Agregar Imagen",
     "Notice": "Aviso",
     "Yes": "Si",
