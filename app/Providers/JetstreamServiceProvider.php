@@ -2,10 +2,14 @@
 
 namespace App\Providers;
 
-use App\Actions\Jetstream\DeleteUser;
-use Illuminate\Support\Facades\Vite;
-use Illuminate\Support\ServiceProvider;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Laravel\Fortify\Fortify;
 use Laravel\Jetstream\Jetstream;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Vite;
+use App\Actions\Jetstream\DeleteUser;
+use Illuminate\Support\ServiceProvider;
 
 class JetstreamServiceProvider extends ServiceProvider
 {
@@ -26,6 +30,7 @@ class JetstreamServiceProvider extends ServiceProvider
 
         Jetstream::deleteUsersUsing(DeleteUser::class);
 
+
         Vite::prefetch(concurrency: 3);
     }
 
@@ -35,6 +40,18 @@ class JetstreamServiceProvider extends ServiceProvider
     protected function configurePermissions(): void
     {
         Jetstream::defaultApiTokenPermissions(['read']);
+        
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', $request->email)
+                        ->where('active',1)
+                        ->first();
+
+            if ($user && $user->active && Hash::check($request->password, $user->password)) {
+                return $user;
+            }
+
+
+        });
 
         Jetstream::permissions([
             'create',
