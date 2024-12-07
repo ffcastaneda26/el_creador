@@ -1,8 +1,10 @@
 {
+    "Part": "Parte",
+    "Parts": "Partes",
     "Generals": "Generales",
     "Delivery": "Entrega",
     "Pending": "Pendiente",
-
+    "Contrat": "Contrato",
     "Approved": "¿Aprobada?",
     "Date approved": "Fecha de Aprobación",
     "Advance": "Anticipo",

@@ -300,6 +300,10 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make(__('Contrat'))
+                ->icon('heroicon-o-clipboard-document-list')
+                ->url(fn (Order $record) => route('pdf-document',[ $record,'contrato']))
+                ->openUrlInNewTab()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

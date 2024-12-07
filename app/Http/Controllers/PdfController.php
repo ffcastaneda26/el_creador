@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\GeneralHelp;
 use App\Models\Client;
 use App\Models\Cotization;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
@@ -21,6 +22,9 @@ class PdfController extends Controller
             case 'cotizacion':
                 $this->cotizacion($record);
                 break;
+            case 'contrato':
+                    $this->contrato($record);
+                    break;
             default:
                 dd('Otro Documento:' . $document);
                 break;
@@ -197,4 +201,40 @@ class PdfController extends Controller
         return $fpdi->Output($outputFilePath, 'I');
     }
 
+    /**
+     * Contrato en base a una orden de compra
+     * @param mixed $record
+     * @return void
+     */
+    public function contrato($record){
+        $data = Order::findOrFail($record);
+
+        $filePath = public_path('pdfs/contrato.pdf');
+        $outputFilePath = public_path("output.pdf");
+
+        $fpdi = new FPDI;
+
+        $fpdi->SetFont("arial");
+        $fpdi->SetFontSize(8);
+        $fpdi->SetTextColor(0, 0, 0);
+
+
+        $count = $fpdi->setSourceFile($filePath);
+
+        dd('Son un total de ' . $count . ' Hojas');
+
+        for ($i=1; $i<=$count; $i++) {
+            dd('Agregamos la hoja ' . $i);
+            $template = $fpdi->importPage($i);
+            $size = $fpdi->getTemplateSize($template);
+            $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
+            $fpdi->useTemplate($template);
+
+            if($data && $i==1){
+                $fpdi->text(50,30,$data->client->name);
+            }
+
+        }
+        return $fpdi->Output($outputFilePath, 'I');
+    }
 }
