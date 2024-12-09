@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('parts', function (Blueprint $table) {
             $table->id();
             $table->string('name',30)->comment('Parte');
+            $table->boolean('parent_part')->default(0)->comment('¿Es parte padre?');
         });
     }
 

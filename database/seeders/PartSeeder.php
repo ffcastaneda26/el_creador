@@ -111,7 +111,7 @@ class PartSeeder extends Seeder
             ('Reloj'),
             ('Guitarra');";
         DB::update($sql);
+        DB::table('parts')->whereBetween('id', [1, 9])->update(['parent_part' => 1]);
         DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
-
     }
 }

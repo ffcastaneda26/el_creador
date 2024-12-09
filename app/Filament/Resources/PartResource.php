@@ -10,10 +10,13 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\PartResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PartResource\RelationManagers;
+use Filament\Forms\Components\Toggle;
 
 class PartResource extends Resource
 {
@@ -37,15 +40,18 @@ class PartResource extends Resource
         return __("Motley's Parts");
     }
 
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 TextInput::make('name')
-                ->required()
-                ->unique(ignoreRecord: true)
-                ->maxLength(30)
-                ->translateLabel(),
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(30)
+                    ->translateLabel(),
+                Toggle::make('parent_part')
+                    ->translateLabel()
             ]);
     }
 
@@ -54,9 +60,9 @@ class PartResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->translateLabel()->searchable()->sortable(),
+                ToggleColumn::make(name: 'parent_part')->translateLabel(),
             ])
             ->filters([
-                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -71,7 +77,7 @@ class PartResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\PartsRelationManager::class,
         ];
     }
 
