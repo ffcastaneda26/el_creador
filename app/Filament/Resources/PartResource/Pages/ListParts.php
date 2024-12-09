@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\ParteResource\Pages;
+namespace App\Filament\Resources\PartResource\Pages;
 
-use App\Filament\Resources\ParteResource;
+use App\Filament\Resources\PartResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListPartes extends ListRecords
+class ListParts extends ListRecords
 {
-    protected static string $resource = ParteResource::class;
+    protected static string $resource = PartResource::class;
 
     protected function getHeaderActions(): array
     {
