@@ -32,6 +32,8 @@ class DatabaseSeeder extends Seeder
             'cities',
             'type_zipcodes',
             'units',
+            'detail_parts',
+            'parts'
         ]);
 
         $this->call(RoleAndPermissionSeeder::class);
