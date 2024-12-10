@@ -91,4 +91,15 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Cotization::class);
     }
 
+    public function manufacturing_orders(): HasMany
+    {
+        return $this->hasMany(Manufacturing::class);
+    }
+
+    public function manufacturing_orders_asesor(): HasMany
+    {
+        return $this->hasMany(Manufacturing::class,'asesor_id');
+    }
+
+
 }

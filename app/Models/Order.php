@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
@@ -38,10 +39,10 @@ class Order extends Model
     protected function casts(): array
     {
         return [
-            'date'                  => 'datetime',
-            'date_approved'         => 'datetime',
-            'delivery_date'         => 'datetime',
-            'payment_promise_date'  => 'datetime',
+            'date'                  => 'datetime:Y-m-d',
+            'date_approved'         => 'datetime:Y-m-d',
+            'delivery_date'         => 'datetime:Y-m-d',
+            'payment_promise_date'  => 'datetime:Y-m-d',
         ];
     }
 
@@ -58,6 +59,11 @@ class Order extends Model
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
+    }
+
+    public function manufacturing_order(): HasOne
+    {
+        return $this->hasOne(Manufacturing::class);
     }
 
     public function municipality(): BelongsTo
