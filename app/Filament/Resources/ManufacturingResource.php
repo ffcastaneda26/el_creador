@@ -58,8 +58,7 @@ class ManufacturingResource extends Resource
                                             return Manufacturing::query()->max('id') + 1;
                                         })
                                         ->readOnly()
-
-                                        ->helperText('Siguiente Folio'),
+                                        ->helperText(__('Next Folio')),
                                     Select::make('order_id')
                                         ->relationship(
                                             name: 'order',
@@ -68,7 +67,7 @@ class ManufacturingResource extends Resource
                                         ->required()
                                         ->preload()
                                         ->label(__('Purchase Order'))
-                                        ->helperText('Selecciona la orden de compra'),
+                                        ->helperText(__('Select Purchase Order')),
                                     TextInput::make('botarga')
                                         ->translateLabel()
                                         ->required()
@@ -86,9 +85,9 @@ class ManufacturingResource extends Resource
                                         ->label(__('Start Date'))
                                         ->required(),
                                     DatePicker::make('fecha_fin')
-                                        ->label(__('End date'))
+                                        ->label(__('End Date'))
                                 ])->columns(3),
-                            ]),
+                            ])->icon('heroicon-m-briefcase'),
                         Tabs\Tab::make(__('Observations'))
                             ->schema([
                                 Tabs::make()->tabs([
@@ -123,7 +122,8 @@ class ManufacturingResource extends Resource
                                     ])->columns(3),
                                 ])->columnSpanFull(),
 
-                            ])->columns(2),
+                            ]) ->icon('heroicon-m-eye')
+                            ->columns(2),
                     ])->contained(false),
             ]);
 
