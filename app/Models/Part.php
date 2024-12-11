@@ -17,4 +17,9 @@ class Part extends Model
     {
         return $this->hasMany(DetailPart::class);
     }
+
+    public function manufacturigns(): HasMany
+    {
+        return $this->hasMany(ManufacturingPart::class);
+    }
 }

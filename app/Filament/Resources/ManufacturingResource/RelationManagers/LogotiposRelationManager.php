@@ -18,12 +18,11 @@ class LogotiposRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return 'Datos de Logotipos de la botarga';
+        return __('Comments About Motley Logos');
     }
 
     public function form(Form $form): Form
     {
-
         return $form
             ->schema([
                 Forms\Components\Select::make('anexo_id')
@@ -72,7 +71,8 @@ class LogotiposRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                ->label(__('Add Logo Comment')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

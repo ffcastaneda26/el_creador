@@ -19,7 +19,7 @@ class EditManufacturing extends EditRecord
     }
     public function hasCombinedRelationManagerTabsWithContent(): bool
     {
-        return true;
+        return false;
     }
     protected function getRedirectUrl(): string
     {

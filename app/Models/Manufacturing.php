@@ -55,4 +55,9 @@ class Manufacturing extends Model
     {
         return $this->hasMany(LogosManufacturing::class);
     }
+
+    public function parts(): HasMany
+    {
+        return $this->hasMany(ManufacturingPart::class);
+    }
 }
