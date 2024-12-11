@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Manufacturing extends Model
 {
@@ -48,5 +49,10 @@ class Manufacturing extends Model
     public function asesor(): BelongsTo
     {
         return $this->belongsTo(User::class,'asesor_id');
+    }
+
+    public function logotipos():HasMany
+    {
+        return $this->hasMany(LogosManufacturing::class);
     }
 }

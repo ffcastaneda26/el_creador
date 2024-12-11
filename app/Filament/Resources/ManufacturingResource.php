@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ManufacturingResource\Pages;
 use App\Filament\Resources\ManufacturingResource\RelationManagers;
 use Filament\Forms\Components\Tabs;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class ManufacturingResource extends Resource
 {
@@ -122,7 +123,7 @@ class ManufacturingResource extends Resource
                                     ])->columns(3),
                                 ])->columnSpanFull(),
 
-                            ]) ->icon('heroicon-m-eye')
+                            ])->icon('heroicon-m-eye')
                             ->columns(2),
                     ])->contained(false),
             ]);
@@ -161,52 +162,52 @@ class ManufacturingResource extends Resource
                     ->date('d M y'),
                 Tables\Columns\TextColumn::make('observaciones_cabeza')
                     ->label(__('Head Notes'))
-                    ->toggleable(true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_cuerpo')
                     ->label(__('Body Notes'))
-                    ->toggleable()
+                   ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_estructura')
                     ->label(__('Structure Notes'))
-                    ->toggleable()
+                   ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_body_interno')
                     ->label(__('Internal Body Notes'))
-                    ->toggleable()
+                   ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_outfit1')
                     ->label(__('Outfit 1 Notes'))
-                    ->toggleable()
+                   ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_outfit2')
                     ->label(__('Outfit 2 Notes'))
-                    ->toggleable()
+                   ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_zapatos')
                     ->label(__('Shoes Notes'))
-                    ->toggleable()
+                   ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_accesorios')
                     ->label(__('Accesories Notes'))
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_logotipos')
                     ->label(__('Logos Notes'))
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label(__('User Name'))
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel(),
 
 
@@ -227,7 +228,7 @@ class ManufacturingResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\LogotiposRelationManager::class
         ];
     }
 

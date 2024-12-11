@@ -17,7 +17,10 @@ class EditManufacturing extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
-
+    public function hasCombinedRelationManagerTabsWithContent(): bool
+    {
+        return true;
+    }
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
