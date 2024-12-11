@@ -15,7 +15,7 @@ class PartSeeder extends Seeder
     {
 
         DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
-        DB::table('detail_parts')->truncate();
+        // DB::table('detail_parts')->truncate();
         DB::table('parts')->truncate();
         $sql = "INSERT INTO parts (`name`) VALUES
             ('Cabeza'),

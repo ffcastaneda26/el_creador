@@ -16,10 +16,6 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Part::class)->comment('Parte');
             $table->unsignedBigInteger('child_part_id')->comment('Parte Hija');
-            $table->string('color',30)->nullable()->default(null)->comment('Color');
-            $table->string('material',30)->nullable()->default(null)->comment('Material');
-            $table->string('value')->nullable()->default(null)->comment('Valor');
-            $table->boolean('require')->default(0)->comment('Lleva o no?');
             $table->foreign('child_part_id')->references('id')->on('parts')->cascadeOnDelete();
         });
     }
