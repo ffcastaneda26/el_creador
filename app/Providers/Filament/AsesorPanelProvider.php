@@ -9,6 +9,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use App\Filament\Resources\ClientResource;
+use App\Filament\Resources\ManufacturingResource;
 use Filament\Http\Middleware\Authenticate;
 use App\Filament\Resources\ProductResource;
 use Illuminate\Session\Middleware\StartSession;
@@ -48,6 +49,7 @@ class AsesorPanelProvider extends PanelProvider
             ->resources([
                 ProductResource::class,
                 ClientResource::class,
+                ManufacturingResource::class,
             ])
             ->middleware([
                 EncryptCookies::class,
