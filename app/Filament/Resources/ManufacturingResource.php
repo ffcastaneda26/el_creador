@@ -10,18 +10,19 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\Manufacturing;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\MarkdownEditor;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Filament\Resources\ManufacturingResource\Pages;
 use App\Filament\Resources\ManufacturingResource\RelationManagers;
 use App\Filament\Resources\ManufacturingResource\RelationManagers\PartsRelationManager;
-use Filament\Forms\Components\Tabs;
-use Illuminate\Database\Eloquent\Relations\Relation;
 
 class ManufacturingResource extends Resource
 {
@@ -66,16 +67,21 @@ class ManufacturingResource extends Resource
                                             name: 'order',
                                             titleAttribute: 'id',
                                         )
+                                        // ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} {$record->customer->name}")
+                                        ->getOptionLabelFromRecordUsing( function (Model $record) {
+                                            return 'No.' . ' ' . $record->id . '=' . $record->client->name;
+                                        })
                                         ->required()
                                         ->preload()
                                         ->label(__('Purchase Order'))
-                                        ->helperText(__('Select Purchase Order')),
+                                        ->helperText(__('Select Purchase Order'))
+                                        ->columnSpan(2),
                                     TextInput::make('botarga')
                                         ->translateLabel()
                                         ->required()
                                         ->helperText(__("Motley's Name"))
                                         ->columnSpan(2),
-                                ])->columns(4),
+                                ])->columns(5),
                                 Group::make()->schema([
                                     Select::make('asesor_id')
                                         ->label(__('Advisor in Charge'))

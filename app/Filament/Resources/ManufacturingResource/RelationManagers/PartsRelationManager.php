@@ -90,7 +90,7 @@ class PartsRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                ->label('Add Part'),
+                ->label(__('Add Part')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
