@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Manufacturing extends Model
 {
@@ -36,19 +37,15 @@ class Manufacturing extends Model
         ];
     }
 
-    public function order(): BelongsTo
-    {
-        return $this->belongsTo(Order::class);
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function asesor(): BelongsTo
     {
         return $this->belongsTo(User::class,'asesor_id');
+    }
+
+    public function images(): MorphMany
+    {
+        return $this->morphMany(Image::class, 'imageable');
     }
 
     public function logotipos():HasMany
@@ -56,8 +53,17 @@ class Manufacturing extends Model
         return $this->hasMany(LogosManufacturing::class);
     }
 
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
     public function parts(): HasMany
     {
         return $this->hasMany(ManufacturingPart::class);
+    }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
