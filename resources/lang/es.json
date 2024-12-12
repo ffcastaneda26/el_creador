@@ -1,6 +1,13 @@
 {
+    "part_id": "Parte Padre",
+    "Value": "Valor",
+    "Parent Part": "Parte Padre",
+    "Child Part": "Parte Hija",
+    "Include": "Incluir?",
     "Add Logo Comment": "Agregar Comentario a Logotipo",
     "Comments About Motley Logos": "Comentarios Sobre Logotipos de Botarga",
+    "Parts of the Botarga": "Partes de la Botarga",
+    "Child part": "Parte Hija",
     "Ubication": "Ubicación",
     "Size": "Tamaño",
     "Head": "Cabeza",

@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
+// TODO:: Al editar se debe bloquear la parte padre y la parte hija, al crear no debe estar duplicado parte padre e hija
 class PartsRelationManager extends RelationManager
 {
     protected static string $relationship = 'parts';

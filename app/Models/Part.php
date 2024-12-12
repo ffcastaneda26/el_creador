@@ -15,7 +15,7 @@ class Part extends Model
 
     public function parts(): HasMany
     {
-        return $this->hasMany(DetailPart::class);
+        return $this->hasMany(DetailPart::class)->orderby('id');
     }
 
     public function manufacturigns(): HasMany

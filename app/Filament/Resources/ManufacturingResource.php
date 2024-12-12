@@ -19,6 +19,7 @@ use Filament\Forms\Components\MarkdownEditor;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ManufacturingResource\Pages;
 use App\Filament\Resources\ManufacturingResource\RelationManagers;
+use App\Filament\Resources\ManufacturingResource\RelationManagers\PartsRelationManager;
 use Filament\Forms\Components\Tabs;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -228,7 +229,8 @@ class ManufacturingResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\LogotiposRelationManager::class
+            RelationManagers\LogotiposRelationManager::class,
+            RelationManagers\PartsRelationManager::class,
         ];
     }
 
