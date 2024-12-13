@@ -30,6 +30,7 @@ class UsersTableSeeder extends Seeder
         User::create([
             "name" => "Asesor",
             "email" => "asesor@creador.com",
+            "password" => bcrypt("password"),
             "active" => 1,
         ])->assignRole('Asesor');
 
