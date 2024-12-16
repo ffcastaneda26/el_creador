@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\ProductResource\Pages;
+namespace App\Filament\Resources\WareHouseResource\Pages;
 
-use App\Filament\Resources\ProductResource;
+use App\Filament\Resources\WareHouseResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
 
-class EditProduct extends EditRecord
+class EditWareHouse extends EditRecord
 {
-    protected static string $resource = ProductResource::class;
+    protected static string $resource = WareHouseResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -17,7 +17,6 @@ class EditProduct extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
-
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

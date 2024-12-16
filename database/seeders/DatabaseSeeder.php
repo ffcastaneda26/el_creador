@@ -34,7 +34,8 @@ class DatabaseSeeder extends Seeder
             'units',
             'detail_parts',
             'parts',
-            'anexos'
+            'anexos',
+            'warehouses'
         ]);
 
         $this->call(RoleAndPermissionSeeder::class);
@@ -45,11 +46,10 @@ class DatabaseSeeder extends Seeder
         $this->call(MuniciaplitiesSeeder::class);
         $this->call(CitySeeder::class);
         $this->call(TypeZipcodeSeeder::class);
+        $this->call(WarehouseSeeder::class);
         $this->call(UnitSeeder::class);
         $this->call(PartSeeder::class);
         $this->call(AnexoSeeder::class);
-
-
     }
 
     protected function truncateTables(array $tables) {

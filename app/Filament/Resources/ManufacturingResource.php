@@ -181,7 +181,7 @@ class ManufacturingResource extends Resource
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_estructura')
                     ->label(__('Structure Notes'))
-                   ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->translateLabel()
                     ->limit(50),
                 Tables\Columns\TextColumn::make('observaciones_body_interno')

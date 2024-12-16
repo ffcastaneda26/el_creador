@@ -23,7 +23,7 @@ class PartResource extends Resource
     protected static ?string $model = Part::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-numbered-list';
-    protected static ?int $navigationSort = 12;
+    protected static ?int $navigationSort = 13;
 
     public static function getNavigationGroup(): string
     {

@@ -1,5 +1,6 @@
 {
-    
+    "Warehouse": "Almacen",
+    "Warehouses": "Almacenes",
     "part_id": "Parte Padre",
     "Value": "Valor",
     "Parent Part": "Parte Padre",
