@@ -28,6 +28,8 @@ class ProductResource extends Resource
 
 
     protected static ?string $navigationIcon = 'heroicon-o-gift';
+    
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
 
     protected static ?int $navigationSort = 12;

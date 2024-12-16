@@ -18,6 +18,8 @@ class WareHouseResource extends Resource
     protected static ?string $model = WareHouse::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
+    
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     protected static ?int $navigationSort = 10;
 
     public static function getNavigationGroup(): string

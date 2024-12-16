@@ -35,7 +35,8 @@ class DatabaseSeeder extends Seeder
             'detail_parts',
             'parts',
             'anexos',
-            'warehouses'
+            'warehouses',
+            'key_movements',
         ]);
 
         $this->call(RoleAndPermissionSeeder::class);
@@ -47,6 +48,7 @@ class DatabaseSeeder extends Seeder
         $this->call(CitySeeder::class);
         $this->call(TypeZipcodeSeeder::class);
         $this->call(WarehouseSeeder::class);
+        $this->call(KeyMovementSeeder::class);
         $this->call(UnitSeeder::class);
         $this->call(PartSeeder::class);
         $this->call(AnexoSeeder::class);
