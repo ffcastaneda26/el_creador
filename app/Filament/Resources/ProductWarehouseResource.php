@@ -32,6 +32,7 @@ class ProductWarehouseResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
+    protected static ?int $navigationSort = 21;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->hasRole('Administrador');

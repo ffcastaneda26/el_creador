@@ -24,6 +24,8 @@ class KeyMovementResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-cog';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
+    protected static ?int $navigationSort = 24;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -55,8 +57,6 @@ class KeyMovementResource extends Resource
 
             ]);
     }
-    protected static ?int $navigationSort = 22;
-
     public static function getNavigationGroup(): string
     {
         return __('Catalogs');

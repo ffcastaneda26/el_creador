@@ -40,10 +40,10 @@ class UserResource extends Resource
         return __('User');
     }
 
-    // public static function getNavigationGroup(): string
-    // {
-    //     return __('Security');
-    // }
+    public static function getNavigationGroup(): string
+    {
+        return __('Security');
+    }
 
     // protected static ?int $navigationSort = 1;
 
