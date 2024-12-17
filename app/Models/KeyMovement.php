@@ -28,6 +28,17 @@ class KeyMovement extends Model
             'used_to'   =>KeyMovementUsedToEnum::class,
         ];
     }
+
+    public function isTypeI(): bool
+    {
+        return $this->type === KeyMovementTypeEnum::I;
+    }
+
+    public function movements(): hasMany
+    {
+        return $this->HasMany(Movement::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -18,14 +18,6 @@ class Product extends Model
         'code',
         'unit_id',
         'description',
-        'price',
-        'last_purchase_price',
-        'stock',
-        'stock_available',
-        'stock_min',
-        'stock_max',
-        'stock_reorder',
-        'average_cost',
         'image',
         'user_id'
     ];
@@ -41,24 +33,24 @@ class Product extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function products_in_warehouses(): HasMany
+    public function warehouses(): HasMany
     {
         return $this->hasMany(ProductWarehouse::class);
     }
 
-    public function warehouses(): BelongsToMany
-    {
-        return $this->belongsToMany(Product::class)
-                ->withPivot('price',
-                                    'last_purchase_price',
-                                    'stock',
-                                    'stock_available',
-                                    'stock_compromised',
-                                    'stock_min',
-                                    'stock_max',
-                                    'stock_reorder',
-                                    'average_cost',
-                                    'active',
-                                    'user_id');
-    }
+    // public function warehouses(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Product::class)
+    //             ->withPivot('price',
+    //                                 'last_purchase_price',
+    //                                 'stock',
+    //                                 'stock_available',
+    //                                 'stock_compromised',
+    //                                 'stock_min',
+    //                                 'stock_max',
+    //                                 'stock_reorder',
+    //                                 'average_cost',
+    //                                 'active',
+    //                                 'user_id');
+    // }
 }

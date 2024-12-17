@@ -15,15 +15,14 @@ class KeyMovementSeeder extends Seeder
     {
         $this->command->warn('Creando Claves de Movimiento');
 
-
         DB::table('key_movements')->truncate();
             $sql = "INSERT INTO key_movements VALUES
-            (1,'Compra','Comp','I', 'I', 1,'2'),
-            (2,'Devolución Cliente','DevCte','I','I',0,'2'),
-            (3,'Ajuste','Ajuste','I','I',0,'2'),
-            (4,'Venta','Venta','I','O',0,'2'),
-            (5,'Devolución Proveedor','DevPro','I','O',0,'2'),
-            (6,'Ajuste','Ajuste','I','O',0,'2');";
+            (1,'Compra','Comp','I', 'I', 1,2),
+            (2,'Devolución Cliente','DevCte','I','I',0,2),
+            (3,'Ajuste Entrada','AjuEnt','I','I',0,2),
+            (4,'Venta','Venta','I','O',0,2),
+            (5,'Devolución Proveedor','DevPro','I','O',0,2),
+            (6,'Ajuste Salida','AjuSal','I','O',0,2);";
 
         DB::update($sql);
 

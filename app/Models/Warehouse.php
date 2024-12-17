@@ -26,26 +26,26 @@ class Warehouse extends Model
         'user_id',
     ];
 
-    public function products_in_warehouses(): HasMany
+    public function products(): HasMany
     {
         return $this->hasMany(ProductWarehouse::class);
     }
 
-    public function products(): BelongsToMany
-    {
-        return $this->belongsToMany(Product::class)
-                    ->withPivot('price',
-                            'last_purchase_price',
-                            'stock',
-                            'stock_available',
-                            'stock_compromised',
-                            'stock_min',
-                            'stock_max',
-                            'stock_reorder',
-                            'average_cost',
-                            'active',
-                            'user_id');
-    }
+    // public function products(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Product::class)
+    //                 ->withPivot('price',
+    //                         'last_purchase_price',
+    //                         'stock',
+    //                         'stock_available',
+    //                         'stock_compromised',
+    //                         'stock_min',
+    //                         'stock_max',
+    //                         'stock_reorder',
+    //                         'average_cost',
+    //                         'active',
+    //                         'user_id');
+    // }
 
     public function user(): BelongsTo
     {

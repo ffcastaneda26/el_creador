@@ -29,6 +29,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\Summarizers\Sum;
 
 use Filament\Forms\Components\MarkdownEditor;
 use App\Filament\Resources\MovementResource\Pages;
@@ -68,67 +69,11 @@ class MovementResource extends Resource
 
     public static function form(Form $form): Form
     {
-        // return $form
-        //     ->schema([
-        //         Forms\Components\Select::make('warehouse_id')
-        //             ->relationship('warehouse', 'name')
-        //             ->required(),
-        //         Forms\Components\Select::make('product_id')
-        //             ->relationship('product', 'name')
-        //             ->required(),
-        //         Forms\Components\Select::make('key_movement_id')
-        //             ->relationship('key_movement', 'name')
-        //             ->required(),
-        //         Forms\Components\DatePicker::make('date')
-        //             ->required(),
-        //         Forms\Components\TextInput::make('quantity')
-        //             ->required()
-        //             ->numeric(),
-        //         Forms\Components\TextInput::make('cost')
-        //             ->required()
-        //             ->numeric()
-        //             ->default(0.000000)
-        //             ->prefix('$'),
-        //         Forms\Components\TextInput::make('reference')
-        //             ->maxLength(100),
-        //         Forms\Components\Textarea::make('notes')
-        //             ->columnSpanFull(),
-        //         Forms\Components\FileUpload::make('voucher_image')
-        //             ->image(),
-        //         Forms\Components\TextInput::make('status')
-        //             ->maxLength(20),
-        //         Forms\Components\Select::make('user_id')
-        //             ->relationship('user', 'name')
-        //             ->required(),
-        //     ]);
+ 
         return $form
             ->schema([
                 Section::make()
                     ->schema([
-
-                        // Select::make('warehouse_id')
-                        //     ->reactive()
-                        //     ->translateLabel()
-                        //     ->options(function (): array {
-                        //         return Warehouse::where('company_id', self::getCompanyUser()->id)
-                        //             ->wherehas('products')->pluck('name', 'id')->all();
-                        //     })
-                        //     ->required()
-                        //     ->translateLabel()
-                        //     ->rules([
-                        //         fn(Get $get, string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $operation) {
-                        //             if ($operation == 'create') {
-                        //                 $exists = ProductWarehouse::where('product_id', $get('product_id'))
-                        //                     ->where('warehouse_id', $get('warehouse_id'))
-                        //                     ->exists();
-                        //                 if (!$exists) {
-                        //                     $fail(__('The product does not exist in this warehouse'));
-                        //                 }
-                        //             }
-                        //         },
-                        //     ])
-                        //     ->live(onBlur: true)
-                        //     ->afterStateUpdated(fn(callable $set) => $set('product_id', null)),
                         Select::make('warehouse_id')
                             ->relationship('warehouse', 'name')
                             ->translateLabel()
@@ -250,26 +195,45 @@ class MovementResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('warehouse.name')
+                    ->searchable()
+                    ->sortable()
                     ->translateLabel(),
                 TextColumn::make('product.name')
+                    ->searchable()
+                    ->sortable()
                     ->translateLabel(),
                 TextColumn::make('date')
+                    ->searchable()
+                    ->sortable()
                     ->dateTime('d-m-Y')
                     ->translateLabel(),
                 TextColumn::make('key_movement.name')
+                    ->searchable()
+                    ->sortable()
                     ->translateLabel(),
                 TextColumn::make('quantity')
+                    ->searchable()
+                    ->sortable()
                     ->translateLabel()
                     ->alignment(Alignment::End)
+                    ->summarize(Sum::make())
                     ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ','),
                 TextColumn::make('cost')
                     ->translateLabel()
                     ->alignment(Alignment::End)
-                    ->numeric(decimalPlaces: 4, decimalSeparator: '.', thousandsSeparator: ',')
-            ])
+                    ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
+                TextColumn::make('amount')
+                    ->translateLabel()
+                    ->alignment(Alignment::End)
+                    ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
+             ])
             ->filters([
                 SelectFilter::make('Key Movement')
                     ->relationship('key_movement', 'name')
+                    ->translateLabel()
+                    ->preload(),
+                SelectFilter::make('Product')
+                    ->relationship('product', 'name')
                     ->translateLabel()
                     ->preload()
             ])

@@ -8,6 +8,7 @@ use App\Models\ProductWarehouse;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
+use  App\Helpers\InventoryManagement;
 
 class CreateMovement extends CreateRecord
 {
@@ -29,5 +30,15 @@ class CreateMovement extends CreateRecord
         $data['status'] = 'Aplicado';
         $data['user_id'] = Auth::user()->id;
         return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        $warehouseId=$this->record->warehouse_id;
+        $productId=$this->record->product_id;
+        $keyMovementId= $this->record->key_movement_id;
+        $quantity = $this->record->quantity;
+        $cost= $this->record->cost;
+        InventoryManagement::updateStock($warehouseId,$productId,$keyMovementId,$quantity,$cost);
     }
 }
