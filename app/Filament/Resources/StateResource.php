@@ -23,7 +23,7 @@ class StateResource extends Resource
     protected static ?string $model = State::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-americas';
-
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     protected static ?int $navigationSort = 5;
 
     // protected static ?string $cluster = Geographics::class;

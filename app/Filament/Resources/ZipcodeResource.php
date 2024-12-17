@@ -24,6 +24,7 @@ class ZipcodeResource extends Resource
     protected static ?string $model = Zipcode::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     protected static ?int $navigationSort = 9;
 
     // protected static ?string $cluster = Geographics::class;

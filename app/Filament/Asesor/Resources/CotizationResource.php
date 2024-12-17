@@ -31,7 +31,7 @@ class CotizationResource extends Resource
     protected static ?string $model = Cotization::class;
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
-
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     protected static ?int $navigationSort = 20;
 
     public static function getNavigationGroup(): string

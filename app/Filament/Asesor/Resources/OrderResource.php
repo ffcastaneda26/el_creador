@@ -24,6 +24,7 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
     protected static ?int $navigationSort = 21;
 

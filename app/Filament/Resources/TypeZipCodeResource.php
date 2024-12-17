@@ -18,6 +18,7 @@ class TypeZipCodeResource extends Resource
     protected static ?string $model = TypeZipCode::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-sparkles';
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
     protected static ?int $navigationSort = 8;
 

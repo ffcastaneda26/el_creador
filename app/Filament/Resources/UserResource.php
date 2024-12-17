@@ -36,7 +36,7 @@ class UserResource extends Resource
     {
         return 'heroicon-o-users';
     }
-
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     public static function getModelLabel(): string
     {
         return __('User');
