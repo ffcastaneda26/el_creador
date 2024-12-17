@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductWarehouseResource\Pages;
 use App\Filament\Resources\ProductWarehouseResource\RelationManagers;
+use App\Models\Warehouse;
 use Filament\Forms\Set;
 
 class ProductWarehouseResource extends Resource
@@ -71,7 +72,8 @@ class ProductWarehouseResource extends Resource
                                 Select::make('warehouse_id')
                                     ->relationship('warehouse', 'name')
                                     ->translateLabel()
-                                    ->required(),
+                                    ->required(fn () => Warehouse::count() != 1)
+                                    ->visible(fn () => Warehouse::count() != 1),
                                 Select::make('product_id')
                                     ->relationship('product', 'name')
                                     ->translateLabel()
@@ -100,18 +102,18 @@ class ProductWarehouseResource extends Resource
                                 ->required()
                                 ->translateLabel(),
                             TextInput::make('stock_min')
-                                ->required()
-                                ->numeric()
+                                     ->numeric()
+                                ->default(0)
                                 ->translateLabel(),
                             TextInput::make('stock_max')
-                                ->required()
                                 ->gte('stock_min')
                                 ->numeric()
+                                ->default(0)
                                 ->translateLabel(),
                             TextInput::make('stock_reorder')
                                 ->gte('stock_min')
                                 ->lte('stock_max')
-                                ->required()
+                                ->default(0)
                                 ->numeric()
                                 ->translateLabel(),
                             TextInput::make('stock_available')
@@ -128,8 +130,8 @@ class ProductWarehouseResource extends Resource
                                 ->readOnly()
                                 ->default(0),
 
-                        ])->columns(6)
-                        ->description(__('Data for inventory control')),
+                        ])->columns(6),
+                        // ->description(__('Data for inventory control')),
 
                     Section::make()->schema([
                         TextInput::make('price')
@@ -144,77 +146,16 @@ class ProductWarehouseResource extends Resource
                             ->numeric()
                             ->translateLabel()
                             ->readOnly(fn($operation) => $operation != 'create')
-                            ->default(0.000000),
+                            ->default(0.00),
 
                         TextInput::make('average_cost')
                             ->required()
                             ->numeric()
-                            ->default(0.000000),
-                    ])->columns(4)
-                        ->description(__("Prices & Costs")),
-
-                    // Section::make()
-                    //     ->schema([
-                    //         TextInput::make('stock')
-                    //             ->required()
-                    //             ->numeric()
-                    //             ->translateLabel()
-                    //             ->default(0),
-                    //         TextInput::make('stock_available')
-                    //             ->required()
-                    //             ->numeric()
-                    //             ->translateLabel()
-                    //             ->gte('stock')
-                    //             ->default(0)
-                    //             ->live(onBlur: true)
-                    //             ->afterStateUpdated(fn (Set $set, ?string $state,Get $get) => $set('stock_compromised', $get('stock') -$state)),
-                    //         TextInput::make('stock_compromised')
-                    //             ->required()
-                    //             ->numeric()
-                    //             ->translateLabel()
-                    //             ->readOnly()
-                    //             ->default(0),
-                    //         TextInput::make('stock_min')
-                    //             ->required()
-                    //             ->numeric()
-                    //             ->lt('stock_max')
-                    //             ->translateLabel()
-                    //             ->default(0),
-                    //         TextInput::make('stock_max')
-                    //             ->required()
-                    //             ->numeric()
-                    //             ->gt('stock_max')
-                    //             ->translateLabel()
-                    //             ->default(0),
-
-                    //         TextInput::make('stock_reorder')
-                    //             ->required()
-                    //             ->numeric()
-                    //             ->gte('stock_min')
-                    //             ->lte('stock_max')
-                    //             ->translateLabel()
-                    //             ->default(0),
-
-                    //         TextInput::make('last_purchase_price')
-                    //             ->required()
-                    //             ->numeric()
-                    //             ->translateLabel()
-                    //             ->readOnly(fn ($operation) => $operation != 'create')
-                    //             ->default(0.000000),
-
-                    //         TextInput::make('average_cost')
-                    //             ->required()
-                    //             ->numeric()
-                    //             ->default(0.000000),
-
-                    //     ])->columns(9),
+                            ->default(0.00)
+                            ->readOnly(fn($operation) => $operation != 'create')
+                    ])->columns(4),
+                        // ->description(__("Prices & Costs")),
                 ])->columnSpanFull(),
-
-
-
-
-
-
             ]);
     }
 
