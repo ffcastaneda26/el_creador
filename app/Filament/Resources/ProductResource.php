@@ -32,11 +32,11 @@ class ProductResource extends Resource
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
 
-    protected static ?int $navigationSort = 12;
+    protected static ?int $navigationSort = 21;
 
     public static function getNavigationGroup(): string
     {
-        return __('Sales');
+        return __('Catalogs');
     }
     public static function getModelLabel(): string
     {

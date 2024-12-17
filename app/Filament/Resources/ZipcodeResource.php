@@ -25,7 +25,7 @@ class ZipcodeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 15;
 
     // protected static ?string $cluster = Geographics::class;
     public static function getNavigationGroup(): string
@@ -66,7 +66,7 @@ class ZipcodeResource extends Resource
                     ->preload()
                     ->translateLabel()
                     ->columnSpan(2)
-       
+
                 ])->columns(3),
                 Group::make()->schema([
                     Select::make('country_id')
@@ -82,7 +82,7 @@ class ZipcodeResource extends Resource
                     ->searchable(['country', 'code'])
                     ->translateLabel()
                     ->afterStateUpdated(fn (callable $set) => $set('state_id', null)),
-     
+
                 Select::make('state_id')
                     ->translateLabel()
                     ->required()
@@ -94,7 +94,7 @@ class ZipcodeResource extends Resource
                         }
                         return $country->states->pluck('name', 'id');
                     })->afterStateUpdated(fn (callable $set) => $set('municipality_id', null)),
-                    
+
                 Select::make('municipality_id')
                         ->translateLabel()
                         ->required()
@@ -106,7 +106,7 @@ class ZipcodeResource extends Resource
                             }
                             return $state->municipalities->pluck('name', 'id');
                     })->afterStateUpdated(fn (callable $set) => $set('city_id', null)),
-                
+
                 Select::make('city_id')
                     ->translateLabel()
                     ->required()

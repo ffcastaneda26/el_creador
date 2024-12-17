@@ -24,7 +24,7 @@ class PartResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-numbered-list';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
-    protected static ?int $navigationSort = 14;
+    protected static ?int $navigationSort = 26;
 
     public static function getNavigationGroup(): string
     {

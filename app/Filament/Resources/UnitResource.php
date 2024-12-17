@@ -25,7 +25,7 @@ class UnitResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-scale';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
-    protected static ?int $navigationSort = 12;
+    protected static ?int $navigationSort = 22;
 
 
     public static function getNavigationGroup(): string

@@ -46,12 +46,10 @@ class ProductWarehouseResource extends Resource
         return __('Products in the warehouse');
     }
 
-
     public static function getModelLabel(): string
     {
         return __('Product In The Warehouse');
     }
-
 
     public static function getPluralLabel(): ?string
     {

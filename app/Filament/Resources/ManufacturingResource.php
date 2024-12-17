@@ -31,7 +31,8 @@ class ManufacturingResource extends Resource
     protected static ?string $model = Manufacturing::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-scissors';
-    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';    protected static ?int $navigationSort = 30;
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
+    protected static ?int $navigationSort = 33;
 
     public static function getNavigationGroup(): string
     {

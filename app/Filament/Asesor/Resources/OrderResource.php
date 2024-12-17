@@ -26,7 +26,7 @@ class OrderResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
-    protected static ?int $navigationSort = 21;
+    protected static ?int $navigationSort = 32;
 
     public static function getNavigationGroup(): string
     {

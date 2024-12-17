@@ -32,10 +32,8 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
 
-    public static function getNavigationIcon(): string|Htmlable|null
-    {
-        return 'heroicon-o-users';
-    }
+    protected static ?string $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     public static function getModelLabel(): string
     {

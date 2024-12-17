@@ -27,7 +27,7 @@ class CityResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 13;
 
     // protected static ?string $cluster = Geographics::class;
     public static function getNavigationGroup(): string
@@ -62,7 +62,7 @@ class CityResource extends Resource
                     ->searchable(['country', 'code'])
                     ->translateLabel()
                     ->afterStateUpdated(fn (callable $set) => $set('state_id', null)),
-     
+
                 Select::make('state_id')
                     ->translateLabel()
                     ->required()
@@ -147,5 +147,5 @@ class CityResource extends Resource
         ];
     }
 
-    
+
 }

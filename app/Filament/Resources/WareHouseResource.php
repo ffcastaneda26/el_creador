@@ -20,7 +20,7 @@ class WareHouseResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
 
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
 
 
