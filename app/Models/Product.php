@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -29,8 +31,6 @@ class Product extends Model
     ];
 
 
-
-
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
@@ -39,5 +39,26 @@ class Product extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function products_in_warehouses(): HasMany
+    {
+        return $this->hasMany(ProductWarehouse::class);
+    }
+
+    public function warehouses(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class)
+                ->withPivot('price',
+                                    'last_purchase_price',
+                                    'stock',
+                                    'stock_available',
+                                    'stock_compromised',
+                                    'stock_min',
+                                    'stock_max',
+                                    'stock_reorder',
+                                    'average_cost',
+                                    'active',
+                                    'user_id');
     }
 }

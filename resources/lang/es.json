@@ -1,4 +1,11 @@
 {
+    "Created at": "Creado el",
+    "Updated at": "Actualizado el",
+    "Prices & Costs": "Precios y Costos",
+    "The product already exists in this warehouse": "El producto ya existe en este almacen",
+    "Products in the warehouse": "Productos en Almacen",
+    "Product In The Warehouse": "Producto en Almacen",
+    "Last purchase price": "Último Precio de Compra",
     "Key Movements": "Claves Movimiento",
     "Key Movement": "Clave Movimiento",
     "Used to": "Usada Para",
@@ -89,11 +96,12 @@
     "Unit of Measurement": "Unidad de Medida",
     "Price": "Precio",
     "Data for inventory control": "Datos para control de inventario",
-    "Last purchase price":"Último precio de compra",
+
     "Stock":"Existencia Total",
     "Stock available": "Disponible",
     "Stock compromised": "Comprometida",
     "Stock min": "Existencia Mínimo",
+
     "Stock max": "Existencia Máxima",
     "Stock reorder": "Punto de Reorden",
     "Average cost": "Costo Promedio",

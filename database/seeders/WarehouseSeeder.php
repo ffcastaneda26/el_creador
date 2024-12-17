@@ -13,7 +13,7 @@ class WarehouseSeeder extends Seeder
      */
     public function run(): void
     {
-    
+
         Warehouse::create([
             'name'      => 'Almacén Principal',
             'short'     => 'Principal',

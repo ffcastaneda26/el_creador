@@ -28,7 +28,7 @@ class ProductResource extends Resource
 
 
     protected static ?string $navigationIcon = 'heroicon-o-gift';
-    
+
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
 
@@ -68,39 +68,7 @@ class ProductResource extends Resource
                     ->searchable(condition: ['name', 'symbol'])
                     ->label(__('Unit of Measurement'))
                     ->preload(),
-                TextInput::make('price')
-                    ->required()
-                    ->regex('/[0-9]{1,7}.[0-9]{2}$/')
-
-
-                    ->placeholder('00.00')
-                    ->prefix('$')
-                    ->translateLabel(),
-                Section::make()
-                    ->schema([
-                        TextInput::make('stock')
-                            ->required()
-                            ->translateLabel(),
-                        TextInput::make('stock_min')
-                            ->required()
-                            ->gte('stock')
-                            ->numeric()
-                            ->translateLabel(),
-                        TextInput::make('stock_max')
-                            ->required()
-                            ->gte('stock_min')
-                            ->numeric()
-                            ->translateLabel(),
-                        TextInput::make('stock_reorder')
-                            ->gte('stock_min')
-                            ->lte('stock_max')
-                            ->required()
-                            ->numeric()
-                            ->translateLabel(),
-                    ])->columns(4)
-                    ->description(__('Data for inventory control')),
-                    Section::make()
-                    ->schema([
+                    Section::make()->schema([
                         MarkdownEditor::make('description')
                             ->translateLabel()
                             ->columnSpan(2),
