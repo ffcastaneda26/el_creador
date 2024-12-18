@@ -43,7 +43,12 @@ class ProductWarehouse extends Model
     protected function totalCost(): Attribute
     {
         return Attribute::make(
+            set: fn ($value) => $this->stock * $this->average_cost,
             get: fn ($value) => $this->stock * $this->average_cost,
         );
+    }
+
+    public function movements(){
+
     }
 }

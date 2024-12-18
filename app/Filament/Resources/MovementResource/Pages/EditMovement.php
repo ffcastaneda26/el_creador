@@ -23,6 +23,7 @@ class EditMovement extends EditRecord
     }
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        $data['amount'] = round( $data['quantity'] * $data['cost'],6);
         $data['user_id'] = Auth::user()->id;
         return $data;
     }

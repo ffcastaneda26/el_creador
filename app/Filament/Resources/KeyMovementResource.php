@@ -32,27 +32,30 @@ class KeyMovementResource extends Resource
             ->schema([
                 Forms\Components\Group::make()->schema([
                     Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->translateLabel(),
-                Forms\Components\TextInput::make('short')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->translateLabel(),
+                        ->required()
+                        ->unique(ignoreRecord: true)
+                        ->translateLabel(),
+                    Forms\Components\TextInput::make('short')
+                        ->required()
+                        ->unique(ignoreRecord: true)
+                        ->translateLabel(),
                     Forms\Components\Toggle::make('require_cost')
-                    ->translateLabel()
-                ])->columns(3),
+                        ->translateLabel(),
+                    Forms\Components\Toggle::make('is_purchase')
+                        ->translateLabel(),
+
+                ])->columns(4),
                 Forms\Components\Group::make()->schema([
                     Forms\Components\Radio::make('type')
-                    ->inline()
-                    ->translateLabel()
-                    ->options(KeyMovementTypeEnum::class)
-                    ->required(),
-                Forms\Components\Radio::make('used_to')
-                    ->inline()
-                    ->translateLabel()
-                    ->options(KeyMovementUsedToEnum::class)
-                    ->required(),
+                        ->inline()
+                        ->translateLabel()
+                        ->options(KeyMovementTypeEnum::class)
+                        ->required(),
+                    Forms\Components\Radio::make('used_to')
+                        ->inline()
+                        ->translateLabel()
+                        ->options(KeyMovementUsedToEnum::class)
+                        ->required(),
                 ]),
 
             ]);
@@ -95,6 +98,10 @@ class KeyMovementResource extends Resource
                     ->translateLabel()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('require_cost')
+                    ->translateLabel()
+                    ->alignment(Alignment::Center)
+                    ->boolean(),
+                Tables\Columns\IconColumn::make('is_purchase')
                     ->translateLabel()
                     ->alignment(Alignment::Center)
                     ->boolean(),

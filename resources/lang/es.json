@@ -1,4 +1,7 @@
 {
+    "Is purchase": "¿Es Compra?",
+    "Is sale": "¿Es Venta?",
+    "Product id": "Producto",
     "Inventory": "Inventario",
     "Key movement": "Clave Movto",
     "Quantity": "Cantidad",

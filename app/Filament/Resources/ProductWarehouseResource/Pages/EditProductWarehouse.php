@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\ProductWarehouseResource\Pages;
 
-use App\Filament\Resources\ProductWarehouseResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use App\Models\Movement;
+use App\Models\ProductWarehouse;
 use Illuminate\Support\Facades\Auth;
+use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\ProductWarehouseResource;
 
 class EditProductWarehouse extends EditRecord
 {
@@ -14,7 +16,12 @@ class EditProductWarehouse extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+            ->hidden(function(ProductWarehouse $record){
+                return Movement::where('warehouse_id',$record->warehouse_id)
+                ->where('product_id',$record->product_id)
+                ->count();
+            }),
         ];
     }
     protected function getRedirectUrl(): string

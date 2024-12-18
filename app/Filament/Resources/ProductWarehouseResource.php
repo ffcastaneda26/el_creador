@@ -7,7 +7,10 @@ use Filament\Forms;
 use Filament\Tables;
 use App\Models\Country;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\Movement;
 use Filament\Forms\Form;
+use App\Models\Warehouse;
 use Filament\Tables\Table;
 use App\Models\ProductWarehouse;
 use Filament\Resources\Resource;
@@ -18,13 +21,12 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductWarehouseResource\Pages;
 use App\Filament\Resources\ProductWarehouseResource\RelationManagers;
-use App\Models\Warehouse;
-use Filament\Forms\Set;
 
 class ProductWarehouseResource extends Resource
 {
@@ -32,16 +34,16 @@ class ProductWarehouseResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
-    protected static ?int $navigationSort = 21;
+    protected static ?int $navigationSort = 22;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->hasRole('Administrador');
     }
 
-    public static function getNavigationParentItem(): ?string
-    {
-        return __('Warehouses');
-    }
+    // public static function getNavigationParentItem(): ?string
+    // {
+    //     return __('Warehouses');
+    // }
     public static function getNavigationLabel(): string
     {
         return __('Products in the warehouse');
@@ -245,6 +247,13 @@ class ProductWarehouseResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->disabled(function (ProductWarehouse $record){
+                    return Movement::where('warehouse_id',$record->warehouse_id)
+                                        ->where('product_id',$record->product_id)
+                                        ->count();
+                }),
+
             ]);
     }
 

@@ -19,14 +19,17 @@ class InventoryManagement
         $current_cost = $product->average_cost;
         $product->stock = $keyMovement->isTypeI() ? $product->stock + $quantity : $product->stock - $quantity;
         $product->stock_available = $keyMovement->isTypeI() ? $product->stock_available + $quantity : $product->stock_available - $quantity;
-        
+
+        if($keyMovement->is_purchase){
+            $product->last_purchase_price = $cost;
+        }
+
         $product->save();
 
         if ($require_cost && $cost > 0) {
                 $product->average_cost = Self::calculateAverageCost($current_stock, $current_cost, $quantity, $cost);
                 $product->save();
         }
-
     }
 
     static public function calculateAverageCost($currentStock, $currentAverageCost, $quantity, $cost)

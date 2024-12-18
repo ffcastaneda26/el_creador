@@ -35,6 +35,7 @@ use Filament\Forms\Components\MarkdownEditor;
 use App\Filament\Resources\MovementResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\MovementResource\RelationManagers;
+use Filament\Forms\Components\Group;
 
 class MovementResource extends Resource
 {
@@ -69,124 +70,149 @@ class MovementResource extends Resource
 
     public static function form(Form $form): Form
     {
- 
         return $form
             ->schema([
-                Section::make()
-                    ->schema([
-                        Select::make('warehouse_id')
-                            ->relationship('warehouse', 'name')
-                            ->translateLabel()
-                            ->rules([
-                                fn(Get $get, string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $operation) {
-                                    if ($operation == 'create') {
-                                        $exists = ProductWarehouse::where('product_id', $get('product_id'))
-                                            ->where('warehouse_id', $get('warehouse_id'))
-                                            ->exists();
-                                        if (!$exists) {
-                                            $fail(__('The product does not exist in this warehouse'));
-                                        }
-                                    }
-                                },
-                            ])
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn(callable $set) => $set('product_id', null)),
-                        Select::make('product_id')
-                            ->required()
-                            ->translateLabel()
-                            ->relationship(name: 'product', titleAttribute: 'name')
-                            ->reactive()
-                            ->disabled(function (callable $get): bool {
-                                return $get('warehouse_id') ? false : true;
-                            }),
-                        Select::make('key_movement_id')
-                            ->required()
-                            ->translateLabel()
-                            ->reactive()
-                            ->relationship(name: 'key_movement', titleAttribute: 'name')
-                            ->afterStateUpdated(
-                                function (callable $get, string $operation, Set $set, ?int $state) {
-                                    if ($state) {
-                                        $set('cost', null);
-                                        $key_movement = KeyMovement::findOrFail($state);
-                                        if (!$key_movement->require_cost) {
-                                            $product_cost = ProductWarehouse::where('warehouse_id', $get('warehouse_id'))
-                                                                            ->where('product_id', $get('product_id'))
-                                                                            ->first();
-                                            if ($product_cost) {
-                                                $set('cost', $product_cost->average_cost);
-                                            }
-                                        }
+                Group::make()->schema([
+                    Select::make('warehouse_id')
+                        ->relationship('warehouse', 'name')
+                        ->translateLabel()
+                        ->rules([
+                            fn(Get $get, string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $operation) {
+                                if ($operation == 'create') {
+                                    $exists = ProductWarehouse::where('product_id', $get('product_id'))
+                                        ->where('warehouse_id', $get('warehouse_id'))
+                                        ->exists();
+                                    if (!$exists) {
+                                        $fail(__('The product does not exist in this warehouse'));
                                     }
                                 }
-                            )
-                            ->disabled(function (callable $get): bool {
-                                return $get('product_id') ? false : true;
-                            }),
-
-                    ])->columns(3),
-                Fieldset::make(__('Details'))
-                    ->schema([
-                        DatePicker::make('date')
-                            ->required()
-                            ->translateLabel()
-                            ->before(now())
-                            ->disabled(function (callable $get): bool {
-                                return $get('key_movement_id') ? false : true;
-                            }),
-                        TextInput::make('quantity')
-                            ->required()
-                            ->translateLabel()
-                            ->minValue(1)
-                            ->numeric()
-                            ->maxValue(function (callable $get): int {
-                                if ($get('key_movement_id')) {
-                                    $key_movement = KeyMovement::findOrFail($get('key_movement_id'));
-                                    if ($key_movement->type == 'O') {
-                                        $product_validate = ProductWarehouse::where('warehouse_id', $get('warehouse_id'))
+                            },
+                        ])
+                        ->live(onBlur: true)
+                        ->reactive()
+                        ->afterStateUpdated(fn(callable $set) => $set('product_id', null))
+                        ->disabled(fn($operation) => $operation == 'edit'),
+                    Select::make('product_id')
+                        ->required()
+                        ->translateLabel()
+                        ->options(function (callable $get) {
+                            $warehouse = Warehouse::find($get('warehouse_id'));
+                            if (!$warehouse) {
+                                return;
+                            }
+                            return $warehouse->products->pluck('name', 'id');
+                        })
+                        ->reactive()
+                        ->live()
+                        ->disabled(function (callable $get,$operation): bool {
+                            if($operation == 'edit'){
+                                return true;
+                            }
+                            return $get('warehouse_id') ? false : true;
+                        }),
+                    Select::make('key_movement_id')
+                        ->required()
+                        ->translateLabel()
+                        ->reactive()
+                        ->relationship(name: 'key_movement', titleAttribute: 'name')
+                        ->afterStateUpdated(
+                            function (callable $get, string $operation, Set $set, ?int $state) {
+                                if ($state) {
+                                    $set('cost', null);
+                                    $key_movement = KeyMovement::findOrFail($state);
+                                    if (!$key_movement->require_cost) {
+                                        $product_cost = ProductWarehouse::where('warehouse_id', $get('warehouse_id'))
                                             ->where('product_id', $get('product_id'))
                                             ->first();
-                                        return $product_validate ? $product_validate->stock_available : 9999;
+                                        if ($product_cost) {
+                                            $set('cost', $product_cost->average_cost);
+                                        }
                                     }
                                 }
-                                return 9999;
-                            })
-                            ->disabled(function (callable $get): bool {
-                                return $get('key_movement_id') ? false : true;
-                            }),
-                        TextInput::make('cost')
-                            ->translateLabel()
-                            ->required(function (callable $get): bool {
-                                $key_movement = null;
-                                if ($get('key_movement_id')) {
-                                    $key_movement = KeyMovement::findOrFail($get('key_movement_id'));
+                            }
+                        )
+                        ->disabled(function (callable $get,$operation): bool {
+                            if($operation == 'edit'){
+                                return true;
+                            }
+                            return $get('product_id') ? false : true;
+                        }),
+
+
+                    TextInput::make('reference')
+                        ->translateLabel()
+                        ->maxLength(100)
+                        ->disabled(function (callable $get): bool {
+                            return $get('key_movement_id') ? false : true;
+                        }),
+                ])->columns(2),
+                Group::make()->schema([
+                    DatePicker::make('date')
+                        ->required()
+                        ->translateLabel()
+                        ->before(now())
+                        ->disabled(function (callable $get): bool {
+                            return $get('key_movement_id') ? false : true;
+                        }),
+                    TextInput::make('quantity')
+                        ->required()
+                        ->translateLabel()
+                        ->minValue(1)
+                        ->numeric()
+                        ->maxValue(function (callable $get): int {
+                            if ($get('key_movement_id')) {
+                                $key_movement = KeyMovement::findOrFail($get('key_movement_id'));
+                                if ($key_movement->type == 'O') {
+                                    $product_validate = ProductWarehouse::where('warehouse_id', $get('warehouse_id'))
+                                        ->where('product_id', $get('product_id'))
+                                        ->first();
+                                    return $product_validate ? $product_validate->stock_available : 9999;
                                 }
-                                return $key_movement && $key_movement->type == 'I';
-                            })->disabled(function (callable $get): bool {
-                                $key_movement = null;
-                                if ($get('key_movement_id')) {
-                                    $key_movement = KeyMovement::findOrFail($get('key_movement_id'));
-                                    return $key_movement && $key_movement->type == 'O';
-                                }
-                                return $get('key_movement_id') ? false : true;
-                            }),
-                        TextInput::make('reference')
-                            ->translateLabel()
-                            ->maxLength(100),
-                    ])->disabled(function (callable $get): bool {
-                        return $get('key_movement_id') ? false : true;
-                    })->columns(5),
-                Fieldset::make(__('Notes and Receipt'))
-                    ->schema([
-                        MarkdownEditor::make('notes')
-                            ->translateLabel(),
-                        FileUpload::make('voucher_image')
-                            ->translateLabel()
-                            ->directory('/inventory/movements/vouchers')
-                            ->preserveFilenames(),
-                    ])->visible(function (callable $get): bool {
-                        return $get('key_movement_id') ? true : false;
-                    })->columns(2)
+                            }
+                            return 9999;
+                        })
+                        ->disabled(function (callable $get): bool {
+                            return $get('key_movement_id') ? false : true;
+                        }),
+                    TextInput::make('cost')
+                        ->translateLabel()
+                        ->reactive()
+                        ->required(function (callable $get): bool {
+                            $key_movement = null;
+                            if ($get('key_movement_id')) {
+                                $key_movement = KeyMovement::findOrFail($get('key_movement_id'));
+                            }
+                            return $key_movement && $key_movement->type == 'I';
+                        })->disabled(function (callable $get): bool {
+                            $key_movement = null;
+                            if ($get('key_movement_id')) {
+                                $key_movement = KeyMovement::findOrFail($get('key_movement_id'));
+                                return $key_movement && !$key_movement->isTypeI();
+                            }
+                            return $get('key_movement_id') ? false : true;
+                        }),
+                    FileUpload::make('voucher_image')
+                        ->translateLabel()
+                        ->directory('/inventory/movements/vouchers')
+                        ->preserveFilenames()
+                        ->columnSpanFull()
+                        ->hidden(function (callable $get): bool {
+                            return $get('cost') ? false : true;
+                        })
+                        ->disabled(function (callable $get): bool {
+                            return $get('cost') ? false : true;
+                        }),
+
+                ])->columns(3),
+                MarkdownEditor::make('notes')
+                    ->translateLabel()
+                    ->columnSpanFull()
+                    ->hidden(function (callable $get): bool {
+                        return $get('cost') ? false : true;
+                    })
+                    ->disabled(function (callable $get): bool {
+                        return $get('cost') ? false : true;
+                    }),
             ]);
     }
 
@@ -216,17 +242,21 @@ class MovementResource extends Resource
                     ->sortable()
                     ->translateLabel()
                     ->alignment(Alignment::End)
-                    ->summarize(Sum::make())
+                    ->summarize(Sum::make()
+                        ->label('Total')
+                        ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ','))
                     ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ','),
                 TextColumn::make('cost')
                     ->translateLabel()
                     ->alignment(Alignment::End)
                     ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
                 TextColumn::make('amount')
-                    ->translateLabel()
                     ->alignment(Alignment::End)
+                    ->summarize(Sum::make()
+                        ->label('Total')
+                        ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','))
                     ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
-             ])
+            ])
             ->filters([
                 SelectFilter::make('Key Movement')
                     ->relationship('key_movement', 'name')

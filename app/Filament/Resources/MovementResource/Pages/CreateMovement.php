@@ -29,16 +29,17 @@ class CreateMovement extends CreateRecord
         }
         $data['status'] = 'Aplicado';
         $data['user_id'] = Auth::user()->id;
+        $data['amount'] = round( $data['quantity'] * $data['cost'],6);
         return $data;
     }
 
-    protected function afterCreate(): void
-    {
-        $warehouseId=$this->record->warehouse_id;
-        $productId=$this->record->product_id;
-        $keyMovementId= $this->record->key_movement_id;
-        $quantity = $this->record->quantity;
-        $cost= $this->record->cost;
-        InventoryManagement::updateStock($warehouseId,$productId,$keyMovementId,$quantity,$cost);
-    }
+    // protected function afterCreate(): void
+    // {
+    //     $warehouseId=$this->record->warehouse_id;
+    //     $productId=$this->record->product_id;
+    //     $keyMovementId= $this->record->key_movement_id;
+    //     $quantity = $this->record->quantity;
+    //     $cost= $this->record->cost;
+    //     InventoryManagement::updateStock($warehouseId,$productId,$keyMovementId,$quantity,$cost);
+    // }
 }

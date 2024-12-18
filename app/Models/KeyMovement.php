@@ -6,6 +6,7 @@ use App\Enums\Enums\KeyMovementTypeEnum;
 use App\Enums\Enums\KeyMovementUsedToEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KeyMovement extends Model
 {
@@ -18,6 +19,7 @@ class KeyMovement extends Model
         'used_to',
         'type',
         'require_cost',
+        'is_purchase',
         'user_id'
     ];
 
@@ -34,7 +36,8 @@ class KeyMovement extends Model
         return $this->type === KeyMovementTypeEnum::I;
     }
 
-    public function movements(): hasMany
+
+    public function movements(): HasMany
     {
         return $this->HasMany(Movement::class);
     }

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Observers\MovementObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
+#[Observedby([MovementObserver::class])]
 class Movement extends Model
 {
     protected $table = 'movements';
@@ -16,25 +19,19 @@ class Movement extends Model
         'date',
         'quantity',
         'cost',
+        'amount',
         'reference',
         'notes',
         'status',
         'user_id',
     ];
-
-
     protected function casts(): array
     {
         return [
             'date' => 'datetime:Y-m-d',
         ];
     }
-    protected function amount(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => $this->quantity * $this->cost,
-        );
-    }
+
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
