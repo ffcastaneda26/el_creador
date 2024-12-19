@@ -80,8 +80,11 @@ class ProductWarehouseResource extends Resource
                                     ->translateLabel()
                                     ->required()
                                     ->rules([
-                                        fn(Get $get, string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $operation) {
+                                        fn(Get $get, Set $set,string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $set,$operation) {
                                             if ($operation == 'create') {
+                                                if(Warehouse::count() == 1){
+                                                        $set('warehouse_id',Warehouse::first()->id);
+                                                }
                                                 $exists = ProductWarehouse::where('product_id', $get('product_id'))
                                                     ->where('warehouse_id', $get('warehouse_id'))
                                                     ->exists();
@@ -91,7 +94,13 @@ class ProductWarehouseResource extends Resource
                                             }
                                         },
                                     ]),
-
+                                    TextInput::make('price')
+                                    ->required()
+                                    ->numeric()
+                                    ->regex('/[0-9]{1,7}.[0-9]{2}$/')
+                                    ->default('0.00')
+                                    ->prefix('$')
+                                    ->translateLabel(),
                                 Toggle::make('active')
                                     ->default(true),
                             ])->columns(3),
@@ -101,7 +110,9 @@ class ProductWarehouseResource extends Resource
                         ->schema([
                             TextInput::make('stock')
                                 ->required()
-                                ->translateLabel(),
+                                ->translateLabel()
+                                ->regex('/[0-9]$/')
+                                ->default(0),
                             TextInput::make('stock_min')
                                      ->numeric()
                                 ->default(0)
@@ -131,31 +142,32 @@ class ProductWarehouseResource extends Resource
                                 ->readOnly()
                                 ->default(0),
 
-                        ])->columns(6),
-                        // ->description(__('Data for inventory control')),
+                        ])->columns(6)
+                        ->description(__('Data for inventory control')),
 
-                    Section::make()->schema([
-                        TextInput::make('price')
-                            ->required()
-                            ->numeric()
-                            ->regex('/[0-9]{1,7}.[0-9]{2}$/')
-                            ->default(0.00)
-                            ->prefix('$')
-                            ->translateLabel(),
-                        TextInput::make('last_purchase_price')
-                            ->required()
-                            ->numeric()
-                            ->translateLabel()
-                            ->readOnly(fn($operation) => $operation != 'create')
-                            ->default(0.00),
+                    // Section::make()->schema([
+                    //     TextInput::make('price')
+                    //         ->required()
+                    //         ->numeric()
+                    //         ->regex('/[0-9]{1,7}.[0-9]{2}$/')
+                    //         ->default(0.00)
+                    //         ->prefix('$')
+                    //         ->translateLabel(),
+                    //     TextInput::make('last_purchase_price')
+                    //         ->required()
+                    //         ->numeric()
+                    //         ->translateLabel()
+                    //         ->readOnly(fn($operation) => $operation != 'create')
+                    //         ->default(0.00),
 
-                        TextInput::make('average_cost')
-                            ->required()
-                            ->numeric()
-                            ->default(0.00)
-                            ->readOnly(fn($operation) => $operation != 'create')
-                    ])->columns(4),
-                        // ->description(__("Prices & Costs")),
+                    //     TextInput::make('average_cost')
+                    //         ->required()
+                    //         ->numeric()
+                    //         ->translateLabel()
+                    //         ->default(0.00)
+                    //         ->readOnly(fn($operation) => $operation != 'create')
+                    // ])->columns(4)
+                    // ->description(__("Prices & Costs")),
                 ])->columnSpanFull(),
             ]);
     }
@@ -183,7 +195,7 @@ class ProductWarehouseResource extends Resource
                     ->translateLabel()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('average_cost')
-                    ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ',')
+                    ->numeric(decimalPlaces: 4, decimalSeparator: '.', thousandsSeparator: ',')
                     ->alignEnd()
                     ->translateLabel()
                     ->sortable(),

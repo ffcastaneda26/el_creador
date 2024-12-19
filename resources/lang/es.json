@@ -1,4 +1,5 @@
 {
+    "Amount": "Importe",
     "Is purchase": "¿Es Compra?",
     "Is sale": "¿Es Venta?",
     "Product id": "Producto",
@@ -112,10 +113,9 @@
     "Data for inventory control": "Datos para control de inventario",
 
     "Stock":"Existencia Total",
-    "Stock available": "Disponible",
-    "Stock compromised": "Comprometida",
-    "Stock min": "Existencia Mínimo",
-
+    "Stock available": "Existencia Disponible",
+    "Stock compromised": "Exis. Comprometida",
+    "Stock min": "Existencia Mínima",
     "Stock max": "Existencia Máxima",
     "Stock reorder": "Punto de Reorden",
     "Average cost": "Costo Promedio",

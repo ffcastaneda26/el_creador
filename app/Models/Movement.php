@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 
 #[Observedby([MovementObserver::class])]
 class Movement extends Model
@@ -49,5 +50,21 @@ class Movement extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeLastPurchase(Builder $query,$product_id,$warehouse_id=null,$key_movement_id=null): void
+    {
+        if(!$warehouse_id){
+            $warehouse_id = Warehouse::first()->id;
+        }
+        if(!$key_movement_id){
+            $key_movement_id = KeyMovement::where('is_purchase',1)->first()->id;
+        }
+
+        $query->where('warehouse_id',$warehouse_id)
+              ->where('product_id',$product_id)
+              ->where('key_movement_id',$key_movement_id)
+              ->latest()
+             ->first();
     }
 }

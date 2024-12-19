@@ -73,41 +73,44 @@ class MovementResource extends Resource
         return $form
             ->schema([
                 Group::make()->schema([
-                    Select::make('warehouse_id')
-                        ->relationship('warehouse', 'name')
-                        ->translateLabel()
-                        ->rules([
-                            fn(Get $get, string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $operation) {
-                                if ($operation == 'create') {
-                                    $exists = ProductWarehouse::where('product_id', $get('product_id'))
-                                        ->where('warehouse_id', $get('warehouse_id'))
-                                        ->exists();
-                                    if (!$exists) {
-                                        $fail(__('The product does not exist in this warehouse'));
-                                    }
-                                }
-                            },
-                        ])
-                        ->live(onBlur: true)
-                        ->reactive()
-                        ->afterStateUpdated(fn(callable $set) => $set('product_id', null))
-                        ->disabled(fn($operation) => $operation == 'edit'),
+                    // Select::make('warehouse_id')
+                    //     ->relationship('warehouse', 'name')
+                    //     ->translateLabel()
+                    //     ->rules([
+                    //         fn(Get $get, string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $operation) {
+                    //             if ($operation == 'create') {
+                    //                 $exists = ProductWarehouse::where('product_id', $get('product_id'))
+                    //                     ->where('warehouse_id', $get('warehouse_id'))
+                    //                     ->exists();
+                    //                 if (!$exists) {
+                    //                     $fail(__('The product does not exist in this warehouse'));
+                    //                 }
+                    //             }
+                    //         },
+                    //     ])
+                    //     ->live(onBlur: true)
+                    //     ->reactive()
+                    //     ->afterStateUpdated(fn(callable $set) => $set('product_id', null))
+                    //     ->disabled(fn($operation) => $operation == 'edit'),
                     Select::make('product_id')
                         ->required()
                         ->translateLabel()
                         ->options(function (callable $get) {
                             $warehouse = Warehouse::find($get('warehouse_id'));
                             if (!$warehouse) {
-                                return;
+                                $warehouse = Warehouse::first();
                             }
                             return $warehouse->products->pluck('name', 'id');
                         })
                         ->reactive()
                         ->live()
-                        ->disabled(function (callable $get,$operation): bool {
-                            if($operation == 'edit'){
+                        ->disabled(function (callable $get, $set, $operation): bool {
+                            $warehouse = Warehouse::first();
+                            $set('warehouse_id', $warehouse->id);
+                            if ($operation == 'edit') {
                                 return true;
                             }
+
                             return $get('warehouse_id') ? false : true;
                         }),
                     Select::make('key_movement_id')
@@ -131,26 +134,21 @@ class MovementResource extends Resource
                                 }
                             }
                         )
-                        ->disabled(function (callable $get,$operation): bool {
-                            if($operation == 'edit'){
+                        ->disabled(function (callable $get, $operation): bool {
+                            if ($operation == 'edit') {
                                 return true;
                             }
                             return $get('product_id') ? false : true;
                         }),
 
 
-                    TextInput::make('reference')
-                        ->translateLabel()
-                        ->maxLength(100)
-                        ->disabled(function (callable $get): bool {
-                            return $get('key_movement_id') ? false : true;
-                        }),
                 ])->columns(2),
                 Group::make()->schema([
                     DatePicker::make('date')
                         ->required()
                         ->translateLabel()
                         ->before(now())
+                        ->default(now())
                         ->disabled(function (callable $get): bool {
                             return $get('key_movement_id') ? false : true;
                         }),
@@ -183,12 +181,19 @@ class MovementResource extends Resource
                                 $key_movement = KeyMovement::findOrFail($get('key_movement_id'));
                             }
                             return $key_movement && $key_movement->type == 'I';
-                        })->disabled(function (callable $get): bool {
+                        })
+                        ->disabled(function (callable $get): bool {
                             $key_movement = null;
                             if ($get('key_movement_id')) {
                                 $key_movement = KeyMovement::findOrFail($get('key_movement_id'));
-                                return $key_movement && !$key_movement->isTypeI();
+                                return !$key_movement->require_cost;
                             }
+                            return $get('key_movement_id') ? false : true;
+                        }),
+                    TextInput::make('reference')
+                        ->translateLabel()
+                        ->maxLength(100)
+                        ->disabled(function (callable $get): bool {
                             return $get('key_movement_id') ? false : true;
                         }),
                     FileUpload::make('voucher_image')
@@ -196,18 +201,21 @@ class MovementResource extends Resource
                         ->directory('/inventory/movements/vouchers')
                         ->preserveFilenames()
                         ->columnSpanFull()
-                        ->hidden(function (callable $get): bool {
-                            return $get('cost') ? false : true;
+                        ->visible(function (callable $get): bool {
+                            return env('USE_VOUCHER_IMAGE', false);
+                            // return $get('cost') ? false : true;
                         })
                         ->disabled(function (callable $get): bool {
                             return $get('cost') ? false : true;
                         }),
 
-                ])->columns(3),
+
+                ])->columns(4),
                 MarkdownEditor::make('notes')
                     ->translateLabel()
                     ->columnSpanFull()
-                    ->hidden(function (callable $get): bool {
+                    ->visible(function (callable $get): bool {
+                        return env('USE_MOVEMENT_NOTES', false);
                         return $get('cost') ? false : true;
                     })
                     ->disabled(function (callable $get): bool {
@@ -252,10 +260,18 @@ class MovementResource extends Resource
                     ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
                 TextColumn::make('amount')
                     ->alignment(Alignment::End)
+                    ->translateLabel()
                     ->summarize(Sum::make()
                         ->label('Total')
                         ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','))
                     ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
+                TextColumn::make('reference')
+                    ->translateLabel()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('notes')
+                    ->translateLabel()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->limit(50),
             ])
             ->filters([
                 SelectFilter::make('Key Movement')
@@ -269,6 +285,7 @@ class MovementResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

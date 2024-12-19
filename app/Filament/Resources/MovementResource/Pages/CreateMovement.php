@@ -9,6 +9,7 @@ use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 use  App\Helpers\InventoryManagement;
+use App\Models\Warehouse;
 
 class CreateMovement extends CreateRecord
 {
@@ -20,6 +21,7 @@ class CreateMovement extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $data['warehouse_id'] = Warehouse::first()->id;
         $key_movement = KeyMovement::findOrFail($data['key_movement_id']);
         if (!$key_movement->require_cost) {
             $warehouse_record = ProductWarehouse::where('warehouse_id', $data['warehouse_id'])
@@ -27,19 +29,13 @@ class CreateMovement extends CreateRecord
                 ->first();
             $data['cost'] = $warehouse_record->average_cost;
         }
+
         $data['status'] = 'Aplicado';
         $data['user_id'] = Auth::user()->id;
         $data['amount'] = round( $data['quantity'] * $data['cost'],6);
         return $data;
     }
 
-    // protected function afterCreate(): void
-    // {
-    //     $warehouseId=$this->record->warehouse_id;
-    //     $productId=$this->record->product_id;
-    //     $keyMovementId= $this->record->key_movement_id;
-    //     $quantity = $this->record->quantity;
-    //     $cost= $this->record->cost;
-    //     InventoryManagement::updateStock($warehouseId,$productId,$keyMovementId,$quantity,$cost);
-    // }
+
+
 }
