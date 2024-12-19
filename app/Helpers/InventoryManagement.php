@@ -35,13 +35,8 @@ class InventoryManagement
     }
     static public function updateStock($movement,$type='normal')
     {
-       
         try {
-            $product =ProductWarehouse::where('warehouse_id', $movement->warehouse_id)
-                                    ->where('product_id', $movement->product_id)
-                                    ->first();
-
-
+            $product = self::getProduct($movement);
             if ($movement->key_movement->require_cost) {
                 $product->average_cost = self::calculateAverageCost($product,$movement,$type);
             }
@@ -88,7 +83,7 @@ class InventoryManagement
         }
     }
     static private function   calculateNewStock($key_movement,$currentStock,$quantity,$type='normal'){
-        $isTypeI = $key_movement->isTypeI() ? 'SIMON' : "NEL PASTEL";
+        $isTypeI = $key_movement->isTypeI();
         if($type == 'normal'){
            return  $isTypeI ? $currentStock + $quantity : $currentStock - $quantity;
         }
@@ -134,5 +129,11 @@ class InventoryManagement
             'Costo Movimiento=' . $cost,
             'Nueva Existencia=' .$newStock,
             'Costo Nuevo='. $newAverageCost );
+    }
+
+    static public function getProduct($movement){
+        return ProductWarehouse::where('warehouse_id', $movement->warehouse_id)
+                            ->where('product_id', $movement->product_id)
+                            ->first();
     }
 }

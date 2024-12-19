@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Enums\KeyMovementTypeEnum;
 use Closure;
 
 use Filament\Forms;
@@ -228,10 +229,10 @@ class MovementResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('warehouse.name')
-                    ->searchable()
-                    ->sortable()
-                    ->translateLabel(),
+                // TextColumn::make('warehouse.name')
+                //     ->searchable()
+                //     ->sortable()
+                //     ->translateLabel(),
                 TextColumn::make('product.name')
                     ->searchable()
                     ->sortable()
@@ -245,26 +246,33 @@ class MovementResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->translateLabel(),
+                TextColumn::make('key_movement.type')
+                    ->label(__('Type')),
+
                 TextColumn::make('quantity')
                     ->searchable()
                     ->sortable()
                     ->translateLabel()
                     ->alignment(Alignment::End)
-                    ->summarize(Sum::make()
-                        ->label('Total')
-                        ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ','))
+                    ->color(fn ($record) => $record->key_movement->type === KeyMovementTypeEnum::O ? 'danger' : null)
+                    ->prefix(fn ($record) => $record->key_movement->type === KeyMovementTypeEnum::O ? '-' : null)
                     ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ','),
                 TextColumn::make('cost')
                     ->translateLabel()
                     ->alignment(Alignment::End)
+                    ->color(fn ($record) => $record->key_movement->type === KeyMovementTypeEnum::O ? 'danger' : null)
+                    ->prefix(fn ($record) => $record->key_movement->type === KeyMovementTypeEnum::O ? '-' : null)
                     ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
                 TextColumn::make('amount')
                     ->alignment(Alignment::End)
                     ->translateLabel()
-                    ->summarize(Sum::make()
-                        ->label('Total')
-                        ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','))
+                    ->color(fn ($record) => $record->key_movement->type === KeyMovementTypeEnum::O ? 'danger' : null)
+                    ->prefix(fn ($record) => $record->key_movement->type === KeyMovementTypeEnum::O ? '-' : null)
                     ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
+                    //  ->summarize(Sum::make()
+                    //  ->label('Total')
+                    //  ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ',')),
+
                 TextColumn::make('reference')
                     ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
