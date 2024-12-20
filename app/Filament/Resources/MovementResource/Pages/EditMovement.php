@@ -32,11 +32,6 @@ class EditMovement extends EditRecord
                 InventoryManagement::updateStock($record,'delete');
             }
         }
-
-
-
-
-
         $data['amount'] = round( $data['quantity'] * $data['cost'],6);
         $data['user_id'] = Auth::user()->id;
         return $data;

@@ -15,7 +15,7 @@ class MovementObserver
     
     public function updated(Movement $movement)
     {
-        // InventoryManagement::updateStock($movement,'normal');
+        InventoryManagement::updateStock($movement,'normal');
     }
 
     public function deleted(Movement $movement): void
