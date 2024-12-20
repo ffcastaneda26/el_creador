@@ -8,13 +8,10 @@ use App\Helpers\InventoryManagement;
 class MovementObserver
 {
 
-
     public function created(Movement $movement): void
     {
         InventoryManagement::updateStock($movement,'normal');
     }
-
-
     
     public function updated(Movement $movement)
     {

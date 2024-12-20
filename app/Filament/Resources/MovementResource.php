@@ -233,6 +233,10 @@ class MovementResource extends Resource
                 //     ->searchable()
                 //     ->sortable()
                 //     ->translateLabel(),
+                TextColumn::make('id')
+                ->searchable()
+                ->sortable()
+                ->translateLabel(),
                 TextColumn::make('product.name')
                     ->searchable()
                     ->sortable()
