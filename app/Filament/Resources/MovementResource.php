@@ -273,11 +273,7 @@ class MovementResource extends Resource
                     ->color(fn ($record) => $record->key_movement->type === KeyMovementTypeEnum::O ? 'danger' : null)
                     ->prefix(fn ($record) => $record->key_movement->type === KeyMovementTypeEnum::O ? '-' : null)
                     ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
-                    //  ->summarize(Sum::make()
-                    //  ->label('Total')
-                    //  ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ',')),
-
-                TextColumn::make('reference')
+                 TextColumn::make('reference')
                     ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('notes')
