@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WareHouseResource extends Resource
 {
-    protected static ?string $model = WareHouse::class;
+    protected static ?string $model = Warehouse::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
 

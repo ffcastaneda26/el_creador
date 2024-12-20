@@ -27,11 +27,6 @@ class Warehouse extends Model
         'user_id',
     ];
 
-    // public function products(): HasMany
-    // {
-    //     return $this->hasMany(ProductWarehouse::class);
-    // }
-
 
     public function products(): BelongsToMany
     {
