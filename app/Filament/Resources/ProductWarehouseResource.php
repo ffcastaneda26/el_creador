@@ -14,6 +14,7 @@ use App\Models\Warehouse;
 use Filament\Tables\Table;
 use App\Models\ProductWarehouse;
 use Filament\Resources\Resource;
+use Filament\Resources\Pages\Page;
 use Filament\Forms\Components\Group;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProductWarehouseResource\Pages;
 use App\Filament\Resources\ProductWarehouseResource\RelationManagers;
+use App\Models\Product;
 
 class ProductWarehouseResource extends Resource
 {
@@ -37,7 +39,7 @@ class ProductWarehouseResource extends Resource
     protected static ?int $navigationSort = 22;
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('Administrador');
+        return Auth::user()->hasRole('Administrador') && Warehouse::hasRecords() &&  Product::hasRecords() ;
     }
 
     // public static function getNavigationParentItem(): ?string
@@ -62,6 +64,7 @@ class ProductWarehouseResource extends Resource
     {
         return __('Catalogs');
     }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -73,17 +76,17 @@ class ProductWarehouseResource extends Resource
                                 Select::make('warehouse_id')
                                     ->relationship('warehouse', 'name')
                                     ->translateLabel()
-                                    ->required(fn () => Warehouse::count() != 1)
-                                    ->visible(fn () => Warehouse::count() != 1),
+                                    ->required(fn() => Warehouse::count() != 1)
+                                    ->visible(fn() => Warehouse::count() != 1),
                                 Select::make('product_id')
                                     ->relationship('product', 'name')
                                     ->translateLabel()
                                     ->required()
                                     ->rules([
-                                        fn(Get $get, Set $set,string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $set,$operation) {
+                                        fn(Get $get, Set $set, string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($get, $set, $operation) {
                                             if ($operation == 'create') {
-                                                if(Warehouse::count() == 1){
-                                                        $set('warehouse_id',Warehouse::first()->id);
+                                                if (Warehouse::count() == 1) {
+                                                    $set('warehouse_id', Warehouse::first()->id);
                                                 }
                                                 $exists = ProductWarehouse::where('product_id', $get('product_id'))
                                                     ->where('warehouse_id', $get('warehouse_id'))
@@ -94,7 +97,7 @@ class ProductWarehouseResource extends Resource
                                             }
                                         },
                                     ]),
-                                    TextInput::make('price')
+                                TextInput::make('price')
                                     ->required()
                                     ->numeric()
                                     ->regex('/[0-9]{1,7}.[0-9]{2}$/')
@@ -114,7 +117,7 @@ class ProductWarehouseResource extends Resource
                                 ->regex('/[0-9]$/')
                                 ->default(0),
                             TextInput::make('stock_min')
-                                     ->numeric()
+                                ->numeric()
                                 ->default(0)
                                 ->translateLabel(),
                             TextInput::make('stock_max')
@@ -260,11 +263,11 @@ class ProductWarehouseResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                ->disabled(function (ProductWarehouse $record){
-                    return Movement::where('warehouse_id',$record->warehouse_id)
-                                        ->where('product_id',$record->product_id)
-                                        ->count();
-                }),
+                    ->disabled(function (ProductWarehouse $record) {
+                        return Movement::where('warehouse_id', $record->warehouse_id)
+                            ->where('product_id', $record->product_id)
+                            ->count();
+                    }),
 
             ]);
     }
@@ -284,4 +287,6 @@ class ProductWarehouseResource extends Resource
             'edit' => Pages\EditProductWarehouse::route('/{record}/edit'),
         ];
     }
+
+
 }

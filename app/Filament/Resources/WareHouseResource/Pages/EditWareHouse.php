@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\WareHouseResource\Pages;
 
-use App\Filament\Resources\WareHouseResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\WareHouseResource;
+use App\Models\Warehouse;
 
 class EditWareHouse extends EditRecord
 {
@@ -14,8 +16,12 @@ class EditWareHouse extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+            ->hidden(function(Warehouse $record){
+                return $record->products()->count()&& $record->movements->count() ;
+            }),
         ];
+
     }
     protected function getRedirectUrl(): string
     {
@@ -26,4 +32,5 @@ class EditWareHouse extends EditRecord
         $data['user_id'] = Auth::user()->id;
         return $data;
     }
+
 }

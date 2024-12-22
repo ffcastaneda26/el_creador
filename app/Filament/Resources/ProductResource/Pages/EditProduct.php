@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\ProductResource\Pages;
 
 use App\Filament\Resources\ProductResource;
+use App\Models\Product;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class EditProduct extends EditRecord
@@ -14,8 +16,12 @@ class EditProduct extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+            ->hidden(function(Product $record){
+                return $record->warehouses->count() || $record->movements->count() ;
+            }),
         ];
+
     }
 
     protected function getRedirectUrl(): string
@@ -27,4 +33,5 @@ class EditProduct extends EditRecord
         $data['user_id'] = Auth::user()->id;
         return $data;
     }
+
 }

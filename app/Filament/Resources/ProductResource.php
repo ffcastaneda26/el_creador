@@ -99,11 +99,7 @@ class ProductResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label(__('Unit of Measurement')),
-                TextColumn::make('price')
-                    ->translateLabel()
-                    ->alignment(Alignment::End)
-                    ->numeric(decimalPlaces: 2, decimalSeparator: '.' , thousandsSeparator: ',')
-            ])
+             ])
             ->filters([
                 //
             ])

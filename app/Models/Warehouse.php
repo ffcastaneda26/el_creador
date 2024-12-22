@@ -27,6 +27,10 @@ class Warehouse extends Model
         'user_id',
     ];
 
+    public function movements(): HasMany
+    {
+        return $this->hasMany(Movement::class);
+    }
 
     public function products(): BelongsToMany
     {
@@ -47,5 +51,10 @@ class Warehouse extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public static function hasRecords()
+    {
+        return self::count();
     }
 }

@@ -92,7 +92,7 @@ class RoleResource extends Resource
                 TextColumn::make('users_count')
                     ->counts('users')
                     ->label('Usuarios'),
-                TextColumn::make('permissions.name')->label('Permisos')
+                TextColumn::make('permissions.name')->label(__('Permissions'))
 
             ])
             ->filters([

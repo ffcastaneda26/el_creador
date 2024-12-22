@@ -9,23 +9,27 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Spatie\Permission\Models\Role;
+use Filament\Forms\Components\Group;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Support\Htmlable;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Filament\Resources\UserResource\RelationManagers\RolesRelationManager;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\IconColumn;
+use Spatie\Permission\Models\Permission;
 
 class UserResource extends Resource
 {
@@ -91,15 +95,17 @@ class UserResource extends Resource
                     Section::make()->schema([
                         TextInput::make('name')
                             ->required()
-                            ->minLength(10)
+                            ->minLength(length: 5)
                             ->maxLength(100)
                             ->translateLabel(),
+                            // ->columnSpanFull(),
                         TextInput::make('email')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->translateLabel()
                             ->maxLength(100)
-                            ->minLength(10),
+                            ->minLength(5),
+                            // ->columnSpanFull(),
                         TextInput::make('password')
                             ->password()
                             ->revealable()
@@ -115,7 +121,10 @@ class UserResource extends Resource
 
                 ]),
                 Group::make()->schema([
-                    Select::make('role_id')
+                    // CheckboxList::make('roles')
+                    //     ->relationship(name: 'roles', titleAttribute: 'name'),
+
+                    Select::make('roles')
                         ->relationship(
                             name: 'roles',
                             titleAttribute: 'name',
@@ -126,11 +135,18 @@ class UserResource extends Resource
                         ->preload()
                         ->required(fn($state, $record) => $record ? false : true)
                         ->visible(fn($state, $record) => $record ? false : true),
-                    Select::make('permissions')
-                        ->label('Permisos')
+
+                    // CheckboxList::make('permissions')
+                    //     ->relationship(name: 'rolpermissionses', titleAttribute: 'name')
+                            // ->visible(fn() => Permission::count()),
+
+                     Select::make('permissions')
+                        ->relationship('permissions', 'name')
+                        ->label('Permisos')->translateLabel()
                         ->multiple()
                         ->preload()
-                        ->relationship('permissions', 'name'),
+                        ->visible(fn() => Permission::count()),
+
                 ]),
             ]);
     }
@@ -158,6 +174,12 @@ class UserResource extends Resource
                     ->translateLabel()
                     ->searchable()
                     ->preload(),
+                SelectFilter::make(__('Permission'))
+                    ->relationship('permissions', 'name')
+                    ->translateLabel()
+                    ->searchable()
+                    ->preload()
+                    ->visible(fn() => Permission::count()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

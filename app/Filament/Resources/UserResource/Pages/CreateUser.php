@@ -14,4 +14,19 @@ class CreateUser extends CreateRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        return $data;
+    }
+    protected function afterCreate(): void
+    {
+
+        if(count($this->data['roles'])){
+            $user = $this->record;
+            $user->roles()->sync($this->data['roles']);
+        }
+
+    }
+
 }
