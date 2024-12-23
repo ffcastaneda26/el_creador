@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TypeZipCodeResource\Pages;
 use App\Filament\Resources\TypeZipCodeResource\RelationManagers;
-use App\Models\TypeZipCode;
+use App\Models\TypeZipcode;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
