@@ -46,6 +46,10 @@ class AdminPanelProvider extends PanelProvider
                 CotizationResource::class,
                 OrderResource::class,
             ])
+            // ->brandName('Filament Demo')
+            // ->brandLogo(asset('images/logo.jpg'))
+            ->brandLogo(fn () => view('filament.admin.logo'))
+            ->brandLogoHeight('3rem')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -11,6 +11,7 @@ class Municipality extends Model
     protected $table = 'municipalities';
     public $timestamps = false;
     protected $fillable =  [
+        'country_id',
         'state_id',
         'name',
     ];
@@ -22,6 +23,11 @@ class Municipality extends Model
     public function clients(): HasMany
     {
         return $this->hasMany(Client::class);
+    }
+
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
     }
 
     public function orders(): HasMany

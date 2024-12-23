@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TypeZipCodeResource extends Resource
 {
-    protected static ?string $model = TypeZipCode::class;
+    protected static ?string $model = TypeZipcode::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-sparkles';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';

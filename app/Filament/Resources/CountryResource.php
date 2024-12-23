@@ -60,8 +60,8 @@ class CountryResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('country')->disabled(),
-                TextInput::make('code')->disabled(),
+                TextInput::make('country')->disabled()->translateLabel(),
+                TextInput::make('code')->disabled()->translateLabel(),
                 Toggle::make('include')->label(__('Include?'))
                     ->inline(false)
                     ->onIcon('heroicon-m-check-circle')

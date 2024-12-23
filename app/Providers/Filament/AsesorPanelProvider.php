@@ -51,6 +51,8 @@ class AsesorPanelProvider extends PanelProvider
                 ClientResource::class,
                 ManufacturingResource::class,
             ])
+            ->brandLogo(fn () => view('filament.admin.logo'))
+            ->brandLogoHeight('3rem')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
