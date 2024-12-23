@@ -9,37 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 class InventoryManagement
 {
-    static public function updateStockX($movement,$type='normal')
-    {
-        try {
-            $product =ProductWarehouse::where('warehouse_id', $movement->warehouse_id)
-                                    ->where('product_id', $movement->product_id)
-                                    ->first();
-
-            if($type == 'normal'){
-                $product->stock           = $movement->key_movement->isTypeI() ? $product->stock + $movement->quantity : $product->stock - $movement->quantity;
-                $product->stock_available = $movement->key_movement->isTypeI() ? $product->stock_available + $movement->quantity : $product->stock_available - $movement->quantity;
-                $product->save();
-            }
-            if($type == 'delete'){
-                $product->stock           = $movement->key_movement->isTypeI() ? $product->stock           - $movement->quantity : $product->stock           + $movement->quantity;
-                $product->stock_available = $movement->key_movement->isTypeI() ? $product->stock_available - $movement->quantity : $product->stock_available + $movement->quantity;
-                $product->save();
-            }
-
-        } catch (\Throwable $th) {
-            Log::info("Movimientos de almacén  " . $th->getMessage());
-            return false;
-        }
-       
-  
-    }
     static public function updateStock($movement,$type='normal')
     {
-        
+
         try {
             $product = self::getProduct($movement);
-            
+
             if ($movement->key_movement->require_cost) {
                 $product->average_cost = self::calculateAverageCost($product,$movement,$type);
             }
@@ -47,9 +22,9 @@ class InventoryManagement
             $newStock = self::calculateNewStock($movement->key_movement,$product->stock,$movement->quantity,$type);
             $product->stock           = $newStock;
             $product->stock_available = $product->stock - $product->stock_compromised;
- 
-            if ($movement->key_movement->is_purchase) { 
-               
+
+            if ($movement->key_movement->is_purchase) {
+
                 $product->last_purchase_price =  $type == 'normal' ? $movement->cost
                                                                    : self::getLastPurchasePrice($movement);
             }
@@ -78,13 +53,13 @@ class InventoryManagement
         if($type =='delete'){
             return $isTypeI ? $currentStock - $quantity : $currentStock + $quantity;
         }
-   
+
     }
     static public function calculateAverageCost($product,$movement,$type='normal')
     {
         $currentTotalCost = self::getTotalCost($product->stock,$product->average_cost);
         $amountMovement = self::getAmountMovement($movement->quantity,$movement->cost);
-        
+
         if($type == 'normal'){
             $newStock = self::getNewStock($product->stock,$movement->quantity);
             return ( $currentTotalCost + $amountMovement ) / $newStock;
@@ -98,7 +73,7 @@ class InventoryManagement
     static public function getTotalCost($stock,$average_cost){
         return $stock * $average_cost;
     }
-    
+
     static public function getAmountMovement($quantity,$cost){
         return $quantity * $cost;
     }
@@ -108,7 +83,7 @@ class InventoryManagement
     }
     static public function show_values($currentStock, $currentAverageCost, $amountMovement, $cost,$type='normal',$newStock,$newAverageCost)
     {
-        
+
         dd('Cálculo proceso=' . $type,
             'Existencia actual=' . $currentStock,
             'Costo Actual=' . $currentAverageCost,
@@ -132,6 +107,6 @@ class InventoryManagement
                                         ->latest()
                                         ->first();
         return  $last_purchase ? $last_purchase->cost : 0;
-      
+
     }
 }
