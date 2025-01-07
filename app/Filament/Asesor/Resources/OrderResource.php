@@ -2,22 +2,24 @@
 
 namespace App\Filament\Asesor\Resources;
 
-use App\Filament\Asesor\Resources\OrderResource\Pages;
-use App\Filament\Asesor\Resources\OrderResource\RelationManagers;
-use App\Models\Country;
-use App\Models\Municipality;
+use Filament\Forms;
+use Filament\Tables;
 use App\Models\Order;
 use App\Models\State;
-use Filament\Forms;
+use App\Models\Country;
+use Filament\Forms\Set;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Models\Municipality;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Asesor\Resources\OrderResource\Pages;
+use App\Filament\Asesor\Resources\OrderResource\RelationManagers;
+use Filament\Forms\Get;
 
 class OrderResource extends Resource
 {
@@ -57,68 +59,104 @@ class OrderResource extends Resource
                                         ->relationship('client', 'name')
                                         ->required()
                                         ->translateLabel()
+                                        ->reactive()
+                                        ->live(onBlur: true)
                                         ->columnSpan(2),
                                     Forms\Components\DatePicker::make('date')
                                         ->required()
                                         ->translateLabel()
-                                        ->format('Y-m-d'),
+                                        ->format('Y-m-d')
+                                        ->maxDate(now())
+                                        ->disabled(fn(Get $get) => !$get('client_id')),
                                     Forms\Components\Toggle::make('approved')
                                         ->required()
-                                        ->translateLabel(),
+                                        ->translateLabel()
+                                        ->reactive()
+                                        ->disabled(fn(Get $get) => !$get('client_id')),
                                     Forms\Components\DatePicker::make('date_approved')
                                         ->translateLabel()
-                                        ->format('Y-m-d'),
+                                        ->format('Y-m-d')
+                                        ->minDate(fn(Get $get) => $get('date'))
+                                        ->required(fn(Get $get) => $get('approved'))
+                                        ->visible(fn(Get $get) => $get('approved'))
+                                        ->disabled(fn(Get $get) => !$get('client_id') || !$get('approved')),
                                 ])->columns(5),
+
+                                Group::make()->schema([
+                                    Forms\Components\Toggle::make('require_invoice')
+                                        ->required()
+                                        ->translateLabel()
+                                        ->live(onBlur: true)
+                                        ->reactive()
+                                        ->inline()
+                                        ->disabled(fn(Get $get) => !$get('client_id'))
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
+                                    Forms\Components\DatePicker::make('delivery_date')
+                                        ->translateLabel()
+                                        ->format('Y-m-d')
+                                        ->minDate(fn(Get $get) => $get('date')),
+                                    Forms\Components\DatePicker::make('payment_promise_date')
+                                        ->translateLabel()
+                                        ->minDate(now())
+                                        ->maxDate(fn(Get $get) => $get('delivery_date')),
+                                ])->disabled(fn(Get $get) => !$get('client_id'))
+                                ->inlineLabel()
+                                ->columns(3),
 
                                 Group::make()->schema([
                                     Forms\Components\TextInput::make('subtotal')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
-                                        ->translateLabel(),
-                                    Forms\Components\Toggle::make('require_invoice')
-                                        ->required()
-                                        ->translateLabel(),
+                                        ->translateLabel()
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
                                     Forms\Components\TextInput::make('tax')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
-                                        ->translateLabel(),
+                                        ->translateLabel()
+                                        ->disabled(),
                                     Forms\Components\TextInput::make('discount')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
-                                        ->translateLabel(),
+                                        ->reactive()
+                                        ->translateLabel()
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
                                     Forms\Components\TextInput::make('total')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
-                                        ->translateLabel(),
+                                        ->translateLabel()
+                                        ->disabled()
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
                                     Forms\Components\TextInput::make('advance')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
-                                        ->translateLabel(),
+                                        ->translateLabel()
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(function (Set $set, Get $get, ?string $state) {
+                                            $set('pending_balance', round($get('total') - $get('advance'), 2));
+                                        }),
                                     Forms\Components\TextInput::make('pending_balance')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
-                                        ->translateLabel(),
-                                ])->columns(7),
+                                        ->translateLabel()
+                                        ->disabled(),
+                                ])->disabled(fn(Get $get) => !$get('client_id'))
+                                    ->columns(7),
 
                                 // ----
                                 Group::make()->schema([
-                                    Forms\Components\DatePicker::make('delivery_date')
-                                        ->translateLabel()
-                                        ->format('Y-m-d'),
-                                    Forms\Components\DatePicker::make('payment_promise_date')
-                                        ->translateLabel(),
                                     Forms\Components\Textarea::make('notes')
                                         ->translateLabel()
                                         ->columnSpan(3),
-
-
-                                ])->columns(5),
+                                ])->disabled(fn(Get $get) => !$get('client_id'))
+                                    ->columns(3),
 
                             ]),
                         Tabs\Tab::make(__('Delivery'))
@@ -175,7 +213,8 @@ class OrderResource extends Resource
                                             }
                                             return $municipality->cities->pluck('name', 'id');
                                         }),
-                                ])->inlineLabel(),
+                                ])->disabled(fn(Get $get) => !$get('client_id'))
+                                    ->inlineLabel(),
                                 Group::make()->schema([
                                     Forms\Components\TextInput::make('address')
                                         ->maxLength(100)
@@ -186,8 +225,10 @@ class OrderResource extends Resource
                                     Forms\Components\Textarea::make('references')
                                         ->columnSpanFull()
                                         ->translateLabel(),
-                                ])->inlineLabel()
-                            ])->columns(2),
+                                ])->disabled(fn(Get $get) => !$get('client_id'))
+                                    ->inlineLabel()
+                            ])->columns(2)
+                            ->visible(fn(Get $get) => $get('client_id')),
                     ])->columnSpanFull(),
 
 
@@ -203,10 +244,10 @@ class OrderResource extends Resource
                     ->sortable()
                     ->label(__('Client')),
                 Tables\Columns\TextColumn::make('date')
-                ->translateLabel()
-                ->searchable()
-                ->sortable()
-                ->date('d M y'),
+                    ->translateLabel()
+                    ->searchable()
+                    ->sortable()
+                    ->date('d M y'),
                 Tables\Columns\IconColumn::make('approved')
                     ->boolean()
                     ->translateLabel(),
@@ -302,9 +343,9 @@ class OrderResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make(__('Contrat'))
-                ->icon('heroicon-o-clipboard-document-list')
-                ->url(fn (Order $record) => route('pdf-document',[ $record,'contrato']))
-                ->openUrlInNewTab()
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->url(fn(Order $record) => route('pdf-document', [$record, 'contrato']))
+                    ->openUrlInNewTab()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -328,5 +369,16 @@ class OrderResource extends Resource
             'view' => Pages\ViewOrder::route('/{record}'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
+    }
+
+    public static function calculateTotals(Set $set, Get $get)
+    {
+        $tax = 0;
+        if ($get('require_invoice')) {
+            $tax = round($get('subtotal') * 0.16, 2);
+        }
+        $set('tax', $tax);
+        $set('total', round($get('subtotal') + $tax - $get('discount'), 2));
+        $set('pending_balance', round($get('total') - $get('advance'), 2));
     }
 }

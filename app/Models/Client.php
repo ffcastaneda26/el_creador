@@ -33,29 +33,31 @@ class Client extends Model
         'references'
     ];
 
+    // protected function name(): Attribute
+    // {
+    //     return Attribute::make(
+    //         get: fn (string $value) => ucfirst($value),
+    //         set: fn (string $value) => ucfirst($value),
+    //     );
+    // }
     protected function name(): Attribute
     {
         return Attribute::make(
             get: fn (string $value) => ucfirst($value),
-            set: fn (string $value) => ucfirst($value),
+            set: fn (string $value) => strtolower($value),
         );
     }
 
-    protected function rfc(): Attribute
+
+
+    public function setRfcAttribute($value)
     {
-        return Attribute::make(
-            get: fn (string $value) => strtoupper($value),
-            set: fn (string $value) => strtoupper($value),
-        );
+        $this->attributes['rfc'] = strtoupper($value);
     }
 
-    protected function curp(): Attribute
+    public function setCurpAttribute($value)
     {
-
-        return Attribute::make(
-            get: fn (string $value) => strtoupper($value),
-            set: fn (string $value) => strtoupper($value),
-        );
+        $this->attributes['curp'] = strtoupper($value);
     }
 
     public function cotizations(): HasMany
