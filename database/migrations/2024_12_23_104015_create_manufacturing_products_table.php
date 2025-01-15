@@ -17,9 +17,6 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Manufacturing::class)->comment('Orden Fabricación');
             $table->foreignIdFor(Product::class)->comment('Producto');
-            $table->integer('quantity')->comment('Cantidad');
-            $table->integer('assorted')->default(0)->comment('Cantidad Surtida');
-            $table->timestamps();
         });
     }
 

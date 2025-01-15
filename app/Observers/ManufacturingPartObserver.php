@@ -28,27 +28,5 @@ class ManufacturingPartObserver
         $manufacturingPart->user_id =  Auth::user()->id;
     }
 
-    /**
-     * Handle the ManufacturingPart "deleted" event.
-     */
-    public function deleted(ManufacturingPart $manufacturingPart): void
-    {
-        //
-    }
 
-    /**
-     * Handle the ManufacturingPart "restored" event.
-     */
-    public function restored(ManufacturingPart $manufacturingPart): void
-    {
-        //
-    }
-
-    /**
-     * Handle the ManufacturingPart "force deleted" event.
-     */
-    public function forceDeleted(ManufacturingPart $manufacturingPart): void
-    {
-        //
-    }
 }

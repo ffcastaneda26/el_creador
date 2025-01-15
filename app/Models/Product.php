@@ -26,7 +26,7 @@ class Product extends Model
     {
         return $this->hasMany(Movement::class);
     }
-    
+
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
@@ -40,6 +40,11 @@ class Product extends Model
     public function warehouses(): HasMany
     {
         return $this->hasMany(ProductWarehouse::class);
+    }
+
+    public function manufactorings(): BelongsToMany
+    {
+        return $this->belongsToMany(ManufacturingProduct::class);
     }
 
     public static function hasRecords()
