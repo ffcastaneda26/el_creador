@@ -15,6 +15,7 @@ class ManufacturingProduct extends Model
     ];
 
 
+
     public function manufacturing(): BelongsTo
     {
         return $this->belongsTo(Manufacturing::class);

@@ -68,8 +68,8 @@ class Manufacturing extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function products(): BelongsToMany
+    public function products(): hasMany
     {
-        return $this->belongsToMany(ManufacturingProduct::class);
+        return $this->hasMany(ManufacturingProduct::class);
     }
 }

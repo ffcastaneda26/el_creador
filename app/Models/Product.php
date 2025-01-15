@@ -42,9 +42,9 @@ class Product extends Model
         return $this->hasMany(ProductWarehouse::class);
     }
 
-    public function manufactorings(): BelongsToMany
+    public function manufacturings(): hasMany
     {
-        return $this->belongsToMany(ManufacturingProduct::class);
+        return $this->hasMany(ManufacturingProduct::class);
     }
 
     public static function hasRecords()

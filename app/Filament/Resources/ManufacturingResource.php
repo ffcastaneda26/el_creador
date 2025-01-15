@@ -24,6 +24,7 @@ use App\Filament\Resources\ManufacturingResource\Pages;
 use App\Filament\Resources\ManufacturingResource\RelationManagers;
 use App\Filament\Resources\ManufacturingResource\RelationManagers\PartsRelationManager;
 use App\Filament\Resources\ManufacturingResource\RelationManagers\ImagesRelationManager;
+use App\Filament\Resources\ManufacturingResource\RelationManagers\ProductsRelationManager;
 use App\Filament\Resources\ManufacturingResource\RelationManagers\LogotiposRelationManager;
 
 class ManufacturingResource extends Resource
@@ -239,7 +240,8 @@ class ManufacturingResource extends Resource
         return [
             LogotiposRelationManager::class,
             PartsRelationManager::class,
-            ImagesRelationManager::class
+            ImagesRelationManager::class,
+            ProductsRelationManager::class,
         ];
     }
 
