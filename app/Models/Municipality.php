@@ -30,6 +30,11 @@ class Municipality extends Model
         return $this->belongsTo(Country::class);
     }
 
+    public function coverages(): HasMany
+    {
+        return $this->hasMany(DetailCoverage::class);
+    }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
