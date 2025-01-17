@@ -1,6 +1,9 @@
 {
     "Coverage": "Cobertura",
     "Coverages": "Coberturas",
+    "Locations": "Localidades",
+    "Add Location": "Agregar Localidad",
+    "Total Locations": "Total Localidades",
     "Distance": "Distancia",
     "Amount": "Importe",
     "Is purchase": "¿Es Compra?",

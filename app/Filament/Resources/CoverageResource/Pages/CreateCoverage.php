@@ -9,8 +9,12 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateCoverage extends CreateRecord
 {
     protected static string $resource = CoverageResource::class;
+
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
     }
+
+
 }

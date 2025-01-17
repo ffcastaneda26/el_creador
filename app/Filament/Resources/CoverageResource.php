@@ -2,16 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CoverageResource\Pages;
-use App\Filament\Resources\CoverageResource\RelationManagers;
-use App\Models\Coverage;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Coverage;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\CoverageResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\CoverageResource\RelationManagers;
+use App\Filament\Resources\CoverageResource\RelationManagers\LocationsRelationManager;
 
 class CoverageResource extends Resource
 {
@@ -55,8 +57,8 @@ class CoverageResource extends Resource
                 ])->columns(2),
                 Forms\Components\Group::make()->schema([
                     Forms\Components\Textarea::make('notes')
-                    ->columnSpanFull()
-                    ->translateLabel(),
+                        ->columnSpanFull()
+                        ->translateLabel(),
                 ])
 
             ]);
@@ -76,6 +78,19 @@ class CoverageResource extends Resource
                     ->translateLabel()
                     ->prefix('A ')
                     ->suffix(' Kms'),
+
+                Tables\Columns\TextColumn::make('locations_count')
+                    ->label(__('Total Locations'))
+                    ->counts('locations')
+                    // ->visible(false),
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('locations.municipality.name')
+                    ->searchable()
+                    ->sortable()
+                    ->listWithLineBreaks()
+                    ->label(__('Locations'))
+                    ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //
@@ -93,7 +108,7 @@ class CoverageResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            LocationsRelationManager::class
         ];
     }
 

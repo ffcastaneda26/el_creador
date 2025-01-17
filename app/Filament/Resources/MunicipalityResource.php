@@ -72,10 +72,6 @@ class MunicipalityResource extends Resource
                         return $country->states->pluck('name', 'id');
                     })->afterStateUpdated(fn(callable $set) => $set('municipality_id', null)),
 
-                // Forms\Components\Select::make('state_id')
-                //     ->relationship('state', 'name')
-                //     ->translateLabel()
-                //     ->required(),
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->translateLabel()
