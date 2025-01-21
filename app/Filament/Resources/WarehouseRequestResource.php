@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Doctrine\DBAL\Driver\Mysqli\Initializer\Options;
 use App\Filament\Resources\WarehouseRequestResource\Pages;
 use App\Filament\Resources\WarehouseRequestResource\RelationManagers;
+use App\Filament\Resources\WarehouseRequestResource\RelationManagers\DetailsRelationManager;
 
 class WarehouseRequestResource extends Resource
 {
@@ -184,7 +185,7 @@ class WarehouseRequestResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            DetailsRelationManager::class
         ];
     }
 
