@@ -24,7 +24,7 @@ class WarehouseRequest extends Model
     {
         return [
             'date'      => 'datetime',
-            'status'    =>StatusWarehouseRequestEnum::class,
+            'status'    => StatusWarehouseRequestEnum::class,
         ];
     }
 

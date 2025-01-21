@@ -1,9 +1,10 @@
 {
 
+    "Open Request":"Abrir Solicitud",
+    "Yes, open it": "Sí, Abrirla",
     "Authorize Request": "Autorizar Solicitud",
     "Authorize": "Autorizar",
-    "Yes, authorize it": "Sí, autorizar",
-
+    "Yes, authorize it": "Sí, Autorizar",
     "Status": "Estado",
     "Warehouse Requests": "Solicitudes de Almacén",
     "Warehouse Request": "Solicitud de Almacén",

@@ -139,25 +139,45 @@ class WarehouseRequestResource extends Resource
 
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->button(),
-                Tables\Actions\EditAction::make()->button(),
+                Tables\Actions\ViewAction::make()->button()->color('info'),
+                Tables\Actions\EditAction::make()->button()->color('indigo'),
                 Action::make('authorize')
                     ->translateLabel()
                     ->button()
-                    ->icon('heroicon-s-shield-check')
-                    ->action(action: function(WarehouseRequest $record){
-                        $record->status = StatusWarehouseRequestEnum::autorizado;
-                        $record->save();
-                    })
+                    ->icon('heroicon-s-hand-thumb-up')
                     ->requiresConfirmation()
                     ->modalHeading(__('Authorize Request'))
                     ->modalDescription('¿Estás seguro de autorizar la solicitud?, No se puede deshacer esta acción.')
                     ->modalSubmitActionLabel(__('Yes, authorize it'))
                     ->stickyModalHeader()
-                    // ->slideOver()
                     ->closeModalByClickingAway(false)
-                    ->disabled(fn (WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::autorizado ||  $record->status === StatusWarehouseRequestEnum::cancelado),
+                    ->closeModalByEscaping(false)
+                    ->modalIconColor('danger')
+                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::abierto)
+                    ->action(action: function (WarehouseRequest $record) {
+                        $record->status = StatusWarehouseRequestEnum::autorizado;
+                        $record->save();
+                    }),
+                // ->slideOver()
 
+                Action::make('open')
+                    ->translateLabel()
+                    ->button()
+                    ->icon('heroicon-s-lock-open')
+                    ->requiresConfirmation()
+                    ->modalHeading(__('Open Request'))
+                    ->modalDescription('¿Estás seguro de abrir la solicitud?, No se puede deshacer esta acción.')
+                    ->modalSubmitActionLabel(__('Yes, open it'))
+                    ->stickyModalHeader()
+                    ->closeModalByClickingAway(false)
+                    ->closeModalByEscaping(false)
+                    ->modalIconColor('success')
+                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::autorizado)
+                    ->action(action: function (WarehouseRequest $record) {
+                        $record->status = StatusWarehouseRequestEnum::abierto;
+                        $record->save();
+                    }),
+                // ->slideOver()
             ]);
     }
 
