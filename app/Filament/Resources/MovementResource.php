@@ -222,6 +222,7 @@ class MovementResource extends Resource
                     ->disabled(function (callable $get): bool {
                         return $get('cost') ? false : true;
                     }),
+                
             ]);
     }
 

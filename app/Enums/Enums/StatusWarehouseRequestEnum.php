@@ -8,11 +8,12 @@ use Filament\Support\Contracts\HasLabel;
 
 enum StatusWarehouseRequestEnum: string implements HasLabel,HasColor,HasIcon
 {
-    case abierto = 'Abierto';
+
+    case abierto = 'abierto';
     case autorizado = 'autorizado';
-    case surtido = 'Surtido';
-    case parcial = 'Surtido Parcial';
-    case cancelado = 'Cancelado';
+    case surtido = 'surtido';
+    case parcial = 'parcial';
+    case cancelado = 'cancelado';
 
 
     public function getLabel(): ?string

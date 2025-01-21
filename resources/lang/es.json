@@ -1,4 +1,12 @@
 {
+
+    "Authorize Request": "Autorizar Solicitud",
+    "Authorize": "Autorizar",
+    "Yes, authorize it": "Sí, autorizar",
+
+    "Status": "Estado",
+    "Warehouse Requests": "Solicitudes de Almacén",
+    "Warehouse Request": "Solicitud de Almacén",
     "Coverage": "Cobertura",
     "Coverages": "Coberturas",
     "Locations": "Localidades",

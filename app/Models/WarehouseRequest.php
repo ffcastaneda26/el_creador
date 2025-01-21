@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Enums\StatusWarehouseRequestEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -19,7 +20,13 @@ class WarehouseRequest extends Model
         'user_auhtorizer_id',
         'status'
     ];
-
+    protected function casts(): array
+    {
+        return [
+            'date'      => 'datetime',
+            'status'    =>StatusWarehouseRequestEnum::class,
+        ];
+    }
 
     public function warehouse(): BelongsTo
     {
