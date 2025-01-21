@@ -3,7 +3,6 @@
 namespace App\Enums\Enums;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasIcon;
-use Illuminate\Support\Facades\App;
 use Filament\Support\Contracts\HasLabel;
 
 enum StatusWarehouseRequestEnum: string implements HasLabel,HasColor,HasIcon

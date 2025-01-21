@@ -28,9 +28,13 @@ class WarehouseRequest extends Model
         ];
     }
 
-    public function warehouse(): BelongsTo
+    public function authorizer_user(): BelongsTo
     {
-        return $this->belongsTo(Warehouse::class);
+        return $this->belongsTo(User::class,'user_auhtorizer_id');
+    }
+    public function details()
+    {
+        return $this->hasMany(WarehouseRequestDetail::class);
     }
 
     public function user(): BelongsTo
@@ -38,9 +42,10 @@ class WarehouseRequest extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function authorizer_user(): BelongsTo
+
+    public function warehouse(): BelongsTo
     {
-        return $this->belongsTo(User::class,'user_auhtorizer_id');
+        return $this->belongsTo(Warehouse::class);
     }
 
 

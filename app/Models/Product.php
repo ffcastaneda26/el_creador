@@ -47,6 +47,11 @@ class Product extends Model
         return $this->hasMany(ManufacturingProduct::class);
     }
 
+    public function warehouse_requests(): hasMany
+    {
+        return $this->hasMany(WarehouseRequestDetail::class,'product_id');
+    }
+
     public static function hasRecords()
     {
         return self::count();
