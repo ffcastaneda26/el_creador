@@ -21,6 +21,13 @@
                             {{ __('Clients') }}
                         </x-nav-link>
                     @endif
+
+                    @if(Route::has('warehouse-requests'))
+                    <x-nav-link href="{{ route('warehouse-requests') }}" :active="request()->routeIs('warehouse-requests')">
+                        {{ __('Warehouse Requests') }}
+                    </x-nav-link>
+                @endif
+
                 </div>
             </div>
 

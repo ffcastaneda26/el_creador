@@ -5,6 +5,7 @@ use App\Http\Controllers\PrivateNotice;
 use App\Http\Controllers\TestController;
 use App\Livewire\Clients\Clients;
 use App\Livewire\TestingPdfs;
+use App\Livewire\WarehouseRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 Route::get('/probando',[TestController::class, 'index'])->name('probando');
@@ -29,10 +30,10 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])
     Route::get('/', function () {
         return redirect()->to('/dashboard');
     });
-    
+
 
     Route::get('/dashboard', function () {
- 
+
         if(Auth::user()->hasRole('Administrador')){
             return redirect()->to('/admin');
         }
@@ -41,7 +42,8 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])
             return redirect()->to('/asesor');
         }
 
-        return view('dashboard');   
+        return view('dashboard');
     })->name('dashboard');
     Route::get('clients',Clients::class)->name('clients');
+    Route::get('warehouse-requests',WarehouseRequests::class)->name('warehouse-requests');
 });
