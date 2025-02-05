@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\Enums\StatusWareHouseRequestDetailEnum;
 use App\Enums\Enums\StatusWarehouseRequestEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WarehouseRequest extends Model
 {
@@ -35,6 +37,16 @@ class WarehouseRequest extends Model
     public function details()
     {
         return $this->hasMany(WarehouseRequestDetail::class);
+    }
+
+    public function pendings_to_supply(): HasMany
+    {
+        return $this->hasMany(WarehouseRequestDetail::class)->where('status', '!=',StatusWareHouseRequestDetailEnum::surtida);
+    }
+
+    public function has_pendings_to_suply(): bool
+    {
+        return $this->pendings_to_supply()->count() > 0;
     }
 
     public function user(): BelongsTo

@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name',150)->unique()->comment('Nombre');
-            $table->string('code',30)->unique()->nullable()->default(null)->comment('Código');
+            $table->string('code',30)->unique()->comment('Código');
             $table->foreignIdFor(Unit::class)->nullable()->default(null)->comment('Unidad de Medida');
             $table->mediumText('description')->nullable()->comment('Descripción');
             // $table->decimal('price',8,2)->default(0.00)->comment('Precio Unitario');

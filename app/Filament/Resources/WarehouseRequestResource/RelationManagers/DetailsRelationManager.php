@@ -18,19 +18,23 @@ class DetailsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                // TODO:: Validar para que no se duplique en la misma solicitud
-                Forms\Components\Select::make('product_id')
-                    ->relationship(name: 'product', titleAttribute: 'name')
-                    ->preload()
-                    ->searchable(['name', 'code'])
-                    ->required()
-                    ->translateLabel(),
-                Forms\Components\TextInput::make('quantity')
-                    ->required()
-                    ->numeric()
-                    ->minValue(1)
-                    ->maxValue(9999)
-                    ->translateLabel(),
+                Forms\Components\Group::make()->schema([
+                    // TODO:: Validar para que no se duplique en la misma solicitud
+                    Forms\Components\Select::make('product_id')
+                        ->relationship(name: 'product', titleAttribute: 'name')
+                        ->preload()
+                        ->searchable(['name', 'code'])
+                        ->required()
+                        ->translateLabel(),
+                    Forms\Components\TextInput::make('quantity')
+                        ->required()
+                        ->numeric()
+                        ->minValue(1)
+                        ->maxValue(9999)
+                        ->translateLabel(),
+                ]),
+
+
             ]);
     }
 
@@ -45,9 +49,14 @@ class DetailsRelationManager extends RelationManager
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('quantity')
-                    ->translateLabel()
+                    ->label(__('Required'))
+                    ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ',')
                     ->sortable()
                     ->searchable(),
+                Tables\Columns\TextColumn::make('quantity_delivered')
+                    ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ',')
+                    ->label(__('Delivered')),
+                Tables\Columns\TextColumn::make('pending'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->translateLabel()
@@ -73,8 +82,24 @@ class DetailsRelationManager extends RelationManager
                     ->label(__('Add Product')),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->button()->color('warning'),
+                Tables\Actions\DeleteAction::make()->button(),
+                // Tables\Actions\Action::make('suply')
+                //     ->label(__('Suply'))
+                //     ->button()
+                //     ->color('info')
+                //     ->icon('heroicon-s-shield-check')
+                //     ->form([
+                //         Forms\Components\Group::make()->schema([
+                //         Forms\Components\TextInput::make('quantity')
+                //             ->required()
+                //             ->numeric()
+                //             ->minValue(1)
+                //             ->maxValue(9999)
+                //             ->translateLabel(),
+                //         ]),
+
+                //     ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

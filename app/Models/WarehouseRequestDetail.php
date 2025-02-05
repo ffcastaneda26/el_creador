@@ -33,5 +33,10 @@ class WarehouseRequestDetail extends Model
     {
         return $this->belongsTo(Product::class);
     }
-    
+
+    public function getPendingAttribute()
+    {
+        return $this->quantity - $this->quantity_delivered;
+    }
+
 }

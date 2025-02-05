@@ -173,7 +173,12 @@ class WarehouseRequestResource extends Resource
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalIconColor('success')
-                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::autorizado)
+                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::autorizado  && $record->has_pendings_to_suply())
+                    // ->visible(function(WarehouseRequest $record){
+                    //     return $record->status === StatusWarehouseRequestEnum::autorizado && $record->has_pendings_to_suply();
+
+                    // })
+
                     ->action(action: function (WarehouseRequest $record) {
                         $record->status = StatusWarehouseRequestEnum::abierto;
                         $record->save();
