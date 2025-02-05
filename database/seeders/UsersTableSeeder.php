@@ -61,5 +61,11 @@ class UsersTableSeeder extends Seeder
             "password" => bcrypt("password"),
             "active" => 1,
         ])->assignRole('Envios');
+        User::create([
+            "name" => "Almacen",
+            "email" => "almacen@creador.com",
+            "password" => bcrypt("password"),
+            "active" => 1,
+        ])->assignRole('Almacén');
     }
 }
