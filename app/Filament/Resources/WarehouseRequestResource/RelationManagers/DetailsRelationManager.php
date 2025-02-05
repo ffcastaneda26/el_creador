@@ -56,7 +56,8 @@ class DetailsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('quantity_delivered')
                     ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ',')
                     ->label(__('Delivered')),
-                Tables\Columns\TextColumn::make('pending'),
+                Tables\Columns\TextColumn::make('pending')
+                    ->translateLabel(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->translateLabel()
