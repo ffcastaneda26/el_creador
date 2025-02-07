@@ -6,6 +6,7 @@
                 <tr class="bg-gray-300 text-center ">
                     <th scope="col" class="px-4 py-3">{{ __('Product') }}</th>
                     <th scope="col" class="px-4 py-3">{{ __('Quantity') }}</th>
+                    <th scope="col" class="px-4 py-3">{{ __('Available') }}</th>
                     <th scope="col" class="px-4 py-3">{{ __('Delivered') }}</th>
                     <th scope="col" class="px-4 py-3">{{ __('Pending') }}</th>
                     <th scope="col" class="px-4 py-3">{{ __('Status') }}</th>

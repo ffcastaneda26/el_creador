@@ -13,14 +13,7 @@
         </x-slot>
 
         <x-slot name="footer">
-            {{-- <div class="flex jutify-between items-center gap-10">
-                <div>
-                    <x-danger-button wire:click="$toggle('showModal')" wire:loading.attr="disabled">
-                        {{ __('Cancel') }}
-                    </x-danger-button>
-                </div>
 
-            </div> --}}
         </x-slot>
     </form>
 </x-confirmation-modal>

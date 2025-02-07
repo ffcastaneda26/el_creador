@@ -48,7 +48,18 @@ class ProductWarehouse extends Model
         );
     }
 
-    public function movements(){
+    public function updateStock($quantity=1,$type='I'){
+        if($type == 'O'){
+            $this->stock = $this->stock-$quantity;
+            $this->stock_available = $this->stock_available - $quantity;
+        }
 
+        if($type == 'I'){
+            $this->stock = $this->stock+$quantity;
+            $this->stock_available = $this->stock_available + $quantity;
+        }
+
+        $this->save();
     }
+    
 }
