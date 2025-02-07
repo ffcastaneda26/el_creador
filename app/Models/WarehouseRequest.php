@@ -49,6 +49,17 @@ class WarehouseRequest extends Model
         return $this->pendings_to_supply()->count() > 0;
     }
 
+    public function partial_supply_items(): HasMany
+    {
+        return $this->hasMany(WarehouseRequestDetail::class)->where('status', '!=',StatusWareHouseRequestDetailEnum::parcial);
+    }
+
+    public function has_partial_suply(): bool
+    {
+        return $this->partial_supply_items()->count() > 0;
+    }
+    
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -59,6 +70,30 @@ class WarehouseRequest extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
+
+    public function can_be_suply(): bool
+    {
+        return (StatusWarehouseRequestEnum::autorizado && $this->has_pendings_to_suply()) || !StatusWarehouseRequestEnum::cancelado ;
+
+    }
+    /**
+     * Actualiza Estado
+     */
+
+     public function updateStatus()
+     {
+
+        if(!$this->has_pendings_to_suply()){
+            $this->status = StatusWarehouseRequestEnum::surtido;
+        }
+        if(!$this->has_partial_suply()){
+            $this->status = StatusWarehouseRequestEnum::parcial;
+        }
+
+
+        $this->save();
+
+     }
 
 
 }

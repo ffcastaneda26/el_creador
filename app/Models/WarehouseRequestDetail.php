@@ -34,9 +34,31 @@ class WarehouseRequestDetail extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function getPendingAttribute()
+    public function getPending()
     {
         return $this->quantity - $this->quantity_delivered;
     }
 
+    public function updateDelivery($quantity=0){
+        $this->quantity_delivered = $this->quantity_delivered + $quantity;
+        $this->save();
+        $this->updateStatus();
+    }
+
+    public function updateStatus()
+    {
+        if ($this->quantity_delivered == 0) {
+            $this->status = StatusWareHouseRequestDetailEnum::pendiente;
+        } elseif ($this->quantity == $this->quantity_delivered) {
+            $this->status = StatusWareHouseRequestDetailEnum::surtida;
+        } else {
+            $this->status = StatusWareHouseRequestDetailEnum::parcial;
+        }
+        $this->save();
+    }
+
+
+    public function hasPending(){
+        return $this->quantity > $this->quantity_delivered;
+    }
 }

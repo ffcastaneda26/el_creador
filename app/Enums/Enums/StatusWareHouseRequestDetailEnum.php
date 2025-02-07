@@ -9,9 +9,8 @@ use Filament\Support\Contracts\HasLabel;
 enum StatusWareHouseRequestDetailEnum: string implements HasLabel,HasColor,HasIcon
 {
     case pendiente = 'pendiente';
-    case surtida = 'surtida';
     case parcial = 'parcial';
-
+    case surtida = 'surtida';
 
 
     public function getLabel(): ?string
@@ -40,5 +39,15 @@ enum StatusWareHouseRequestDetailEnum: string implements HasLabel,HasColor,HasIc
             self::parcial => 'heroicon-m-clipboard-document-list',
             self::surtida => 'heroicon-m-check-badge',
         };
+    }
+
+    public function getFontAwasomeIcon(): ?string
+    {
+        return match ($this) {
+            self::pendiente => 'fa-regular fa-bell',
+            self::parcial => 'fa-solid fa-file-circle-check',
+            self::surtida => 'fa-solid fa-check-double',
+        };
+
     }
 }

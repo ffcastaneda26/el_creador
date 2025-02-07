@@ -5,7 +5,7 @@ use App\Http\Controllers\PrivateNotice;
 use App\Http\Controllers\TestController;
 use App\Livewire\Clients\Clients;
 use App\Livewire\TestingPdfs;
-use App\Livewire\WarehouseRequests;
+use App\Livewire\WarehouseRequests\WarehouseRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 Route::get('/probando',[TestController::class, 'index'])->name('probando');
@@ -45,5 +45,6 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])
         return view('dashboard');
     })->name('dashboard');
     Route::get('clients',Clients::class)->name('clients');
-    Route::get('warehouse-requests',WarehouseRequests::class)->name('warehouse-requests');
+    Route::get('warehouse_requests', WarehouseRequests::class)->name('warehouse-requests');
+
 });

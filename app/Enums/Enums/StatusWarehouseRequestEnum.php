@@ -20,7 +20,7 @@ enum StatusWarehouseRequestEnum: string implements HasLabel,HasColor,HasIcon
         return match ($this) {
             self::abierto => 'Abierto',
             self::autorizado=> 'Autorizado',
-            self::parcial=> 'Surtido Parcial',
+            self::parcial=> 'Parcial',
             self::surtido=> 'Surtido',
             self::cancelado=> 'Cancelado',
         };
@@ -48,4 +48,18 @@ enum StatusWarehouseRequestEnum: string implements HasLabel,HasColor,HasIcon
             self::cancelado => 'heroicon-m-x-circle',
         };
     }
+
+    public function getFontAwasomeIcon(): ?string
+    {
+        return match ($this) {
+            self::abierto => 'fa-regular fa-bell',
+            self::autorizado=> 'fa-solid fa-clipboard-check',
+            self::parcial => 'fa-solid fa-file-circle-check',
+            self::surtido => 'fa-solid fa-check-double',
+            self::cancelado => 'fa-solid fa-ban',
+        };
+
+    }
+
+
 }

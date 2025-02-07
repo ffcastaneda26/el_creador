@@ -1,4 +1,7 @@
 {
+    "Verify": "Verifique",
+    "Search": "Buscar",
+    "Actions": "Acciones",
     "Suply": "Surtir",
     "Delivered": "Surtida",
     "Required": "Solicitada",
@@ -11,6 +14,7 @@
     "Status": "Estado",
     "Warehouse Requests": "Solicitudes de Almacén",
     "Warehouse Request": "Solicitud de Almacén",
+    "Supply items from the request No.": "Surtiendo partidas de la solicitud No.",
     "Coverage": "Cobertura",
     "Coverages": "Coberturas",
     "Locations": "Localidades",
