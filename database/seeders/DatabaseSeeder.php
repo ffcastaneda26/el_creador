@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PartSeeder::class);
         $this->call(AnexoSeeder::class);
         $this->call(CoverageSeeder::class);
-        $this->call(DetailCoverageSeeder::class);
+
     }
 
     protected function truncateTables(array $tables) {

@@ -18,19 +18,21 @@ class CoverageSeeder extends Seeder
         DB::table('detail_coverages')->truncate();
         DB::table('coverages')->truncate();
 
-        $sql = "INSERT INTO coverages (name,distance) VALUES
-            ('Mex-Mex',0),
-            ('Mex/Mex2',0),
-            ('A',110),
-            ('B',370),
-            ('C',515),
-            ('D',920),
-            ('E',1500),
-            ('F',2000),
-            ('G',2300),
-            ('H',2900);";
+        $sql = "INSERT INTO coverages (name,distance,fee) VALUES
+            ('Mex-Mex',0,0),
+            ('Mex/Mex2',0,0),
+            ('A',110,0),
+            ('B',370,0),
+            ('C',515,0),
+            ('D',920,0),
+            ('E',1500,0),
+            ('F',2000,0),
+            ('G',2300,0),
+            ('H',2900,0);";
         DB::update($sql);
         $this->command->info('Taba de Coberturas Territoriales Creada');
         DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
+
+        $this->call(DetailCoverageSeeder::class);
     }
 }
