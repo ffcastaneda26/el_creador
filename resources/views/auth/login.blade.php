@@ -4,7 +4,7 @@
         <x-slot name="logo">
             <x-authentication-card-logo />
         </x-slot>
-
+       cualquier cosas de Apolo y Fede
         <x-validation-errors class="mb-4" />
 
         @session('status')
