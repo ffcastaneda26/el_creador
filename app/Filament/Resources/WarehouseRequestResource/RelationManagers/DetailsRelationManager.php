@@ -18,7 +18,7 @@ class DetailsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Group::make()->schema([
+                // Forms\Components\Group::make()->schema([
                     // TODO:: Validar para que no se duplique en la misma solicitud
                     Forms\Components\Select::make('product_id')
                         ->relationship(name: 'product', titleAttribute: 'name')
@@ -32,7 +32,7 @@ class DetailsRelationManager extends RelationManager
                         ->minValue(1)
                         ->maxValue(9999)
                         ->translateLabel(),
-                ]),
+                // ]),
 
 
             ]);

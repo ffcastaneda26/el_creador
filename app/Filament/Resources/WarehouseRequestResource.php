@@ -75,8 +75,10 @@ class WarehouseRequestResource extends Resource
                     Forms\Components\Select::make('status')
                         ->options(StatusWarehouseRequestEnum::class)
                         ->translateLabel()
-                        ->required(fn($operation) => $operation == 'create')
+                        // ->required(fn($operation) => $operation != 'create')
+                        ->visible(fn($operation) => $operation != 'create')
                         ->disabled(),
+
                 ])->columns(2),
                 Forms\Components\Group::make()->schema([
                     Forms\Components\RichEditor::make('notes')
@@ -157,6 +159,7 @@ class WarehouseRequestResource extends Resource
                     ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::abierto)
                     ->action(action: function (WarehouseRequest $record) {
                         $record->status = StatusWarehouseRequestEnum::autorizado;
+                        $record->user_auhtorizer_id = Auth::user()->id;
                         $record->save();
                     }),
                 // ->slideOver()
@@ -173,7 +176,7 @@ class WarehouseRequestResource extends Resource
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalIconColor('success')
-                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::autorizado  && $record->has_pendings_to_suply())
+                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::autorizado  && !$record->has_pendings_to_suply())
                     // ->visible(function(WarehouseRequest $record){
                     //     return $record->status === StatusWarehouseRequestEnum::autorizado && $record->has_pendings_to_suply();
 

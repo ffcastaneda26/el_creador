@@ -26,17 +26,15 @@ class EditWarehouseRequest extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // $record = $this->getRecord();
-        // dd($record);
         $data['user_id'] = Auth::user()->id;
         if(strlen($data['reference'])){
             $data['reference'] =strtoupper($data['reference']);
         }
 
         // Si se autoriza actualiza
-        if($data['status'] == 'autorizado'){
-            $data['user_auhtorizer_id'] =Auth::user()->id;
-        }
+        // if($data['status'] == 'autorizado'){
+        //     $data['user_auhtorizer_id'] =Auth::user()->id;
+        // }
         return $data;
     }
 }
