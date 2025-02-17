@@ -12,6 +12,7 @@ class Coverage extends Model
     protected $fillable =  [
         'name',
         'distance',
+        'fee',
         'notes',
     ];
 

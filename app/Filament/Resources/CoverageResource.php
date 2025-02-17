@@ -44,24 +44,25 @@ class CoverageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Group::make()->schema([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->maxLength(50)
-                        ->unique(ignoreRecord: true)
-                        ->translateLabel(),
-                    Forms\Components\TextInput::make('distance')
-                        ->numeric()
-                        ->default(0)
-                        ->translateLabel(),
-                ])->columns(2),
-                Forms\Components\Group::make()->schema([
-                    Forms\Components\Textarea::make('notes')
-                        ->columnSpanFull()
-                        ->translateLabel(),
-                ])
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->maxLength(50)
+                    ->unique(ignoreRecord: true)
+                    ->translateLabel(),
+                Forms\Components\TextInput::make('distance')
+                    ->numeric()
+                    ->default(0)
+                    ->translateLabel(),
+                Forms\Components\TextInput::make('fee')
+                    ->default(0.00)
+                    ->required()
+                    ->translateLabel()
+                    ->live(onBlur: true)
+                    ->inputMode('decimal'),
+                Forms\Components\Textarea::make('notes')
+                    ->translateLabel(),
 
-            ]);
+            ])->columns(4);
     }
 
     public static function table(Table $table): Table
@@ -78,7 +79,14 @@ class CoverageResource extends Resource
                     ->translateLabel()
                     ->prefix('A ')
                     ->suffix(' Kms'),
-
+                Tables\Columns\TextColumn::make('fee')
+                    ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ',')
+                    ->sortable()
+                    ->translateLabel(),
+                Tables\Columns\TextColumn::make('notes')
+                    ->limit(50)
+                    ->translateLabel()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('locations_count')
                     ->label(__('Total Locations'))
                     ->counts('locations')
@@ -90,6 +98,7 @@ class CoverageResource extends Resource
                     ->listWithLineBreaks()
                     ->label(__('Locations'))
                     ->toggleable(isToggledHiddenByDefault: true),
+
 
             ])
             ->filters([

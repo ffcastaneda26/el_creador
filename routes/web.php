@@ -41,7 +41,9 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])
         if(Auth::user()->hasRole('Asesor')){
             return redirect()->to('/asesor');
         }
-
+        if(Auth::user()->hasRole('Gerente')){
+            return redirect()->to('/admin');
+        }
         return view('dashboard');
     })->name('dashboard');
     Route::get('clients',Clients::class)->name('clients');
