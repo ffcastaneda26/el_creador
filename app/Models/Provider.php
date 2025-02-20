@@ -30,7 +30,8 @@ class Provider extends Model
         'municipality_id',
         'city_id',
         'notes',
-        'references'
+        'references',
+        'active'
     ];
 
     // protected function name(): Attribute
@@ -94,5 +95,9 @@ class Provider extends Model
                 ->orwhere('phone', 'like', "%{$this->search}%")
                 ->orwhere('mobile', 'like', "%{$this->search}%");
 
+    }
+
+    public isActive(){
+        return $this->active;
     }
 }
