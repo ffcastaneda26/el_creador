@@ -251,9 +251,7 @@ class CountriesSeeder extends Seeder
             (235, 'YUGOSLAVIA', 'YUG', 0),
             (236, 'SOUTH AFRICA', 'ZAF', 0),
             (237, 'ZAMBIA', 'ZMB', 0),
-            (238, 'ZIMBABWE', 'ZWE', 0),
-            (239, 'Latinoamerica', 'lat', 0),
-            (240, 'Todos los paises', 'all', 1);";
+            (238, 'ZIMBABWE', 'ZWE', 0);";
         DB::update($sql);
 
 
