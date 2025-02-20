@@ -97,7 +97,7 @@ class Provider extends Model
 
     }
 
-    public isActive(){
+    public function isActive(){
         return $this->active;
     }
 }
