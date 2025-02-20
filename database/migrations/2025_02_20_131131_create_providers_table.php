@@ -31,7 +31,9 @@ return new class extends Migration
             $table->foreignIdFor(Municipality::class)->nullable()->default(null)->comment('Municipio');
             $table->foreignIdFor(City::class)->nullable()->default(null)->comment('Ciudad');
             $table->mediumText('notes')->nullable()->default(null)->comment('Notas');
+            $table->boolean('active')->default(1)->comment('¿Está activo?');
             $table->timestamps();
+
         });
     }
 

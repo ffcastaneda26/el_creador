@@ -18,7 +18,6 @@ class Provider extends Model
         'email',
         'phone',
         'mobile',
-        'ine',
         'rfc',
         'address',
         'num_int',
@@ -34,28 +33,10 @@ class Provider extends Model
         'active'
     ];
 
-    // protected function name(): Attribute
-    // {
-    //     return Attribute::make(
-    //         get: fn (string $value) => ucfirst($value),
-    //         set: fn (string $value) => ucfirst($value),
-    //     );
-    // }
-
-
-
-
     public function setRfcAttribute($value)
     {
         $this->attributes['rfc'] = strtoupper($value);
     }
-
-    public function setCurpAttribute($value)
-    {
-        $this->attributes['curp'] = strtoupper($value);
-    }
-
-
 
 
     public function country(): BelongsTo

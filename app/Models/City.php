@@ -29,6 +29,10 @@ class City extends Model
     {
         return $this->hasMany(Order::class);
     }
+    public function providers(): HasMany
+    {
+        return $this->hasMany(Provider::class);
+    }
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);

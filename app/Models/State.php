@@ -33,6 +33,11 @@ class State extends Model
     {
         return $this->hasMany(Municipality::class);
     }
+
+    public function providers(): HasMany
+    {
+        return $this->hasMany(Provider::class);
+    }
     public function zipcodes(): HasMany
     {
         return $this->hasMany(Zipcode::class);
