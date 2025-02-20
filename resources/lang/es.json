@@ -1,4 +1,6 @@
 {
+
+    "Purchases": "Compras",
     "Provider": "Proveedor",
     "Providers": "Proveedores",
     "Available": "Disponible",
@@ -83,6 +85,7 @@
     "Accesories Notes": "Obs. Accesorios",
     "Logos Notes": "Obs. Logotipos",
     "User Name": "Usuario",
+    "User authorizer id": "Autorizador",
     "Next Folio": "Siguiente Folio",
     "Select Purchase Order": "Seleccione Orden de Compra",
     "Observations": "Observaciones",

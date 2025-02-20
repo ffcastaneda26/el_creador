@@ -34,7 +34,6 @@ class ProviderFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
-            // 'phone' => substr($this->faker->phoneNumber(), 0,15), // Usa phoneNumber() de Faker
             'phone' => $this->faker->regexify('^[0-9]{10,15}$'),
             'rfc' => $this->faker->regexify('[A-Z]{3}[0-9]{6}[A-Z0-9]{3}'), // RFC genérico
             'type' => $this->faker->randomElement(['Física', 'Moral']),
@@ -47,6 +46,7 @@ class ProviderFactory extends Factory
             'municipality_id' => $municipality->id ?? null, // Municipio aleatorio o null
             'city_id' => $city->id ?? null, // Ciudad aleatoria o null
             'notes' => $this->faker->text(200), // Notas aleatorias
+            'active' => $this->faker->boolean() ? true : false,
         ];
     }
 }

@@ -26,12 +26,12 @@ class ProviderResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-home-modern';
 
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
-    protected static ?int $navigationSort = 26;
+    protected static ?int $navigationSort = 41;
 
     // protected static ?string $cluster = Geographics::class;
     public static function getNavigationGroup(): string
     {
-        return __('Catalogs');
+        return __('Purchases');
     }
     public static function getModelLabel(): string
     {

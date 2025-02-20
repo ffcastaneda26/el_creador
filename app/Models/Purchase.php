@@ -17,6 +17,7 @@ class Purchase extends Model
         'provider_id',
         'folio',
         'date',
+        'amount',
         'notes',
         'user_id',
         'user_authorizer_id',
@@ -28,6 +29,11 @@ class Purchase extends Model
             'date'      => 'datetime',
             'status'    => StatusPurchaseEnum::class,
         ];
+    }
+
+    public function provider(): BelongsTo
+    {
+        return $this->belongsTo(Provider::class);
     }
 
     public function authorizer_user(): BelongsTo
