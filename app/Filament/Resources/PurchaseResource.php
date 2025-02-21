@@ -174,8 +174,7 @@ class PurchaseResource extends Resource
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalIconColor('success')
-                    // TODO: Agregar método has_pendings_to_suply para que pueda controlarse cuando mostrarlo
-                    // ->visible(fn(Purchase $record): bool => $record->status === StatusPurchaseEnum::autorizado  && !$record->has_pendings_to_suply())
+                    ->visible(fn(Purchase $record): bool => $record->status === StatusPurchaseEnum::autorizado  && !$record->has_pendings_to_receive())
                     ->action(action: function (Purchase $record) {
                         $record->status = StatusPurchaseEnum::abierto;
                         $record->user_authorizer_id = null;

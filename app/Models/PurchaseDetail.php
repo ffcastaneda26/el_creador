@@ -59,4 +59,9 @@ class PurchaseDetail extends Model
     public function hasPending(){
         return $this->quantity > $this->quantity_delivered;
     }
+
+    public function has_pendings_to_suply(): bool
+    {
+        return $this->pendings_to_supply()->count() > 0;
+    }
 }
