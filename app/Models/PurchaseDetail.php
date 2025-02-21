@@ -11,7 +11,8 @@ class PurchaseDetail extends Model
         'purchase_id',
         'product_id',
         'quantity',
-        'quantity_delivered',
+        'quantity_received',
+        'cost',
         'status'
     ];
 
@@ -34,20 +35,20 @@ class PurchaseDetail extends Model
 
     public function getPending()
     {
-        return $this->quantity - $this->quantity_delivered;
+        return $this->quantity - $this->quantity_received;
     }
 
     public function updateDelivery($quantity=0){
-        $this->quantity_delivered = $this->quantity_delivered + $quantity;
+        $this->quantity_received = $this->quantity_received + $quantity;
         $this->save();
         $this->updateStatus();
     }
 
     public function updateStatus()
     {
-        if ($this->quantity_delivered == 0) {
+        if ($this->quantity_received == 0) {
             $this->status = StatusPurchaseDetailEnum::pendiente;
-        } elseif ($this->quantity == $this->quantity_delivered) {
+        } elseif ($this->quantity == $this->quantity_received) {
             $this->status = StatusPurchaseDetailEnum::surtida;
         } else {
             $this->status = StatusPurchaseDetailEnum::parcial;
@@ -57,7 +58,7 @@ class PurchaseDetail extends Model
 
 
     public function hasPending(){
-        return $this->quantity > $this->quantity_delivered;
+        return $this->quantity > $this->quantity_received;
     }
 
     public function has_pendings_to_suply(): bool

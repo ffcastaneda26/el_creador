@@ -18,7 +18,9 @@ return new class extends Migration
             $table->foreignIdFor(Purchase::class)->constrained()->cascadeOnDelete()->comment('Orden de compra');
             $table->foreignIdFor(Product::class)->constrained()->cascadeOnDelete()->comment('Producto');
             $table->integer('quantity')->comment('Cantidad');
-            $table->integer('quantity_delivered')->default(0)->comment('Cantidad entregada');
+            $table->integer('quantity_received')->default(0)->comment('Cantidad entregada');
+            $table->decimal('cost', 8, 2)->default(0)->comment('Costo');
+
             $table->enum('status', ['pendiente','surtida', 'parcial'])->default('pendiente')->comment('Estado');
             $table->timestamps();
         });

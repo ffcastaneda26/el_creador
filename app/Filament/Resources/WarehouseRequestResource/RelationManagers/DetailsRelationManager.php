@@ -53,7 +53,7 @@ class DetailsRelationManager extends RelationManager
                     ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ',')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('quantity_delivered')
+                Tables\Columns\TextColumn::make('quantity_received')
                     ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ',')
                     ->label(__('Delivered')),
                 Tables\Columns\TextColumn::make('pending')
