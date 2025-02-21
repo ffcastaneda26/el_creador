@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             'permissions',
             'countries',
             'states',
+            'municipalities',
             'cities',
             'type_zipcodes',
             'units',
@@ -54,7 +55,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AnexoSeeder::class);
         $this->call(CoverageSeeder::class);
         $this->call(ProviderSeeder::class);
-
+        $this->call(ProductSeeder::class);
     }
 
     protected function truncateTables(array $tables) {

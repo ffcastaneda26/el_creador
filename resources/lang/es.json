@@ -1,5 +1,8 @@
 {
-
+    "Add": "Agregar",
+    "to a": "a",
+    "Create": "Crear",
+    "to a Warehouse Request": "a Solicitud de Almacén",
     "Purchases": "Compras",
     "Provider": "Proveedor",
     "Providers": "Proveedores",
@@ -98,7 +101,7 @@
     "Child Parts": "Partes Hijas",
     "Parent Parts": "Partes Padre",
     "Add Part": "Agregar Parte",
-    "Add Product": "Agrgar Producto",
+    "Add Product": "Agregar Producto",
     "Parent part": "¿Parte Padre?",
     "Motley": "Botarga",
     "Motley's Name": "Nombre de la Botarga",

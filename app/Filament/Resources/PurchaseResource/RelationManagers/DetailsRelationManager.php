@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Filament\Resources\WarehouseRequestResource\RelationManagers;
+namespace App\Filament\Resources\PurchaseResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DetailsRelationManager extends RelationManager
 {
     protected static string $relationship = 'details';
-
-
 
     public function form(Form $form): Form
     {
@@ -27,6 +27,11 @@ class DetailsRelationManager extends RelationManager
                     ->translateLabel(),
                 Forms\Components\TextInput::make('quantity')
                     ->required()
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(9999)
+                    ->translateLabel(),
+                Forms\Components\TextInput::make('cost')
                     ->numeric()
                     ->minValue(1)
                     ->maxValue(9999)
@@ -51,13 +56,13 @@ class DetailsRelationManager extends RelationManager
                     ->sortable()
                     ->searchable()
                     ->alignEnd(),
-                Tables\Columns\TextColumn::make('quantity_delivered')
+                Tables\Columns\TextColumn::make('quantity_received')
                     ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ',')
-                    ->label(__('Delivered'))
+                    ->label(__('Received'))
                     ->alignEnd(),
                 Tables\Columns\TextColumn::make('pending')
                     ->getStateUsing(function ($record) {
-                        return $record->quantity - $record->quantity_delivered;
+                        return $record->quantity - $record->quantity_received;
                     })
                     ->translateLabel()
                     ->alignEnd(),
@@ -85,10 +90,13 @@ class DetailsRelationManager extends RelationManager
 
                 Tables\Actions\CreateAction::make()
                     ->label(__('Add') . ' ' . __('Product'))
-                    ->modalHeading(__('Add') . ' ' . __('Product') . ' ' .  __('to a Warehouse Request')),
+                    ->modalHeading(__('Add') . ' ' . __('Product') . ' ' .  __('to a')   . ' ' . __('Purchase Order')),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->button()->color('warning')->modalHeading(__('Edit') . ' ' . __('Product') . ' ' .  __('to a Warehouse Request')),
+                Tables\Actions\EditAction::make()
+                    ->button()
+                    ->color('warning')
+                    ->modalHeading(__('Edit') . ' ' . __('Product') . ' ' .  __('to a')   . ' ' . __('Purchase Order')),
                 Tables\Actions\DeleteAction::make()->button(),
             ])
             ->bulkActions([

@@ -57,36 +57,35 @@ class WarehouseRequestResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Group::make()->schema([
-                    Forms\Components\DatePicker::make('date')
-                        ->required()
-                        ->default(now())
-                        ->translateLabel()
-                        ->format('Y-m-d'),
-                    Forms\Components\TextInput::make('folio')
-                        ->required()
-                        ->maxLength(15)
-                        ->unique(ignoreRecord: true)
-                        ->translateLabel()
-                        ->disabled(fn($operation) => $operation == 'edit'),
-                    Forms\Components\TextInput::make('reference')
-                        ->maxLength(30)
-                        ->translateLabel(),
-                    Forms\Components\Select::make('status')
-                        ->options(StatusWarehouseRequestEnum::class)
-                        ->translateLabel()
-                        // ->required(fn($operation) => $operation != 'create')
-                        ->visible(fn($operation) => $operation != 'create')
-                        ->disabled(),
+                Forms\Components\DatePicker::make('date')
+                ->required()
+                ->default(now())
+                ->translateLabel()
+                ->format('Y-m-d'),
+            Forms\Components\TextInput::make('folio')
+                ->required()
+                ->maxLength(15)
+                ->unique(ignoreRecord: true)
+                ->translateLabel()
+                ->disabled(fn($operation) => $operation == 'edit'),
+            Forms\Components\TextInput::make('reference')
+                ->maxLength(30)
+                ->translateLabel(),
+            Forms\Components\Select::make('status')
+                ->options(StatusWarehouseRequestEnum::class)
+                ->translateLabel()
+                // ->required(fn($operation) => $operation != 'create')
+                ->visible(fn($operation) => $operation != 'create')
+                ->disabled(),
 
-                ])->columns(2),
-                Forms\Components\Group::make()->schema([
-                    Forms\Components\RichEditor::make('notes')
-                        ->translateLabel()
-                        ->columnSpanFull(),
-                ]),
 
-            ]);
+                Forms\Components\MarkdownEditor::make('notes')
+                ->translateLabel()
+                ->maxHeight('96px')
+                ->extraAttributes(['stype'=> 'overflow-y:scroll;'])
+                ->columnSpanFull(),
+
+            ])->columns(4);
     }
 
     public static function table(Table $table): Table

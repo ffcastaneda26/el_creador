@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PurchaseResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PurchaseResource\RelationManagers;
+use App\Filament\Resources\PurchaseResource\RelationManagers\DetailsRelationManager;
 
 class PurchaseResource extends Resource
 {
@@ -193,7 +194,7 @@ class PurchaseResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            DetailsRelationManager::class,
         ];
     }
 
