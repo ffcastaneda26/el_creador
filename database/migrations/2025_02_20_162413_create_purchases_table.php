@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Enums\StatusPurchaseEnum;
 use App\Models\Provider;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -22,7 +23,8 @@ return new class extends Migration
             $table->mediumText('notes')->nullable()->default(null)->comment('Notas');
             $table->foreignIdFor(User::class)->comment('Usuario que crea o modifica');
             $table->unsignedBigInteger('user_authorizer_id')->nullable()->default(null)->comment('Usuario que autoriza');
-            $table->enum('status', ['abierto', 'autorizado','parcial','surtido','cancelado'])->comment('Estado');
+            // $table->enum('status', ['abierto', 'autorizado','parcial','surtido','cancelado'])->comment('Estado');
+            $table->enum('status', array_column(StatusPurchaseEnum::cases(), 'value'))->default(StatusPurchaseEnum::abierto->value);
             $table->foreign('user_authorizer_id')->references('id')->on('users');
             $table->timestamps();
 
