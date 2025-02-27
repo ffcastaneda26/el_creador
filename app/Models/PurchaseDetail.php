@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use App\Enums\Enums\StatusPurchaseDetailEnum;
 use Illuminate\Database\Eloquent\Model;
+
+use App\Enums\Enums\StatusPurchaseDetailEnum;
+
 
 class PurchaseDetail extends Model
 {

@@ -53,14 +53,26 @@ class Purchase extends Model
     {
         return $this->pendings_to_receive()->count() > 0;
     }
-    public function has_partial_receive(): bool
+
+    public function details_received(): HasMany
     {
-        return $this->partial_receive_items()->count() > 0;
+        return $this->hasMany(PurchaseDetail::class)->where('status','!=', StatusPurchaseDetailEnum::pendiente);
     }
+    // Necesito saber si tiene al menos una partida surtida parcial o totalmente
+     public function has_details_received(): bool
+     {
+        return $this->details_received->count() > 0;
+     }
+
+
 
     public function partial_receive_items(): HasMany
     {
-        return $this->hasMany(PurchaseDetail::class)->where('status', '!=',StatusPurchaseDetailEnum::parcial);
+        return $this->hasMany(PurchaseDetail::class)->where('status', StatusPurchaseDetailEnum::parcial);
+    }
+    public function has_partial_receive(): bool
+    {
+        return $this->partial_receive_items()->count() > 0;
     }
 
     public function provider(): BelongsTo

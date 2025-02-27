@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\PurchaseResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use App\Models\Purchase;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Enums\Enums\StatusPurchaseEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class DetailsRelationManager extends RelationManager
 {
@@ -56,6 +58,17 @@ class DetailsRelationManager extends RelationManager
                     ->sortable()
                     ->searchable()
                     ->alignEnd(),
+                Tables\Columns\TextColumn::make('cost')
+                    ->translateLabel()
+                    ->sortable()
+                    ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
+                Tables\Columns\TextColumn::make('amount')
+                    ->label(__('Amount'))
+                    ->getStateUsing(function ($record): float {
+                        return round($record->cost * $record->quantity, 2);
+                    })
+                    ->alignEnd()
+                    ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
                 Tables\Columns\TextColumn::make('quantity_received')
                     ->numeric(decimalPlaces: 0, decimalSeparator: '.', thousandsSeparator: ',')
                     ->label(__('Received'))
@@ -90,19 +103,37 @@ class DetailsRelationManager extends RelationManager
 
                 Tables\Actions\CreateAction::make()
                     ->label(__('Add') . ' ' . __('Product'))
-                    ->modalHeading(__('Add') . ' ' . __('Product') . ' ' .  __('to a')   . ' ' . __('Purchase Order')),
+                    ->modalHeading(__('Add') . ' ' . __('Product') . ' ' .  __('to a')   . ' ' . __('Purchase Order'))
+                    ->visible(function (DetailsRelationManager $livewire): bool {
+                        $purchase = $livewire->getOwnerRecord();
+                        return $purchase->status === StatusPurchaseEnum::abierto;
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->button()
                     ->color('warning')
-                    ->modalHeading(__('Edit') . ' ' . __('Product') . ' ' .  __('to a')   . ' ' . __('Purchase Order')),
-                Tables\Actions\DeleteAction::make()->button(),
+                    ->modalHeading(__('Edit') . ' ' . __('Product') . ' ' .  __('to a')   . ' ' . __('Purchase Order'))
+                    ->visible(function (DetailsRelationManager $livewire): bool {
+                        $purchase = $livewire->getOwnerRecord();
+                        return $purchase->status === StatusPurchaseEnum::abierto;
+                    }),
+                Tables\Actions\DeleteAction::make()->button()
+                    ->visible(function (DetailsRelationManager $livewire): bool {
+                        $purchase = $livewire->getOwnerRecord();
+                        return $purchase->status === StatusPurchaseEnum::abierto;
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function visible($record): bool
+    {
+        $purchase = $record->getOwnerRecord();
+        return $purchase->status === StatusPurchaseEnum::abierto;
     }
 }

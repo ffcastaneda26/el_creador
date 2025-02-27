@@ -20,6 +20,7 @@ use App\Filament\Resources\PurchaseResource\RelationManagers\DetailsRelationMana
 class PurchaseResource extends Resource
 {
     protected static ?string $model = Purchase::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
@@ -57,14 +58,14 @@ class PurchaseResource extends Resource
                         ->translateLabel()
                         ->reactive()
                         ->live(onBlur: true)
-                        ->columnSpan(2),
+                        ->columnSpan(3),
 
                     Forms\Components\TextInput::make('folio')
                         ->required()
                         ->maxLength(15)
                         ->unique(ignoreRecord: true)
-                        ->translateLabel()
-                        ->disabled(fn($operation) => $operation == 'edit'),
+                        ->translateLabel(),
+                        // ->disabled(fn($operation) => $operation == 'edit'),
 
                     Forms\Components\DatePicker::make('date')
                         ->required()
@@ -72,17 +73,18 @@ class PurchaseResource extends Resource
                         ->translateLabel()
                         ->format('Y-m-d'),
 
-                    Forms\Components\TextInput::make('amount')
-                        ->maxLength(30)
-                        ->disabled()
-                        ->numeric()
-                        ->translateLabel(),
+                    // Forms\Components\TextInput::make('amount')
+                    //     ->disabled()
+                    //     ->numeric()
+                    //     ->translateLabel()
+                    //     ->hiddenOn('create'),
                     Forms\Components\Select::make('status')
                         ->options(StatusPurchaseEnum::class)
                         ->translateLabel()
                         ->visible(fn($operation) => $operation != 'create')
-                        ->disabled(),
-                ])->columns(2),
+                        ->disabledOn('edit')
+                        ->hiddenOn('create'),
+                ])->columns(3),
                 Forms\Components\Group::make()->schema([
                     Forms\Components\MarkdownEditor::make('notes')
                         ->translateLabel()
@@ -90,8 +92,7 @@ class PurchaseResource extends Resource
                         ->maxHeight('96px')
                         ->extraAttributes(['stype' => 'overflow-y:scroll;']),
 
-                ])->columns(1),
-
+                ])->columns(2),
 
             ]);
     }
@@ -100,24 +101,39 @@ class PurchaseResource extends Resource
     {
         return $table
             ->columns([
+                // Tables\Columns\TextColumn::make('id')
+                //     ->sortable(),
+                Tables\Columns\TextColumn::make('folio')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('provider.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('folio')
-                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('date')
                     ->date()
                     ->sortable()
                     ->searchable()
                     ->translateLabel(),
-                Tables\Columns\TextColumn::make('amount')
-                    ->numeric()
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('amount')
+                //     ->numeric()
+                //     ->sortable(),
+                Tables\Columns\TextColumn::make('total_cost_quantity')
+                ->label(__('Amount'))
+                ->getStateUsing(function ($record): float {
+                    return $record->details->sum(function ($detail) {
+                        return round($detail->cost * $detail->quantity, 2);
+                    });
+                })
+                ->alignEnd()
+                ->numeric(decimalPlaces: 2, decimalSeparator: '.', thousandsSeparator: ','),
+
+                Tables\Columns\TextColumn::make('details_count')->counts('details')->label(__('Products')),
                 Tables\Columns\TextColumn::make('user.name')
                     ->numeric()
                     ->sortable()
                     ->searchable()
-                    ->translateLabel(),
+                    ->translateLabel()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('authorizer_user.name')
                     ->numeric()
                     ->sortable()
@@ -141,7 +157,9 @@ class PurchaseResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()->button()->color('info'),
+                Tables\Actions\EditAction::make()->button()->color('warning')
+                    ->visible(fn(Purchase $record): bool => $record->status === StatusPurchaseEnum::abierto),
 
                 Action::make('authorize')
                     ->translateLabel()
@@ -161,6 +179,7 @@ class PurchaseResource extends Resource
                         $record->user_authorizer_id = Auth::user()->id;
                         $record->save();
                     }),
+
                 // ->slideOver()
 
                 Action::make('open')
@@ -182,6 +201,9 @@ class PurchaseResource extends Resource
 
                         $record->save();
                     }),
+                Tables\Actions\DeleteAction::make()->button()->color('danger')
+                    ->visible(fn($record) => $record->status == StatusPurchaseEnum::abierto || !$record->has_details_received())
+
                 // ->slideOver()
             ])
             ->bulkActions([
@@ -203,6 +225,7 @@ class PurchaseResource extends Resource
         return [
             'index' => Pages\ListPurchases::route('/'),
             'create' => Pages\CreatePurchase::route('/create'),
+            'view' => Pages\ViewPurchase::route('/{record}'),
             'edit' => Pages\EditPurchase::route('/{record}/edit'),
         ];
     }

@@ -2,6 +2,8 @@
     "Add": "Agregar",
     "to a": "a",
     "Create": "Crear",
+    "Edit": "Editar",
+    "Received": "Recibida",
     "to a Warehouse Request": "a Solicitud de Almacén",
     "Purchases": "Compras",
     "Provider": "Proveedor",
@@ -127,7 +129,7 @@
     "Delivery date": "Fecha de Entrega",
     "Require invoice": "¿Requiere Factura?",
     "Payment promise date": "Fecha Promesa de Pago",
-    "Purchase Order": "Órden de Compra",
+    "Purchase Order": "Orden de Compra",
 
     "Add Image": "Agregar Imagen",
     "Notice": "Aviso",

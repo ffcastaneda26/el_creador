@@ -2,10 +2,14 @@
 
 namespace App\Filament\Resources\PurchaseResource\Pages;
 
-use App\Filament\Resources\PurchaseResource;
+use App\Enums\Enums\StatusPurchaseEnum;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
+use Filament\Resources\Pages\EditRecord;
+
+use App\Filament\Resources\PurchaseResource;
+use App\Models\Purchase;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
 
 class EditPurchase extends EditRecord
 {
@@ -14,7 +18,10 @@ class EditPurchase extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\ViewAction::make()->button()->color('info'),
+            Actions\DeleteAction::make()
+            ->visible(fn ($record) => $record->status == StatusPurchaseEnum::abierto || !$record->has_details_received())
+
         ];
     }
 

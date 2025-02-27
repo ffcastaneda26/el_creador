@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Purchase;
+use App\Models\PurchaseDetail;
+use App\Observers\PurchaseDetailObserver;
 use Filament\Forms\Components\Toggle;
 use Illuminate\Support\ServiceProvider;
 use Filament\Support\Colors\Color;
@@ -22,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        PurchaseDetail::observe(PurchaseDetailObserver::class);
         Toggle::configureUsing(function (Toggle $toggle): void {
             $toggle
             ->translateLabel()
