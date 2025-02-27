@@ -28,6 +28,9 @@ class Client extends Model
         'colony',
         'zipcode',
         'type',
+        'street',
+        'number',
+        'interior_number',
         'country_id',
         'state_id',
         'municipality_id',
@@ -52,6 +55,22 @@ class Client extends Model
         );
     }
 
+//     public function setaddressAttribute($value):
+//     {
+//         $this->attributes['address']  = $this->street . ' ' . $this->number . ' ' . $this->interior_number;
+//    }
+
+
+    public function setaddressAttribute($value)
+    {
+        if($this->interior_number){
+            $this->attributes['address'] = ucfirst($this->street) . ' ' .  $this->number . ' -' . $this->interior_number;
+
+        }else{
+        $this->attributes['address'] = ucfirst($this->street) . ' ' .  $this->number;
+
+        }
+    }
 
     public function setRfcAttribute($value)
     {

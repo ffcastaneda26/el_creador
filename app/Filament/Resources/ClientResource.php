@@ -122,12 +122,8 @@ class ClientResource extends Resource
                             ->translateLabel()
                             ->nullable()
                             ->maxLength(15),
-                        TextInput::make('zipcode')
-                            ->translateLabel()
-                            ->numeric()
-                            ->maxLength(5)
-                            ->minLength(5),
-                    ])->columns(3),
+
+                    ])->columns(2),
                     Section::make()->schema([
                         TextInput::make('curp')
                             ->translateLabel()
@@ -195,14 +191,29 @@ class ClientResource extends Resource
                             }
                             return $municipality->cities->pluck('name', 'id');
                         }),
-                    TextInput::make('address')
+                    TextInput::make('street')
                         ->translateLabel()
                         ->required()
-                        ->maxLength(100),
+                        ->maxLength(100)
+                        ->translateLabel(),
+                    TextInput::make('number')
+                        ->translateLabel()
+                        ->required()
+                        ->maxLength(5)
+                        ->translateLabel(),
+                    TextInput::make('interior_number')
+                        ->translateLabel()
+                        ->maxLength(5)
+                        ->translateLabel(),
                     TextInput::make('colony')
                         ->translateLabel()
                         ->required()
                         ->maxLength(100),
+                        TextInput::make('zipcode')
+                        ->translateLabel()
+                        ->numeric()
+                        ->maxLength(5)
+                        ->minLength(5),
                 ])->columns(2),
 
                 Group::make()->schema([
