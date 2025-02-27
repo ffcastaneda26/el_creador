@@ -14,6 +14,9 @@ class Client extends Model
 
     protected $fillable =  [
         'name',
+        'last_name',
+        'mother_surname',
+        'company_name',
         'email',
         'phone',
         'mobile',
@@ -33,13 +36,7 @@ class Client extends Model
         'references'
     ];
 
-    // protected function name(): Attribute
-    // {
-    //     return Attribute::make(
-    //         get: fn (string $value) => ucfirst($value),
-    //         set: fn (string $value) => ucfirst($value),
-    //     );
-    // }
+
     protected function name(): Attribute
     {
         return Attribute::make(
@@ -48,6 +45,12 @@ class Client extends Model
         );
     }
 
+    protected function fullName(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => "{$this->name} {$this->last_name} {$this->mother_surname}",
+        );
+    }
 
 
     public function setRfcAttribute($value)

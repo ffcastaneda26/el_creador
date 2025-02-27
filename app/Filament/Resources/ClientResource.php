@@ -28,6 +28,7 @@ use Filament\Forms\Components\MarkdownEditor;
 use App\Filament\Resources\ClientResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ClientResource\RelationManagers;
+use Filament\Forms\Get;
 
 class ClientResource extends Resource
 {
@@ -59,10 +60,52 @@ class ClientResource extends Resource
         return $form
             ->schema([
                 Group::make()->schema([
-                    TextInput::make('name')
-                        ->required()
-                        ->label(__('Full Name'))
-                        ->maxLength(100),
+                    Section::make()->schema([
+                        Radio::make('type')
+                            ->inline()
+                            ->reactive()
+                            ->options([
+                                'Física' => 'Física',
+                                'Moral' => 'Moral',
+                            ])->label(__('Type Person'))
+                            ->default('Física'),
+                    ])->columnSpanFull(),
+
+                    Section::make()->schema([
+                        TextInput::make('name')
+                            ->required()
+                            ->label(__('Name'))
+                            ->maxLength(100),
+                        TextInput::make('last_name')
+                            ->required(fn(Get $get): bool => $get('type') === 'Física')
+                            ->label(__('Last Name'))
+                            ->maxLength(100),
+                        TextInput::make('mother_surname')
+                            ->label(__('Mother Surname'))
+                            ->maxLength(100),
+                        TextInput::make('company_name')
+                            ->required()
+                            ->label(__('Company Name'))
+                            ->maxLength(100)
+                            ->columnSpanFull(),
+                    ])->visible(fn(Get $get): bool => $get('type') === 'Física')
+                        ->columns(3),
+
+                    Section::make()->schema([
+                        TextInput::make('name')
+                            ->required()
+                            ->label(__('Full Name'))
+                            ->maxLength(100)
+                            ->columnSpanFull(),
+                        TextInput::make('company_name')
+                            ->required()
+                            ->label(__('Company Name'))
+                            ->maxLength(100)
+                            ->columnSpanFull(),
+                    ])->visible(fn(Get $get): bool => $get('type') === 'Moral')
+                        ->columnSpanFull(),
+
+
                     TextInput::make('email')
                         ->translateLabel()
                         ->maxLength(100),
@@ -70,25 +113,20 @@ class ClientResource extends Resource
                         ->translateLabel()
                         ->maxLength(13)
                         ->minLength(13),
-                    Radio::make('type')
-                        ->inline()
-                        ->options([
-                            'Física'=> 'Física',
-                            'Moral' => 'Moral',
-                        ])->label(__('Type Person')),
+
                     Section::make()->schema([
                         TextInput::make('phone')
-                        ->translateLabel()
-                        ->maxLength(15),
-                    TextInput::make('mobile')
-                        ->translateLabel()
-                        ->nullable()
-                        ->maxLength(15),
-                    TextInput::make('zipcode')
-                        ->translateLabel()
-                        ->numeric()
-                        ->maxLength(5)
-                        ->minLength(5),
+                            ->translateLabel()
+                            ->maxLength(15),
+                        TextInput::make('mobile')
+                            ->translateLabel()
+                            ->nullable()
+                            ->maxLength(15),
+                        TextInput::make('zipcode')
+                            ->translateLabel()
+                            ->numeric()
+                            ->maxLength(5)
+                            ->minLength(5),
                     ])->columns(3),
                     Section::make()->schema([
                         TextInput::make('curp')
@@ -97,85 +135,85 @@ class ClientResource extends Resource
                             ->minLength(18)
                             ->maxLength(18)
                             ->alphaNum()
-                        ->regex('/^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$/'),
+                            ->regex('/^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$/'),
                         TextInput::make('ine')
                             ->translateLabel()
                             ->nullable()
                             ->minLength(13)
                             ->maxLength(13),
-                        ])->columns(2),
+                    ])->columns(2),
 
                 ])->columns(2),
 
 
                 Group::make()->schema([
-                        Select::make('country_id')
-                            ->relationship(
-                                    name: 'country',
-                                    titleAttribute: 'country',
-                                    modifyQueryUsing: fn (Builder $query) => $query->where('include',1),
-                                )
-                            ->required()
-                            ->reactive()
-                            ->preload()
-                            ->default(135)
-                            ->searchable(['country', 'code'])
-                            ->translateLabel()
-                            ->afterStateUpdated(fn (callable $set) => $set('state_id', null)),
+                    Select::make('country_id')
+                        ->relationship(
+                            name: 'country',
+                            titleAttribute: 'country',
+                            modifyQueryUsing: fn(Builder $query) => $query->where('include', 1),
+                        )
+                        ->required()
+                        ->reactive()
+                        ->preload()
+                        ->default(135)
+                        ->searchable(['country', 'code'])
+                        ->translateLabel()
+                        ->afterStateUpdated(fn(callable $set) => $set('state_id', null)),
 
-                        Select::make('state_id')
-                            ->translateLabel()
-                            ->required()
-                            ->reactive()
-                            ->options(function (callable $get) {
-                                $country = Country::find($get('country_id'));
-                                if (!$country) {
-                                    return;
-                                }
-                                return $country->states->pluck('name', 'id');
-                            })->afterStateUpdated(fn (callable $set) => $set('municipality_id', null)),
+                    Select::make('state_id')
+                        ->translateLabel()
+                        ->required()
+                        ->reactive()
+                        ->options(function (callable $get) {
+                            $country = Country::find($get('country_id'));
+                            if (!$country) {
+                                return;
+                            }
+                            return $country->states->pluck('name', 'id');
+                        })->afterStateUpdated(fn(callable $set) => $set('municipality_id', null)),
 
-                        Select::make('municipality_id')
-                            ->translateLabel()
-                            ->required()
-                            ->reactive()
-                            ->options(function (callable $get) {
-                                $state = State::find($get('state_id'));
-                                if (!$state) {
-                                    return;
-                                }
-                                return $state->municipalities->sortby('name')->pluck('name', 'id');
-                            })->afterStateUpdated(fn (callable $set) => $set('city_id', null)),
+                    Select::make('municipality_id')
+                        ->translateLabel()
+                        ->required()
+                        ->reactive()
+                        ->options(function (callable $get) {
+                            $state = State::find($get('state_id'));
+                            if (!$state) {
+                                return;
+                            }
+                            return $state->municipalities->sortby('name')->pluck('name', 'id');
+                        })->afterStateUpdated(fn(callable $set) => $set('city_id', null)),
 
-                        Select::make('city_id')
-                            ->translateLabel()
-                            ->required()
-                            ->options(function (callable $get) {
-                                $municipality = Municipality::find($get('municipality_id'));
-                                if (!$municipality) {
-                                    return;
-                                }
-                                return $municipality->cities->pluck('name', 'id');
-                            }),
-                            TextInput::make('address')
-                            ->translateLabel()
-                            ->required()
-                            ->maxLength(100),
-                        TextInput::make('colony')
-                                ->translateLabel()
-                                ->required()
-                                ->maxLength(100),
+                    Select::make('city_id')
+                        ->translateLabel()
+                        ->required()
+                        ->options(function (callable $get) {
+                            $municipality = Municipality::find($get('municipality_id'));
+                            if (!$municipality) {
+                                return;
+                            }
+                            return $municipality->cities->pluck('name', 'id');
+                        }),
+                    TextInput::make('address')
+                        ->translateLabel()
+                        ->required()
+                        ->maxLength(100),
+                    TextInput::make('colony')
+                        ->translateLabel()
+                        ->required()
+                        ->maxLength(100),
                 ])->columns(2),
 
                 Group::make()->schema([
                     MarkdownEditor::make('notes')
-                    ->translateLabel()
-                    ->columnSpan(2),
+                        ->translateLabel()
+                        ->columnSpan(2),
                 ]),
                 Group::make()->schema([
                     MarkdownEditor::make('references')
-                    ->translateLabel()
-                    ->columnSpan(2),
+                        ->translateLabel()
+                        ->columnSpan(2),
                 ])
             ]);
     }
@@ -184,41 +222,42 @@ class ClientResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                        ->searchable()
-                        ->sortable()
-                        ->label(__('Name')),
+                TextColumn::make('full_name')
+                ->searchable()
+                ->sortable()
+                ->label(__('Name')),
+
                 TextColumn::make('email')
-                        ->searchable()
-                        ->sortable()
-                        ->translateLabel(),
+                    ->searchable()
+                    ->sortable()
+                    ->translateLabel(),
                 TextColumn::make('phone')
-                        ->searchable()
-                        ->sortable()
-                        ->translateLabel(),
-                    TextColumn::make('mobile')
-                        ->searchable()
-                        ->sortable()
-                        ->translateLabel(),
+                    ->searchable()
+                    ->sortable()
+                    ->translateLabel(),
+                TextColumn::make('mobile')
+                    ->searchable()
+                    ->sortable()
+                    ->translateLabel(),
                 TextColumn::make('type')
-                        ->searchable()
-                        ->sortable()
-                        ->label(__('Person')),
+                    ->searchable()
+                    ->sortable()
+                    ->label(__('Person')),
                 TextColumn::make('rfc')
-                        ->searchable()
-                        ->sortable()
-                        ->label('RFC')
-                        ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable()
+                    ->sortable()
+                    ->label('RFC')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('curp')
-                        ->searchable()
-                        ->sortable()
-                        ->label('CURP')
-                         ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable()
+                    ->sortable()
+                    ->label('CURP')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('ine')
-                        ->searchable()
-                        ->sortable()
-                        ->label('INE')
-                        ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable()
+                    ->sortable()
+                    ->label('INE')
+                    ->toggleable(isToggledHiddenByDefault: true)
 
             ])
             // TODO:: Hacer los select depndientes
@@ -237,7 +276,7 @@ class ClientResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make(__('Notice'))
                     ->icon('heroicon-o-document')
-                    ->url(fn (Client $record) => route('pdf-document',[ $record,'aviso']))
+                    ->url(fn(Client $record) => route('pdf-document', [$record, 'aviso']))
                     ->openUrlInNewTab(),
 
             ]);
