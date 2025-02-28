@@ -88,6 +88,7 @@ class ClientResource extends Resource
                             ->label(__('Company Name'))
                             ->maxLength(100)
                             ->columnSpanFull(),
+
                     ])->visible(fn(Get $get): bool => $get('type') === 'Física')
                         ->columns(3),
 
@@ -106,24 +107,9 @@ class ClientResource extends Resource
                         ->columnSpanFull(),
 
 
-                    TextInput::make('email')
-                        ->translateLabel()
-                        ->maxLength(100),
-                    TextInput::make('rfc')
-                        ->translateLabel()
-                        ->maxLength(13)
-                        ->minLength(13),
 
-                    Section::make()->schema([
-                        TextInput::make('phone')
-                            ->translateLabel()
-                            ->maxLength(15),
-                        TextInput::make('mobile')
-                            ->translateLabel()
-                            ->nullable()
-                            ->maxLength(15),
 
-                    ])->columns(2),
+
                     Section::make()->schema([
                         TextInput::make('curp')
                             ->translateLabel()
@@ -143,79 +129,182 @@ class ClientResource extends Resource
 
 
                 Group::make()->schema([
-                    Select::make('country_id')
-                        ->relationship(
-                            name: 'country',
-                            titleAttribute: 'country',
-                            modifyQueryUsing: fn(Builder $query) => $query->where('include', 1),
-                        )
-                        ->required()
-                        ->reactive()
-                        ->preload()
-                        ->default(135)
-                        ->searchable(['country', 'code'])
-                        ->translateLabel()
-                        ->afterStateUpdated(fn(callable $set) => $set('state_id', null)),
-
-                    Select::make('state_id')
-                        ->translateLabel()
-                        ->required()
-                        ->reactive()
-                        ->options(function (callable $get) {
-                            $country = Country::find($get('country_id'));
-                            if (!$country) {
-                                return;
-                            }
-                            return $country->states->pluck('name', 'id');
-                        })->afterStateUpdated(fn(callable $set) => $set('municipality_id', null)),
-
-                    Select::make('municipality_id')
-                        ->translateLabel()
-                        ->required()
-                        ->reactive()
-                        ->options(function (callable $get) {
-                            $state = State::find($get('state_id'));
-                            if (!$state) {
-                                return;
-                            }
-                            return $state->municipalities->sortby('name')->pluck('name', 'id');
-                        })->afterStateUpdated(fn(callable $set) => $set('city_id', null)),
-
-                    Select::make('city_id')
-                        ->translateLabel()
-                        ->required()
-                        ->options(function (callable $get) {
-                            $municipality = Municipality::find($get('municipality_id'));
-                            if (!$municipality) {
-                                return;
-                            }
-                            return $municipality->cities->pluck('name', 'id');
-                        }),
-                    TextInput::make('street')
-                        ->translateLabel()
-                        ->required()
-                        ->maxLength(100)
-                        ->translateLabel(),
-                    TextInput::make('number')
-                        ->translateLabel()
-                        ->required()
-                        ->maxLength(5)
-                        ->translateLabel(),
-                    TextInput::make('interior_number')
-                        ->translateLabel()
-                        ->maxLength(5)
-                        ->translateLabel(),
-                    TextInput::make('colony')
-                        ->translateLabel()
-                        ->required()
-                        ->maxLength(100),
+                    Section::make()->schema([
+                        TextInput::make('phone')
+                            ->translateLabel()
+                            ->maxLength(15),
+                        TextInput::make('mobile')
+                            ->translateLabel()
+                            ->nullable()
+                            ->maxLength(15),
                         TextInput::make('zipcode')
-                        ->translateLabel()
-                        ->numeric()
-                        ->maxLength(5)
-                        ->minLength(5),
-                ])->columns(2),
+                            ->translateLabel()
+                            ->numeric()
+                            ->reactive()
+                            ->maxLength(5)
+                            ->minLength(5)
+                            ->afterstateupdated(function (callable $get, callable $set) {
+                                $zipcode = ClientResource::getZipcode($get('zipcode'));
+                                if ($zipcode) {
+                                    $set('country_id', $zipcode->country_id);
+                                    $set('state_id', $zipcode->state_id);
+                                    $set('municipality_id', $zipcode->municipality_id);
+                                    $set('city_id', $zipcode->city_id);
+                                }
+                            })
+                    ])->columns(3),
 
+                    Section::make()->schema([
+                        TextInput::make('country_id')
+                            ->hidden(),
+                        Select::make('state_id')
+                            ->translateLabel()
+                            ->required()
+                            ->disabled()
+                            ->options(function (callable $get, callable $set) {
+                                if ($get('zipcode') != null && strlen($get('zipcode')) == 5) {
+                                    $zipcode = ClientResource::getZipcode($get('zipcode'));
+                                    if ($zipcode) {
+                                        $set('country_id', $zipcode->country_id);
+                                    }
+                                }
+                                $country = Country::find($get('country_id'));
+                                if (!$country) {
+                                    return;
+                                }
+                                return $country->states->pluck('name', 'id');
+                            }),
+
+                        Select::make('municipality_id')
+                            ->translateLabel()
+                            ->required()
+                            ->disabled()
+                            ->options(function (callable $get, callable $set) {
+                                if ($get('zipcode') != null && strlen($get('zipcode')) == 5) {
+                                    $zipcode = ClientResource::getZipcode($get('zipcode'));
+                                    if ($zipcode) {
+                                        $set('state', $zipcode->state_id);
+                                    }
+                                }
+                                $state = State::find($get('state_id'));
+                                if (!$state) {
+                                    return;
+                                }
+                                return $state->municipalities->sortby('name')->pluck('name', 'id');
+                            }),
+
+                        Select::make('city_id')
+                            ->translateLabel()
+                            ->required()
+                            ->disabled()
+                            ->options(function (callable $get, callable $set) {
+                                if ($get('zipcode') != null && strlen($get('zipcode')) == 5) {
+                                    $zipcode = ClientResource::getZipcode($get('zipcode'));
+                                    if ($zipcode) {
+                                        $set('municipality_id', $zipcode->municipality_id);
+                                    }
+                                }
+                                $municipality = Municipality::find($get('municipality_id'));
+                                if (!$municipality) {
+                                    return;
+                                }
+
+                                return $municipality->cities->pluck('name', 'id');
+                            }),
+                        Select::make('colony')
+                            ->translateLabel()
+                            ->required()
+                            ->searchable()
+                            ->options(function (callable $get, callable $set) {
+                                return ClientResource::getColony($get('zipcode'));
+                            })->columnSpanFull(),
+
+                    ])->visible(fn(Get $get): bool => $get('zipcode') != null && strlen($get('zipcode')) == 5)
+                        ->columns(3),
+                    Section::make()->schema([
+
+                        Select::make('country_id')
+                            ->relationship(
+                                name: 'country',
+                                titleAttribute: 'country',
+                                modifyQueryUsing: fn(Builder $query) => $query->where('include', 1),
+                            )
+                            ->required()
+                            ->reactive()
+                            ->preload()
+                            ->default(135)
+                            ->searchable(['country', 'code'])
+                            ->translateLabel()
+                            ->visible(false)
+                            ->afterStateUpdated(fn(callable $set) => $set('state_id', null)),
+
+                        Select::make('state_id')
+                            ->translateLabel()
+                            ->required()
+                            ->reactive()
+                            ->options(function (callable $get) {
+                                $country = Country::find($get('country_id'));
+                                if (!$country) {
+                                    return;
+                                }
+                                return $country->states->pluck('name', 'id');
+                            })->afterStateUpdated(fn(callable $set) => $set('municipality_id', null)),
+
+                        Select::make('municipality_id')
+                            ->translateLabel()
+                            ->required()
+                            ->reactive()
+                            ->options(function (callable $get) {
+                                $state = State::find($get('state_id'));
+                                if (!$state) {
+                                    return;
+                                }
+                                return $state->municipalities->sortby('name')->pluck('name', 'id');
+                            })->afterStateUpdated(fn(callable $set) => $set('city_id', null)),
+
+                        Select::make('city_id')
+                            ->translateLabel()
+                            ->required()
+                            ->options(function (callable $get) {
+                                $municipality = Municipality::find($get('municipality_id'));
+                                if (!$municipality) {
+                                    return;
+                                }
+                                return $municipality->cities->pluck('name', 'id');
+                            }),
+
+
+                    ])->visible(fn(Get $get): bool => $get('zipcode') == null || strlen($get('zipcode')) != 5)
+                        ->columns(3),
+
+                    Section::make()->schema([
+                        TextInput::make('colony')
+                            ->translateLabel()
+                            ->required()
+                            ->visible(fn(Get $get): bool => $get('zipcode') == null || strlen($get('zipcode')) != 5)
+                             ->columnSpanFull(),
+                        TextInput::make('street')
+                            ->translateLabel()
+                            ->required()
+                            ->maxLength(100)
+                            ->translateLabel(),
+                        TextInput::make('number')
+                            ->translateLabel()
+                            ->required()
+                            ->maxLength(5)
+                            ->translateLabel(),
+                        TextInput::make('interior_number')
+                            ->translateLabel()
+                            ->maxLength(5)
+                            ->translateLabel(),
+                    ])->columns(3),
+
+
+
+                ])
+                    ->columns(2),
+                // ->visible(fn(Get $get): bool => $get('zipcode') === 'Física'),
+                // ->visible(fn(Get $get): bool => $get('zipcode') != null && strlen($get('zipcode')) !=5)
                 Group::make()->schema([
                     MarkdownEditor::make('notes')
                         ->translateLabel()
@@ -234,9 +323,9 @@ class ClientResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('full_name')
-                ->searchable()
-                ->sortable()
-                ->label(__('Name')),
+                    ->searchable()
+                    ->sortable()
+                    ->label(__('Name')),
 
                 TextColumn::make('email')
                     ->searchable()
@@ -307,5 +396,17 @@ class ClientResource extends Resource
             'create' => Pages\CreateClient::route('/create'),
             'edit' => Pages\EditClient::route('/{record}/edit'),
         ];
+    }
+
+    public static function getZipcode($zipcode)
+    {
+        $zipcode = Zipcode::where('zipcode', $zipcode)->first();
+        return $zipcode;
+    }
+
+    public static function getColony($zipcode)
+    {
+        $zipcode = Zipcode::where('zipcode', $zipcode)->pluck('name', 'name')->toArray();
+        return $zipcode;
     }
 }
