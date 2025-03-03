@@ -138,18 +138,33 @@ class ClientResource extends Resource
                             ->nullable()
                             ->maxLength(15),
                         TextInput::make('zipcode')
+                            ->required()
                             ->translateLabel()
                             ->numeric()
                             ->reactive()
                             ->maxLength(5)
                             ->minLength(5)
-                            ->afterstateupdated(function (callable $get, callable $set) {
+                            ->afterstateupdated(function ($operation,callable $get, callable $set) {
+                                $set('country_id', null);
+                                $set('state_id', null);
+                                $set('municipality_id', null);
+                                $set('city_id', null);
+
                                 $zipcode = ClientResource::getZipcode($get('zipcode'));
                                 if ($zipcode) {
                                     $set('country_id', $zipcode->country_id);
                                     $set('state_id', $zipcode->state_id);
                                     $set('municipality_id', $zipcode->municipality_id);
                                     $set('city_id', $zipcode->city_id);
+                                    $colonies = ClientResource::getColonies($get('zipcode'));
+                                    $colonyvalue = $get('colony');
+                                    if($colonyvalue || strlen($colonyvalue) > 0){
+                                        if ($colonyvalue && is_array($colonies) && in_array($colonyvalue, array_keys($colonies))) {
+                                            return;
+                                        } else {
+                                            $set('colony', null);
+                                        }
+                                    }
                                 }
                             })
                     ])->columns(3),
@@ -176,7 +191,10 @@ class ClientResource extends Resource
                             }),
 
                         Select::make('municipality_id')
-                            ->translateLabel()
+                            // ->translateLabel()
+                            ->label(function (Get $get) {
+                                return $get('state_id') === 9 ? __('Delegation') : __('Municipality');
+                            })
                             ->required()
                             ->disabled()
                             ->options(function (callable $get, callable $set) {
@@ -210,72 +228,31 @@ class ClientResource extends Resource
                                 }
 
                                 return $municipality->cities->pluck('name', 'id');
-                            }),
+                            })->afterStateUpdated(function($operation,$state,callable $set,callable $get){
+                                $colonies = ClientResource::getColonies($get('zipcode'));
+                                $colonyValue = $get('colony');
+                                if($get('colony') || strlen($get('colony') > 0) ){
+                                    if ($colonyValue && is_array($colonies) && in_array($colonyValue, array_keys($colonies))) {
+                                        return;
+                                    } else {
+                                        $set('colony', null);
+                                    }
+                                }
+
+                             }),
                         Select::make('colony')
                             ->translateLabel()
                             ->required()
                             ->searchable()
+                            ->disabled(fn(Get $get): bool => !ClientResource::existsZipcode($get('zipcode')))
                             ->options(function (callable $get, callable $set) {
-                                return ClientResource::getColony($get('zipcode'));
+                                return ClientResource::getColonies($get('zipcode'));
                             })->columnSpanFull(),
 
                     ])->visible(fn(Get $get): bool => $get('zipcode') != null && strlen($get('zipcode')) == 5)
                         ->columns(3),
-                    Section::make()->schema([
-
-                        Select::make('country_id')
-                            ->relationship(
-                                name: 'country',
-                                titleAttribute: 'country',
-                                modifyQueryUsing: fn(Builder $query) => $query->where('include', 1),
-                            )
-                            ->required()
-                            ->reactive()
-                            ->preload()
-                            ->default(135)
-                            ->searchable(['country', 'code'])
-                            ->translateLabel()
-                            ->visible(false)
-                            ->afterStateUpdated(fn(callable $set) => $set('state_id', null)),
-
-                        Select::make('state_id')
-                            ->translateLabel()
-                            ->required()
-                            ->reactive()
-                            ->options(function (callable $get) {
-                                $country = Country::find($get('country_id'));
-                                if (!$country) {
-                                    return;
-                                }
-                                return $country->states->pluck('name', 'id');
-                            })->afterStateUpdated(fn(callable $set) => $set('municipality_id', null)),
-
-                        Select::make('municipality_id')
-                            ->translateLabel()
-                            ->required()
-                            ->reactive()
-                            ->options(function (callable $get) {
-                                $state = State::find($get('state_id'));
-                                if (!$state) {
-                                    return;
-                                }
-                                return $state->municipalities->sortby('name')->pluck('name', 'id');
-                            })->afterStateUpdated(fn(callable $set) => $set('city_id', null)),
-
-                        Select::make('city_id')
-                            ->translateLabel()
-                            ->required()
-                            ->options(function (callable $get) {
-                                $municipality = Municipality::find($get('municipality_id'));
-                                if (!$municipality) {
-                                    return;
-                                }
-                                return $municipality->cities->pluck('name', 'id');
-                            }),
 
 
-                    ])->visible(fn(Get $get): bool => $get('zipcode') == null || strlen($get('zipcode')) != 5)
-                        ->columns(3),
 
                     Section::make()->schema([
                         TextInput::make('colony')
@@ -301,10 +278,8 @@ class ClientResource extends Resource
 
 
 
-                ])
-                    ->columns(2),
-                // ->visible(fn(Get $get): bool => $get('zipcode') === 'Física'),
-                // ->visible(fn(Get $get): bool => $get('zipcode') != null && strlen($get('zipcode')) !=5)
+                ])->columns(2),
+
                 Group::make()->schema([
                     MarkdownEditor::make('notes')
                         ->translateLabel()
@@ -404,9 +379,15 @@ class ClientResource extends Resource
         return $zipcode;
     }
 
-    public static function getColony($zipcode)
+    public static function getColonies($zipcode)
     {
         $zipcode = Zipcode::where('zipcode', $zipcode)->pluck('name', 'name')->toArray();
         return $zipcode;
+    }
+
+    public static function existsZipcode($zipcode)
+    {
+         return Zipcode::where('zipcode', $zipcode)->exists();
+
     }
 }
