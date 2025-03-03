@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Asesor\Resources\OrderResource\Pages;
 use App\Filament\Asesor\Resources\OrderResource\RelationManagers;
+use App\Models\Client;
+use App\Models\Zipcode;
 use Filament\Forms\Get;
 
 class OrderResource extends Resource
@@ -61,6 +63,7 @@ class OrderResource extends Resource
                                         ->translateLabel()
                                         ->reactive()
                                         ->live(onBlur: true)
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::getClient($set, $get, $get('client_id')))
                                         ->columnSpan(2),
                                     Forms\Components\DatePicker::make('date')
                                         ->required()
@@ -216,7 +219,13 @@ class OrderResource extends Resource
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
                                     ->inlineLabel(),
                                 Group::make()->schema([
-                                    Forms\Components\TextInput::make('address')
+                                    Forms\Components\TextInput::make('street')
+                                        ->maxLength(100)
+                                        ->translateLabel(),
+                                    Forms\Components\TextInput::make('number')
+                                        ->maxLength(100)
+                                        ->translateLabel(),
+                                    Forms\Components\TextInput::make('interior_number')
                                         ->maxLength(100)
                                         ->translateLabel(),
                                     Forms\Components\TextInput::make('colony')
@@ -380,5 +389,26 @@ class OrderResource extends Resource
         $set('tax', $tax);
         $set('total', round($get('subtotal') + $tax - $get('discount'), 2));
         $set('pending_balance', round($get('total') - $get('advance'), 2));
+    }
+
+    public static function getClient(Set $set,Get $get,$client_id){
+        $client = Client::find($client_id);
+        $set('zipcode', $client->zipcode);
+        $set('street', $client->street);
+        $set('number', $client->number);
+        $set('interior_number', $client->interior_number);
+        $set('colony', $client->colony);
+        $set('country_id', $client->country_id);
+        $set('state_id', $client->state_id);
+        $set('municipality_id', $client->municipality_id);
+        $set('city_id', $client->city_id);
+        $set('references', $client->references);
+
+    }
+
+    public static function getZipcode($zipcode)
+    {
+        $zipcode = Zipcode::where('zipcode', $zipcode)->first();
+        return $zipcode;
     }
 }

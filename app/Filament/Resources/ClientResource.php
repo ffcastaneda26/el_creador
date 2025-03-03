@@ -297,6 +297,10 @@ class ClientResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')
+                    ->sortable()
+                    ->label(__('ID')),
+
                 TextColumn::make('full_name')
                     ->searchable()
                     ->sortable()
