@@ -57,124 +57,128 @@ class CotizationResource extends Resource
                 Group::make()->schema([
                     Select::make('client_id')
                         ->relationship(
-                                name: 'client',
-                                titleAttribute: 'name',
-                            )
+                            name: 'client',
+                            titleAttribute: 'name',
+                        )
                         ->required()
                         ->preload()
-                        ->searchable(['name', 'phone','email'])
+                        ->searchable(['name', 'phone', 'email'])
                         ->translateLabel(),
 
-                        MarkdownEditor::make('description')
-                            ->required()
-                            ->translateLabel()
-                            ->columnSpan(2),
-                    ]),
+                    MarkdownEditor::make('description')
+                        ->required()
+                        ->translateLabel()
+                        ->columnSpan(2),
+                ]),
                 Group::make()->schema([
                     DatePicker::make('fecha')
-                            ->required()
-                            ->default(now())
-                            ->format('Y-m-d'),
+                        ->required()
+                        ->default(now())
+                        ->format('Y-m-d'),
                     DatePicker::make('vigencia')
+                        ->required()
+                        ->format('Y-m-d')
+                        ->after('fecha'),
+                    Section::make()->schema([
+                        Select::make('tax')
+                            ->options([
+                                true => __('Yes'),
+                                false => 'No',
+                            ])
+                            ->live(onBlur: true)
+                            ->reactive()
+                            ->label('¿Incluir Iva?')
+                            ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
+                                $subtotal = $get('subtotal');
+                                $descuento = $get('descuento');
+                                $envio = $get('envio');
+                                $iva = 00.00;
+                                $tax = $get('tax');
+                                if ($tax) {
+                                    $iva = round($subtotal * 0.16, 2);
+                                }
+                                $set('iva', $iva);
+                                $total = round($subtotal + $iva - $descuento + $envio, 2);
+                                $set('total', $total);
+                            })
+                            ->columnSpan(2),
+                        Section::make()->schema([
+                            TextInput::make('subtotal')
+                                ->default(0.00)
+                                ->required()
+                                ->translateLabel()
+                                ->live(onBlur: true)
+                                ->inputMode('decimal')
+                                ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
+                                    $descuento = $get('descuento');
+                                    $envio = $get('envio');
+                                    $iva = 0.00;
+                                    $tax = $get('tax');
+                                    if ($tax) {
+                                        $iva = round($state * 0.16, 2);
+                                    }
+                                    $set('iva', $iva);
+                                    $total = round($state + $iva - $descuento + $envio, 2);
+                                    $set('total', $total);
+                                }),
+                            TextInput::make('descuento')
+                                ->default(0.00)
+                                ->translateLabel()
+                                ->live(onBlur: true)
+                                ->inputMode('decimal')
+                                ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
+                                    $subtotal = $get('subtotal');
+                                    $envio = $get('envio');
+                                    $iva = $get('iva');
+                                    $total = round($subtotal +  $iva - $state + $envio, 2);
+                                    $set('total', $total);
+                                }),
+                            TextInput::make('envio')
+                                ->default(0.00)
+                                ->translateLabel()
+                                ->live(onBlur: true)
+                                ->inputMode('decimal')
+                                ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
+                                    $subtotal = $get('subtotal');
+                                    $descuento = $get('descuento');
+                                    $iva = $get('iva');
+                                    $total = round($subtotal +  $iva - $descuento + $state, 2);
+                                    $set('total', $total);
+                                }),
+                        ])->columns(3),
+
+                        TextInput::make('iva')
                             ->required()
+                            ->translateLabel()
+                            ->inputMode('decimal')
+                            ->disabled()
+                            ->inlinelabel(),
+
+                        TextInput::make('total')
+                            ->required()
+                            ->disabled()
+                            ->translateLabel()
+                            ->inputMode('decimal')
+                            ->inlinelabel(),
+
+                    ])->columns(2),
+
+                    Section::make()->schema([
+                        Toggle::make('aprobada'),
+                        DatePicker::make('fecha_aprobada')
+                            ->afterOrEqual('fecha')
                             ->format('Y-m-d')
-                            ->after('fecha'),
-                    Section::make()->schema([
-                            Select::make('tax')
-                                ->options([
-                                    true => __('Yes'),
-                                    false => 'No',
-                                    ])
-                                ->live(onBlur:true)
-                                ->reactive()
-                                ->label('¿Incluir Iva?')
-                                ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                        $subtotal= $get('subtotal');
-                                        $descuento= $get('descuento');
-                                        $envio = $get('envio');
-                                        $iva= 00.00;
-                                        $tax = $get('tax');
-                                        if($tax){
-                                            $iva= round($subtotal*0.16,2);
-                                        }
-                                        $set('iva',$iva);
-                                        $total = round($subtotal + $iva - $descuento +$envio,2);
-                                        $set('total',$total);
+                            ->requiredIf('aprobada', true)
+                            ->validationMessages([
+                                'required_if' => 'Debe seleccionar fecha de aprobación si la cotización es aprobada',
+                                'after_or_equal' => 'La fecha de aproBación debe ser igual o mayor a la fecha de la cotización',
 
-                                    })
-                                ->columnSpan(2),
-                            Section::make()->schema([
-                                TextInput::make('subtotal')
-                                    ->default(0.00)
-                                    ->required()
-                                    ->translateLabel()
-                                    ->live(onBlur:true)
-                                    ->inputMode('decimal')
-                                    ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                        $descuento= $get('descuento');
-                                        $envio= $get('envio');
-                                        $iva= 0.00;
-                                        $tax = $get('tax');
-                                        if($tax){
-                                            $iva= round($state*0.16,2);
-                                        }
-                                        $set('iva',$iva);
-                                        $total = round($state + $iva - $descuento + $envio,2);
-                                        $set('total',$total);
-                                }),
-                                TextInput::make('descuento')
-                                    ->default(0.00)
-                                    ->translateLabel()
-                                    ->live(onBlur:true)
-                                    ->inputMode('decimal')
-                                    ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                        $subtotal= $get('subtotal');
-                                        $envio = $get('envio');
-                                        $iva = $get('iva');
-                                        $total = round($subtotal +  $iva - $state + $envio,2);
-                                        $set('total',$total);
-                                }),
-                                TextInput::make('envio')
-                                    ->default(0.00)
-                                    ->translateLabel()
-                                    ->live(onBlur:true)
-                                    ->inputMode('decimal')
-                                    ->afterStateUpdated(function (callable $get,Set $set,?string $state) {
-                                        $subtotal= $get('subtotal');
-                                        $descuento = $get('descuento');
-                                        $iva = $get('iva');
-                                        $total = round($subtotal +  $iva - $descuento + $state,2);
-                                        $set('total',$total);
-                                }),
-                            ])->columns(3),
+                            ]),
 
-                            TextInput::make('iva')
-                                ->required()
-                                ->translateLabel()
-                                ->inputMode('decimal')
-                                ->disabled()
-                                ->inlinelabel(),
-
-                            TextInput::make('total')
-                                ->required()
-                                ->disabled()
-                                ->translateLabel()
-                                ->inputMode('decimal')
-                                ->inlinelabel(),
-
-                        ])->columns(2),
-
-                    Section::make()->schema([
-                            Toggle::make('aprobada'),
-                            DatePicker::make('fecha_aprobada')
-                                ->requiredIfAccepted('aprobada')
-                                ->afterOrEqual('fecha')
-                                ->format('Y-m-d'),
-                            DatePicker::make('fecha_entrega')
-                                ->after('fecha')
-                                ->format('Y-m-d'),
-
-                        ])->columns(3)
+                        DatePicker::make('fecha_entrega')
+                            ->after('fecha')
+                            ->format('Y-m-d'),
+                    ])->columns(3)
                 ])->columns(2),
             ]);
     }
@@ -185,54 +189,65 @@ class CotizationResource extends Resource
             ->columns([
 
                 TextColumn::make('client.name')
-                        ->searchable()
-                        ->sortable()
-                        ->label(__('Client')),
+                    ->searchable()
+                    ->sortable()
+                    ->label(__('Client')),
                 TextColumn::make('fecha')
-                        ->translateLabel()
-                        ->searchable()
-                        ->sortable()
-                        ->date('d M y'),
+                    ->translateLabel()
+                    ->searchable()
+                    ->sortable()
+                    ->date('d M y'),
+                TextColumn::make('fecha')
+                    ->translateLabel()
+                    ->searchable()
+                    ->sortable()
+                    ->date('d M y'),
 
                 TextColumn::make('vigencia')
-                        ->translateLabel()
-                        ->searchable()
-                        ->sortable()
-                        ->date('d M y')
-                        ->toggleable(isToggledHiddenByDefault: true),
+                    ->translateLabel()
+                    ->searchable()
+                    ->sortable()
+                    ->date('d M y')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 IconColumn::make('aprobada')->translateLabel()->boolean(),
+                TextColumn::make('fecha_aprobada')
+                    ->translateLabel()
+                    ->searchable()
+                    ->sortable()
+                    ->date('d M y')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 ImageColumn::make('images.image')->circular()->stacked()->translateLabel(),
                 TextColumn::make('subtotal')
-                    ->formatStateUsing(fn (string $state): string => number_format($state))
+                    ->formatStateUsing(fn(string $state): string => number_format($state))
                     ->alignEnd(),
                 TextColumn::make('iva')
-                    ->formatStateUsing(fn (string $state): string => number_format($state,2))
+                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd(),
                 TextColumn::make('descuento')
-                    ->formatStateUsing(fn (string $state): string => number_format($state,2))
+                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('envio')
-                    ->formatStateUsing(fn (string $state): string => number_format($state,2))
+                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('total')
-                        ->formatStateUsing(fn (string $state): string => number_format($state,2))
-                        ->alignEnd()
+                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
+                    ->alignEnd()
             ])
             ->filters([
                 SelectFilter::make('client')
-                ->relationship('client', 'name')
-                ->translateLabel()
-                ->searchable()
-                ->preload()
+                    ->relationship('client', 'name')
+                    ->translateLabel()
+                    ->searchable()
+                    ->preload()
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make(__('Cotization'))
                     ->icon('heroicon-o-document-currency-dollar')
-                    ->url(fn (Cotization $record) => route('pdf-document',[ $record,'cotizacion']))
+                    ->url(fn(Cotization $record) => route('pdf-document', [$record, 'cotizacion']))
                     ->openUrlInNewTab()
             ])
             ->bulkActions([
@@ -245,7 +260,7 @@ class CotizationResource extends Resource
     public static function getRelations(): array
     {
         return [
-           ImagesRelationManager::class,
+            ImagesRelationManager::class,
         ];
     }
 
@@ -257,6 +272,4 @@ class CotizationResource extends Resource
             'edit' => Pages\EditCotization::route('/{record}/edit'),
         ];
     }
-
-
 }
