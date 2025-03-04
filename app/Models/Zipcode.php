@@ -24,36 +24,48 @@ class Zipcode extends Model
         'type_zipcode_id',
     ];
 
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class);
-    }
-    public function clients(): HasMany
-    {
-        return $this->hasMany(Client::class,'zipcode');
-    }
-
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
-    public function municipality(): BelongsTo
-    {
-        return $this->belongsTo(Municipality::class);
-    }
 
-    public function orders():HasMany
-    {
-        return $this->hasMany(Order::class,'zipcode');
-    }
 
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
+    }
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function municipality(): BelongsTo
+    {
+        return $this->belongsTo(Municipality::class);
     }
 
     public function type(): BelongsTo
     {
         return $this->belongsTo(TypeZipcode::class,'type_zipcode_id');
     }
+
+    /**
+     * Clientes en este código postal
+     */
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class,'zipcode');
+    }
+
+
+    /**
+     * Órdenes de compra de ventas coneste domicilio
+     */
+
+    public function orders():HasMany
+    {
+        return $this->hasMany(Order::class,'zipcode');
+    }
+
+
 }

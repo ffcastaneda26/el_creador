@@ -14,16 +14,16 @@ class ZipcodePolicy
     }
     public function create(User $user): bool
     {
-        return $user->isSuperAdmin() || $user->isAdministrador();
+        return $user->isSuperAdmin() || $user->isAdministrador() || $user->isGerente();
     }
     public function update(User $user, ZipCode $zipCode): bool
     {
-        return $user->isSuperAdmin() || $user->isAdministrador();
+        return $user->isSuperAdmin() || $user->isAdministrador() || $user->isGerente();
     }
 
     public function delete(User $user, ZipCode $zipCode): bool
     {
-        return $user->isSuperAdmin() || $user->isAdministrador();
+        return $user->isSuperAdmin() || $user->isAdministrador() || $user->isGerente();
     }
 
 }
