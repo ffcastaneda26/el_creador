@@ -3,6 +3,7 @@
 namespace App\Filament\Asesor\Resources\OrderResource\Pages;
 
 use App\Filament\Asesor\Resources\OrderResource;
+use App\Models\Zipcode;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,20 @@ class EditOrder extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['user_id'] = Auth::user()->id;
+
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        //dd('Entramos a la edición',$data);
+        $zipcode = Zipcode::where('zipcode', $data['zipcode'])->first();
+        if ($zipcode) {
+            $data['country'] = $zipcode->country;
+            $data['state'] = $zipcode->state;
+            $data['municipality'] = $zipcode->municipality;
+            $data['city'] = $zipcode->city;
+        }
         return $data;
     }
 }

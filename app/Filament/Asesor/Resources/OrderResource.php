@@ -6,19 +6,13 @@ use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
 use App\Models\State;
-use App\Models\Country;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use App\Models\Municipality;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Asesor\Resources\OrderResource\Pages;
-use App\Filament\Asesor\Resources\OrderResource\RelationManagers;
 use App\Models\Client;
 use App\Models\Zipcode;
 use Filament\Forms\Get;
@@ -103,8 +97,8 @@ class OrderResource extends Resource
                                         ->minDate(now())
                                         ->maxDate(fn(Get $get) => $get('delivery_date')),
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
-                                ->inlineLabel()
-                                ->columns(3),
+                                    ->inlineLabel()
+                                    ->columns(3),
 
                                 Group::make()->schema([
                                     Forms\Components\TextInput::make('subtotal')
@@ -165,60 +159,66 @@ class OrderResource extends Resource
                         Tabs\Tab::make(__('Delivery'))
                             ->schema([
                                 Group::make()->schema([
-                                    Forms\Components\TextInput::make('zipcode')
-                                        ->maxLength(5)
-                                        ->translateLabel(),
-                                    Forms\Components\Select::make('country_id')
-                                        ->relationship(
-                                            name: 'country',
-                                            titleAttribute: 'country',
-                                            modifyQueryUsing: fn(Builder $query) => $query->where('include', 1),
-                                        )
-                                        ->required()
-                                        ->reactive()
-                                        ->preload()
-                                        ->default(135)
-                                        ->searchable(['country', 'code'])
-                                        ->translateLabel()
-                                        ->afterStateUpdated(fn(callable $set) => $set('state_id', null)),
+                                        Forms\Components\TextInput::make('zipcode')
+                                            ->maxLength(5)
+                                            ->translateLabel()
+                                            ->live(onBlur: true)
+                                            ->afterstateupdated(function (callable $get, callable $set) {
+                                                $set('country', null);
+                                                $set('state', null);
+                                                $set('municipality', null);
+                                                $set('city', null);
 
-                                    Forms\Components\Select::make('state_id')
-                                        ->translateLabel()
-                                        ->required()
-                                        ->reactive()
-                                        ->options(function (callable $get) {
-                                            $country = Country::find($get('country_id'));
-                                            if (!$country) {
-                                                return;
-                                            }
-                                            return $country->states->pluck('name', 'id');
-                                        })->afterStateUpdated(fn(callable $set) => $set('municipality_id', null)),
+                                                $zipcode = OrderResource::getZipcode($get('zipcode'));
+                                                if ($zipcode) {
+                                                    // dd($zipcode);
+                                                    $set('country', $zipcode->country);
+                                                    $set('state', $zipcode->state);
+                                                    $set('municipality', $zipcode->municipality);
+                                                    $set('city', $zipcode->city);
+                                                    $colonies = OrderResource::getColonies($get('zipcode'));
+                                                    $colonyvalue = $get('colony');
+                                                    if ($colonyvalue || strlen($colonyvalue) > 0) {
+                                                        if ($colonyvalue && is_array($colonies) && in_array($colonyvalue, array_keys($colonies))) {
+                                                            return;
+                                                        } else {
+                                                            $set('colony', null);
+                                                        }
+                                                    }
+                                                }
+                                            }),
 
-                                    Forms\Components\Select::make('municipality_id')
-                                        ->translateLabel()
-                                        ->required()
-                                        ->reactive()
-                                        ->options(function (callable $get) {
-                                            $state = State::find($get('state_id'));
-                                            if (!$state) {
-                                                return;
-                                            }
-                                            return $state->municipalities->sortby('name')->pluck('name', 'id');
-                                        })->afterStateUpdated(fn(callable $set) => $set('city_id', null)),
 
-                                    Forms\Components\Select::make('city_id')
-                                        ->translateLabel()
-                                        ->required()
-                                        ->options(function (callable $get) {
-                                            $municipality = Municipality::find($get('municipality_id'));
-                                            if (!$municipality) {
-                                                return;
-                                            }
-                                            return $municipality->cities->pluck('name', 'id');
-                                        }),
-                                ])->disabled(fn(Get $get) => !$get('client_id'))
-                                    ->inlineLabel(),
 
+                                        Forms\Components\TextInput::make('country')
+                                            ->translateLabel()
+                                            ->disabled(),
+                                        Forms\Components\TextInput::make('state')
+                                            ->translateLabel()
+                                            ->disabled(),
+                                        Forms\Components\TextInput::make('municipality')
+                                            ->translateLabel()
+                                            ->disabled(),
+                                        Forms\Components\TextInput::make('city')
+                                            ->translateLabel()
+                                            ->disabled(),
+                                        Forms\Components\Select::make('colony')
+                                            ->translateLabel()
+                                            ->required()
+                                            ->searchable()
+                                            ->disabled(fn(Get $get): bool => !OrderResource::zipcodeExists($get('zipcode')))
+                                            ->options(function (callable $get, callable $set) {
+                                                $colonies = OrderResource::getColonies($get('zipcode'));
+                                                if(count($colonies)){
+                                                    return $colonies;
+                                                }
+                                                $set('colony',null);
+                                                return null;
+
+                                            }),
+
+
+                                ])->columns(2),
                                 Group::make()->schema([
                                     Forms\Components\TextInput::make('street')
                                         ->maxLength(100)
@@ -229,16 +229,13 @@ class OrderResource extends Resource
                                     Forms\Components\TextInput::make('interior_number')
                                         ->maxLength(100)
                                         ->translateLabel(),
-                                    Forms\Components\TextInput::make('colony')
-                                        ->maxLength(100)
-                                        ->translateLabel(),
                                     Forms\Components\Textarea::make('references')
                                         ->columnSpanFull()
+                                        ->rows(3)
                                         ->translateLabel(),
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
                                     ->inlineLabel()
-                            ])->columns(2)
-                            ->visible(fn(Get $get) => $get('client_id')),
+                            ])->columns(2),
                     ])->columnSpanFull(),
 
 
@@ -392,24 +389,40 @@ class OrderResource extends Resource
         $set('pending_balance', round($get('total') - $get('advance'), 2));
     }
 
-    public static function getClient(Set $set,Get $get,$client_id){
+    public static function getClient(Set $set, Get $get, $client_id)
+    {
         $client = Client::find($client_id);
         $set('zipcode', $client->zipcode);
         $set('street', $client->street);
         $set('number', $client->number);
         $set('interior_number', $client->interior_number);
         $set('colony', $client->colony);
-        $set('country_id', $client->country_id);
-        $set('state_id', $client->state_id);
-        $set('municipality_id', $client->municipality_id);
-        $set('city_id', $client->city_id);
+        $zipcode = Zipcode::where('zipcode', $client->zipcode)->first();
+        if ($zipcode) {
+            $set('country', $zipcode->country);
+            $set('state', $zipcode->state);
+            $set('municipality', $zipcode->municipality);
+            $set('city', $zipcode->city);
+        }
         $set('references', $client->references);
-
     }
 
     public static function getZipcode($zipcode)
     {
         $zipcode = Zipcode::where('zipcode', $zipcode)->first();
+        return $zipcode;
+    }
+
+
+    public static function zipcodeExists($zipcode)
+    {
+        return Zipcode::where('zipcode', $zipcode)->exists();
+    }
+
+
+    public static function getColonies($zipcode)
+    {
+        $zipcode = Zipcode::where('zipcode', $zipcode)->pluck('name', 'name')->toArray();
         return $zipcode;
     }
 }
