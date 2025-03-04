@@ -144,7 +144,7 @@ class ClientResource extends Resource
                             ->reactive()
                             ->maxLength(5)
                             ->minLength(5)
-                            ->afterstateupdated(function ($operation,callable $get, callable $set) {
+                            ->afterstateupdated(function ($operation, callable $get, callable $set) {
                                 $set('country_id', null);
                                 $set('state_id', null);
                                 $set('municipality_id', null);
@@ -158,7 +158,7 @@ class ClientResource extends Resource
                                     $set('city_id', $zipcode->city_id);
                                     $colonies = ClientResource::getColonies($get('zipcode'));
                                     $colonyvalue = $get('colony');
-                                    if($colonyvalue || strlen($colonyvalue) > 0){
+                                    if ($colonyvalue || strlen($colonyvalue) > 0) {
                                         if ($colonyvalue && is_array($colonies) && in_array($colonyvalue, array_keys($colonies))) {
                                             return;
                                         } else {
@@ -228,18 +228,17 @@ class ClientResource extends Resource
                                 }
 
                                 return $municipality->cities->pluck('name', 'id');
-                            })->afterStateUpdated(function($operation,$state,callable $set,callable $get){
+                            })->afterStateUpdated(function ($operation, $state, callable $set, callable $get) {
                                 $colonies = ClientResource::getColonies($get('zipcode'));
                                 $colonyValue = $get('colony');
-                                if($get('colony') || strlen($get('colony') > 0) ){
+                                if ($get('colony') || strlen($get('colony') > 0)) {
                                     if ($colonyValue && is_array($colonies) && in_array($colonyValue, array_keys($colonies))) {
                                         return;
                                     } else {
                                         $set('colony', null);
                                     }
                                 }
-
-                             }),
+                            }),
                         Select::make('colony')
                             ->translateLabel()
                             ->required()
@@ -259,7 +258,7 @@ class ClientResource extends Resource
                             ->translateLabel()
                             ->required()
                             ->visible(fn(Get $get): bool => $get('zipcode') == null || strlen($get('zipcode')) != 5)
-                             ->columnSpanFull(),
+                            ->columnSpanFull(),
                         TextInput::make('street')
                             ->translateLabel()
                             ->required()
@@ -297,7 +296,10 @@ class ClientResource extends Resource
     {
         return $table
             ->columns([
-
+                TextColumn::make('id')
+                    ->sortable()
+                    ->searchable()
+                    ->label(__('ID')),
                 TextColumn::make('full_name')
                     ->searchable()
                     ->sortable()
@@ -349,11 +351,23 @@ class ClientResource extends Resource
                     ->relationship('municipality', 'name')
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->button()
+                    ->color('warning')
+                    ->size('xs'),
                 Tables\Actions\Action::make(__('Notice'))
+                    ->button()
+                    ->size('xs')
+                    ->color('primary')
                     ->icon('heroicon-o-document')
                     ->url(fn(Client $record) => route('pdf-document', [$record, 'aviso']))
                     ->openUrlInNewTab(),
+                Tables\Actions\DeleteAction::make()
+                    ->button()
+                    ->size('xs')
+                    ->disabled(function(Client $record) {
+                        return $record->cotizations()->exists() || $record->orders()->exists();
+                    }),
 
             ]);
     }
@@ -388,7 +402,6 @@ class ClientResource extends Resource
 
     public static function existsZipcode($zipcode)
     {
-         return Zipcode::where('zipcode', $zipcode)->exists();
-
+        return Zipcode::where('zipcode', $zipcode)->exists();
     }
 }
