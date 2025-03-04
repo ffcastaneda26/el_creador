@@ -25,10 +25,5 @@ class CreateOrder extends CreateRecord
         $data['user_id']        = Auth::user()->id;
         return $data;
     }
-    protected function beforeFill(): void
-    {
-        // Runs before the form fields are populated from the database.
-        $record = $this->getRecord();
-        dd($record);
-    }
+
 }

@@ -218,6 +218,7 @@ class OrderResource extends Resource
                                         }),
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
                                     ->inlineLabel(),
+
                                 Group::make()->schema([
                                     Forms\Components\TextInput::make('street')
                                         ->maxLength(100)
