@@ -92,7 +92,7 @@ class PdfController extends Controller
     public function cotizacion($record)
     {
         $data = Cotization::findOrFail($record);
-        $filePath = public_path('pdfs/cotizacion_formal.pdf'); // Asegúrate de que el nombre sea correcto
+        $filePath = public_path('pdfs/cotizacion formal.pdf'); // Asegúrate de que el nombre sea correcto
         $outputFilePath = public_path("output.pdf");
 
         // Validar que el archivo PDF exista
