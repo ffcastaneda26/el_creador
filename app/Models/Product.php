@@ -57,6 +57,15 @@ class Product extends Model
         return self::count();
     }
 
+    public function purchase_etails(): HasMany
+    {
+        return $this->hasMany(PurchaseDetail::class,'product_id');
+    }
+
+    public function reception_details(): HasMany
+    {
+        return $this->hasMany(ReceiptDetail::class,'product_id');
+    }
 
     // public function warehouses(): BelongsToMany
     // {

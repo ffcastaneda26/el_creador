@@ -37,7 +37,7 @@ class Purchase extends Model
 
     public function authorizer_user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_auhtorizer_id');
+        return $this->belongsTo(User::class, 'user_authorizer_id');
     }
 
     public function details()

@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\UserTrait;
+use Filament\Forms\Components\HasManyRepeater;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -111,6 +112,36 @@ class User extends Authenticatable implements FilamentUser
     public function products(): HasMany
     {
         return $this->hasMany(ProductWarehouse::class);
+    }
+
+    public function warehouseRequests(): HasMany
+    {
+        return $this->hasMany(WarehouseRequest::class);
+    }
+
+    public function warehouseRequestsAuthorized(): HasMany
+    {
+        return $this->hasMany(WarehouseRequest::class,'user_auhtorizer_id');
+    }
+
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(Purchase::class);
+    }
+
+    public function purchasesAuthorized(): HasMany
+    {
+        return $this->hasMany(Purchase::class,'user_authorizer_id');
+    }
+
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
+    }
+
+    public function receiptsAuthorized(): HasMany
+    {
+        return $this->hasMany(Receipt::class,'user_authorizer_id');
     }
 
 }

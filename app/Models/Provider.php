@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Attribute;
 use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\HasManyRepeater;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Provider extends Model
 {
@@ -80,5 +82,10 @@ class Provider extends Model
 
     public function isActive(){
         return $this->active;
+    }
+
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(Purchase::class);
     }
 }
