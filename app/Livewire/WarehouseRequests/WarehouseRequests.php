@@ -33,12 +33,12 @@ class WarehouseRequests extends Component
     {
         return view('livewire.warehouse-requests.warehouse-requests',[
             'records' => $this->getRecords(),
-        ])->title(__('Warehouse Requests'));;
+        ])->title(__('Warehouse Requests'));
     }
 
-    /** Lee Clientes */
+
     /**
-     * Lee clientes considerando la busqueda por: Nombre,Teléfono y Celular
+     * Lee Requerimientos al almacén
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function getRecords()

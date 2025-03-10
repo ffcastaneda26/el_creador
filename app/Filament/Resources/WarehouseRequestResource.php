@@ -29,7 +29,7 @@ class WarehouseRequestResource extends Resource
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('Administrador');
+        return Auth::user()->hasRole('Administrador') || Auth::user()->hasRole('Gerente');
     }
 
     protected static ?int $navigationSort = 61;

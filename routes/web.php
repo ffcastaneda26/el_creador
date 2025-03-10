@@ -4,6 +4,7 @@ use App\Http\Controllers\PdfController;
 use App\Http\Controllers\PrivateNotice;
 use App\Http\Controllers\TestController;
 use App\Livewire\Clients\Clients;
+use App\Livewire\Receipts\Receipts;
 use App\Livewire\TestingPdfs;
 use App\Livewire\WarehouseRequests\WarehouseRequests;
 use Illuminate\Support\Facades\Auth;
@@ -48,5 +49,6 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])
     })->name('dashboard');
     Route::get('clients',Clients::class)->name('clients');
     Route::get('warehouse_requests', WarehouseRequests::class)->name('warehouse-requests');
+    Route::get('receipts',Receipts::class)->name('receipts');
 
 });

@@ -201,6 +201,25 @@ class PurchaseResource extends Resource
 
                         $record->save();
                     }),
+                // Botón para enviar al proveedor
+                Action::make('Mark as Sent')
+                ->label(__('Mark as Sent'))
+                ->button()
+                ->icon('heroicon-s-paper-airplane')
+                ->requiresConfirmation()
+                ->modalHeading(__('Mark as sent to supplier'))
+                ->modalDescription(__('Are you sure you want to mark the Purchase Order as Shipped? This action cannot be undone.'))
+                ->modalSubmitActionLabel(__('Yes, Mark as sent'))
+                ->stickyModalHeader()
+                ->closeModalByClickingAway(false)
+                ->closeModalByEscaping(false)
+                ->modalIconColor('danger')
+                ->visible(fn(Purchase $record): bool => $record->status === StatusPurchaseEnum::autorizado)
+                ->action(action: function (Purchase $record) {
+                    $record->status = StatusPurchaseEnum::pendiente;
+                    $record->save();
+                }),
+                // Botón para borrar
                 Tables\Actions\DeleteAction::make()->button()->color('danger')
                     ->visible(fn($record) => $record->status == StatusPurchaseEnum::abierto || !$record->has_details_received())
 

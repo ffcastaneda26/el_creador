@@ -1,4 +1,10 @@
 {
+    "All Status": "Todos",
+    "Are you sure you want to mark the Purchase Order as Shipped? This action cannot be undone.":"¿Estás seguro de marcar la orden de Compra como enviada al proveedor?, No se puede deshacer esta acción.",
+    "Material Receptions": "Recepciones de Material",
+    "Material Receipt": "Recepción de Material",
+    "Mark as Sent": "Marcar Enviada a Proveedor",
+    "Mark as sent to supplier": "Marcar como enviada al proveedor",
     "Street": "Calle",
     "Number": "Número",
     "Interior number": "Número Interior",
@@ -28,8 +34,10 @@
     "Open Request":"Abrir Solicitud",
     "Yes, open it": "Sí, Abrirla",
     "Authorize Request": "Autorizar Solicitud",
+
     "Authorize": "Autorizar",
     "Yes, authorize it": "Sí, Autorizar",
+    "Yes, Mark as sent": "Si, Marcar como Enviada",
     "Status": "Estado",
     "Warehouse Requests": "Solicitudes de Almacén",
     "Warehouse Request": "Solicitud de Almacén",
