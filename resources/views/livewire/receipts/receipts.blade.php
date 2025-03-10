@@ -29,13 +29,13 @@
                                             </div>
                                             <div class="flex-shrink-0">
                                                 <div class="w-full">
-                                                    <label for="purchase_status">{{ __('Status') }}</label>
-                                                    <select wire:model.live.debounce.150ms="purchase_status"
+                                                    <label for="receipt_status">{{ __('Status') }}</label>
+                                                    <select wire:model.live.debounce.150ms="receipt_status"
                                                              wire:change="getRecords"
-                                                            id="purchase_status"
+                                                            id="receipt_status"
                                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                                         <option value="">{{ __('All Status') }}</option>
-                                                        @foreach (\App\Enums\Enums\StatusPurchaseEnum::cases() as $status)
+                                                        @foreach (\App\Enums\Enums\StatusReceiptEnum::cases() as $status)
                                                             <option value="{{ $status->value }}">
                                                                 {{ $status->getLabel() }}
                                                             </option>

@@ -16,7 +16,7 @@ class Receipts extends Component
     public $pagination = 10;
     public $showModal = false;
     public $search, $record_id;
-    public $purchase_status;
+    public $receipt_status;
     public $receipt_record;
     public $receipt_details;
 
@@ -56,8 +56,8 @@ class Receipts extends Component
         $qry  = Receipt::query();
         $qry = $qry->when($this->search, function ($query) {
             return $query->where('folio', 'like', "%{$this->search}%");
-        })->when($this->purchase_status, function ($query) {
-            return $query->where('status', '=', $this->purchase_status);
+        })->when($this->receipt_status, function ($query) {
+            return $query->where('status', '=', $this->receipt_status);
         });
         return  $qry->paginate($this->pagination);
     }
