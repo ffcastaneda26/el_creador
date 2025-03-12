@@ -22,18 +22,11 @@ class Receipts extends Component
     public $can_create_receipt = false;
 
     public $purchases,$purchase,$purchase_details;
-    public $purchase_id,$folio,$date,$reference,$notes,$status;
+    public $purchase_id,$folio,$date,$reference,$amoun,$notes,$status;
     public $receipt_id=null;
     public $receipt;
+    public $max_date;
 
-    // #[Validate('required|unique:receipts,folio')]
-    // public $folio;
-
-    // public function mount(){
-    //     $this->getPurchases();
-    //     // dd($this->purchases->count());
-    //     $this->can_create_receipt = $this->purchases->count();
-    // }
     protected function rules()
     {
         return [
@@ -50,7 +43,7 @@ class Receipts extends Component
         ];
     }
     #[Validate('required|numeric|regex:/^\d+(\.\d{1,2})?$/')]
-    public $amount;
+
 
     public function render()
     {
@@ -81,6 +74,7 @@ class Receipts extends Component
         $this->showModal();
         $this->resetInputFields();
         $this->getPurchases();
+        $this->calculateMaxDate();
         $this->date = Carbon::now()->format('Y-m-d'); // Asigna la fecha actual
     }
 
@@ -127,5 +121,9 @@ class Receipts extends Component
     {
         $this->reset('purchase_details');
         return $this->purchase->pendings_to_receive;
+    }
+
+    public function calculateMaxDate(){
+        $this->max_date = Carbon::now()->format('Y-m-d');
     }
 }

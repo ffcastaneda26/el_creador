@@ -43,7 +43,9 @@
                         <label for="date"
                             class="block text-sm font-medium text-gray-700">{{ __('Date') }}</label>
                         <input type="date" wire:model="date" id="date"
-                            class="mt-1 block w-full border rounded p-2" required>
+                            class="mt-1 block w-full border rounded p-2"
+                            max="{{ $max_date }}"
+                            required>
 
                         @error('date')
                             <div class="text-md text-red-500">
