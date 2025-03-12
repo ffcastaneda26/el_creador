@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use App\Enums\Enums\StatusPurchaseDetailEnum;
 use App\Enums\Enums\StatusPurchaseEnum;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
+use App\Enums\Enums\StatusPurchaseDetailEnum;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Purchase extends Model
 {
@@ -104,4 +105,7 @@ class Purchase extends Model
 
     }
 
+    public function scopeStatus(Builder $query,$status){
+        $query->where('status',$status);
+    }
 }

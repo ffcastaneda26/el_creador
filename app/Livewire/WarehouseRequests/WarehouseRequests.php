@@ -4,17 +4,8 @@ namespace App\Livewire\WarehouseRequests;
 
 use Livewire\Component;
 
-use App\Models\City;
-use App\Models\State;
-use App\Models\Client;
-use App\Models\Country;
-use App\Models\Zipcode;
-use App\Models\Municipality;
 use App\Models\WarehouseRequest;
-use App\Models\WarehouseRequestDetail;
 use Livewire\WithPagination;
-use Livewire\Attributes\Validate;
-use Illuminate\Support\Facades\Log;
 
 class WarehouseRequests extends Component
 {

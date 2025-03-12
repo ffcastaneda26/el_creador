@@ -64,4 +64,6 @@ class Receipt extends Model
 
         $this->save();
     }
+
+
 }
