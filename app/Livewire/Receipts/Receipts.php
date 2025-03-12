@@ -2,131 +2,130 @@
 
 namespace App\Livewire\Receipts;
 
-use App\Models\Purchase;
+use Carbon\Carbon;
 use App\Models\Receipt;
 use Livewire\Component;
-
-use App\Models\WarehouseRequest;
+use App\Models\Purchase;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\Validate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\Enums\StatusReceiptEnum;
 
 class Receipts extends Component
 {
     use WithPagination;
     public $pagination = 10;
-    public $showModal = false;
-    public $showFormCreate = false;
-    public $search, $record_id;
-    public $create_receipt = false;
-    public $can_create_receipts = true;
-    public $receipt_record;
-    public $receipt_status;
+    public $showModal= false;
+    public $search,$record_id;
+    public $can_create_receipt = false;
 
-    public $receipt_record_details;
+    public $purchases,$purchase,$purchase_details;
+    public $purchase_id,$folio,$date,$reference,$notes,$status;
+    public $receipt_id=null;
+    public $receipt;
 
-    /** Variables del registro padre */
-    public $purchases, $purchase, $purchase_id, $purchase_details;
-    public $folio, $date, $amount, $reference, $notes;
+    // #[Validate('required|unique:receipts,folio')]
+    // public $folio;
 
+    // public function mount(){
+    //     $this->getPurchases();
+    //     // dd($this->purchases->count());
+    //     $this->can_create_receipt = $this->purchases->count();
+    // }
+    protected function rules()
+    {
+        return [
+            'purchase_id' => [
+                'required',
+                Rule::exists('purchases','id'),
+            ],
+            'folio' => [
+                'required',
+                Rule::unique('receipts'),
+            ],
+            'date' => 'required',
+            'reference' => 'required|max:30',
+        ];
+    }
+    #[Validate('required|numeric|regex:/^\d+(\.\d{1,2})?$/')]
+    public $amount;
 
-    /** Presenta resultados */
     public function render()
     {
-        return view('livewire.receipts.receipts', [
-            'records' => $this->getRecords(),
+        return view('livewire.receipts.receipts',[
+           'records' => $this->getRecords(),
         ])->title(__('Material Receptions'));
     }
 
-
-    /**
-     * Lee Requerimientos al almacén
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
     public function getRecords()
     {
-        $qry  = WarehouseRequest::query();
+        $qry  = Receipt::query();
         $qry = $qry->when($this->search, function ($query) {
             return $query->where('folio', 'like', "%{$this->search}%");
         });
         return  $qry->paginate($this->pagination);
     }
 
-
-    /**
-     * Valida y en su caso guarda los datos
-     */
-
-    public function store()
-    {
-
-        $this->resetErrorBag();
-
-        $this->resetInputFields();
-
-        $this->showModal(false);
-    }
-    /**
-     * Enciende o Apaga variable para mostrar u ocultar modal
-     * @param bool $open
-     * @return void
-     */
-    public function showModal(bool $open = true)
-    {
+    public function showModal(bool $open=true){
         $this->showModal = $open;
-        $this->showFormCreate = false;
     }
 
+    public function getPurchases(){
+        $this->purchases = Purchase::status('pendiente')->get();
+        $this->can_create_receipt = $this->purchases->count();
+    }
 
-    public function suply(Receipt $record)
-    {
+    public function create_receipt(){
+        $this->showModal();
         $this->resetInputFields();
-        $this->record_id = $record->id;
-        $this->receipt_record = $record;
-        $this->receipt_record_details = $this->receipt_record->details;
-        $this->showModal = true;
+        $this->getPurchases();
+        $this->date = Carbon::now()->format('Y-m-d'); // Asigna la fecha actual
     }
-    /**
-     * Restaura variables
-     * @return void
-     */
+
+
+
     private function resetInputFields()
     {
         $this->reset('record_id');
-        $this->reset('purchase_id', 'folio', 'date', 'amount', 'reference', 'notes');
+        $this->reset('purchase_id','folio','date','notes');
     }
+    public function store_receipt(){
+        $this->validate();
+                try {
+            $this->receipt = Receipt::create([
+                'purchase_id'   => $this->purchase_id,
+                'folio'         => $this->folio,
+                'date'          => $this->date,
+                'amount'        => $this->amount,
+                'reference'     => $this->reference,
+                'notes'         => $this->notes,
+                'user_id'       => Auth::user()->id,
+                'status'        => StatusReceiptEnum::abierto
+            ]);
 
-    /**
-     * Abrir Modal
-     */
-    public function create()
-    {
-        $this->resetInputFields();
-        $this->reset('receipt_record');
-        $this->showFormCreate = true;
-        $this->showModal = true;
+            $this->resetErrorBag();
+            $this->resetInputFields();
+            $this->showModal(false);
 
-        $this->purchases = Purchase::status('pendiente')->get();
-    }
+            // $this->purchase_details = $this->read_purchase_details($this->purchase_id);
 
-    /**
-     * Leer la orden de compra
-     */
-    public function read_purchase()
-    {
-        $this->reset('purchase');
-        if ($this->purchase_id) {
-            $this->purchase = Purchase::findOrFail($this->purchase_id);
-            if ($this->purchase) {
-                $this->purchase_details = $this->purchase->pendings_to_receive;
-            }
+
+        } catch (\Exception $e) {
+            $this->resetErrorBag();
+            $this->resetInputFields();
+            $this->showModal(false);
+            Log::error('Error al crear Recepción de Material:', ['error' => $e->getMessage()]);
+            $this->addError('error', 'Error al actualizar generar Recepción de Material.');
+
         }
+
     }
 
-    /**
-     * Validar y en su caso crear la recepción de material
-     */
-
-     public function create_receipt(){
-        dd('Aquí es donde se va a crear la recepción de material');
-     }
-
+    public function read_purchase_details(Purchase $purchase)
+    {
+        $this->reset('purchase_details');
+        return $this->purchase->pendings_to_receive;
+    }
 }

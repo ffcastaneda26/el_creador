@@ -1,7 +1,11 @@
 {
+    "Folio": "Folio",
     "All Status": "Todos",
     "Are you sure you want to mark the Purchase Order as Shipped? This action cannot be undone.":"¿Estás seguro de marcar la orden de Compra como enviada al proveedor?, No se puede deshacer esta acción.",
     "Material Receptions": "Recepciones de Material",
+    "New ": "Nuevo",
+    "Pending Purchase Order Items": "Partidas Pendientes de la Orden de Compra",
+    "New Material Receipt": "Nueva Recepción de Material",
     "Material Receipt": "Recepción de Material",
     "Mark as Sent": "Marcar Enviada a Proveedor",
     "Mark as sent to supplier": "Marcar como enviada al proveedor",

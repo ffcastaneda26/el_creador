@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('folio',20)->nullable()->default(null)->comment('Folio interno');
             $table->date('date')->nullable()->default(null)->comment('Fecha Recepción');
             $table->decimal('amount',10,2)->default(0)->comment('Importe');
-            $table->string('reference')->nullable()->default(null)->comment('Referencia');
+            $table->string('reference',30)->nullable()->default(null)->comment('Referencia');
             $table->mediumText('notes')->nullable()->default(null)->comment('Notas');
             $table->foreignIdFor(User::class)->comment('Usuario que crea o modifica');
             $table->unsignedBigInteger('user_authorizer_id')->nullable()->default(null)->comment('Usuario que autoriza');

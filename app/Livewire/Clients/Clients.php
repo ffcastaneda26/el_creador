@@ -46,7 +46,7 @@ class Clients extends Component
     {
         return view('livewire.clients.clients',[
             'records' => $this->getClients(),
-        ])->title(__('Clients'));;
+        ])->title(__('Clients'));
     }
 
     /** Lee Clientes */

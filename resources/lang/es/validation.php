@@ -146,6 +146,7 @@ return [
 	*/
 
 	'attributes' => [
+        'purchase_id' => 'Orden de Compra',
         'short_spanish' => "Español Corto",
         'short_english' => "Inglés Corto",
 		'short' => 'Corto',
