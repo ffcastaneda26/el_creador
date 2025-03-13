@@ -31,7 +31,7 @@
                     <div>
                         <label for="folio"
                             class="block w-full text-sm font-medium text-gray-700">{{ __('Folio') }}</label>
-                        <input type="text" wire:model="folio" id="folio" placeholder="Folio"
+                        <input type="number" min="1" wire:model="folio" id="folio" placeholder="Folio"
                             class="mt-1 block w-20 border rounded p-2" required>
                         @error('folio')
                             <div class="text-md text-red-500">

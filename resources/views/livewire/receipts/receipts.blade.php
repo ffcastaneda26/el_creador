@@ -55,6 +55,13 @@
                                                         </x-button>
 
                                                     </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                                                        <x-button wire:click="destroy({{ $record->id }})"
+                                                            class="h-6 w-auto text-white bg-red-500 hover:bg-orange-700 text-center">
+                                                            {{ __('Delete') }}
+                                                        </x-button>
+
+                                                    </td>
                                                 </tr>
                                             @empty
                                                 <tr>

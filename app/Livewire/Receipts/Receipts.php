@@ -12,6 +12,7 @@ use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\Enums\StatusReceiptEnum;
+use Illuminate\Support\Facades\DB;
 
 use function PHPUnit\Framework\isNan;
 
@@ -39,6 +40,8 @@ class Receipts extends Component
             ],
             'folio' => [
                 'required',
+                'min:1',
+                'numeric',
                 Rule::unique('receipts'),
             ],
             'date' => 'required',
@@ -122,41 +125,30 @@ class Receipts extends Component
      */
     public function store_receipt()
     {
-        $this->validate();
-        try {
-            $this->receipt = Receipt::create([
-                'purchase_id'   => $this->purchase_id,
-                'folio'         => $this->folio,
-                'date'          => $this->date,
-                'amount'        => $this->amount,
-                'tax'           => $this->tax,
-                'total'        => $this->total,
-                'reference'     => $this->reference,
-                'notes'         => $this->notes,
-                'user_id'       => Auth::user()->id,
-                'status'        => StatusReceiptEnum::abierto
-            ]);
-
-            $this->resetErrorBag();
-            $this->resetInputFields();
-            $this->showModal(false);
-
-            // $this->purchase_details = $this->read_purchase_details($this->purchase_id);
+        $validatedData =$this->validate();
+        $receipt = Receipt::create([
+            'purchase_id'   => $this->purchase_id,
+            'folio'         => $this->folio,
+            'date'          => $this->date,
+            'amount'        => $this->amount,
+            'tax'           => $this->tax,
+            'total'        => $this->total,
+            'reference'     => $this->reference,
+            'notes'         => $this->notes,
+            'user_id'       => Auth::user()->id,
+            'status'        => StatusReceiptEnum::abierto
+        ]);
+        $purchase = Purchase::findOrFail($this->purchase_id);
+        $this->purchase_details = $purchase->pendings_to_receive;
 
 
-        } catch (\Exception $e) {
-            $this->resetErrorBag();
-            $this->resetInputFields();
-            $this->showModal(false);
-            Log::error('Error al crear Recepción de Material:', ['error' => $e->getMessage()]);
-            $this->addError('error', 'Error al actualizar generar Recepción de Material.');
-        }
     }
 
     public function read_purchase_details(Purchase $purchase)
     {
         $this->reset('purchase_details');
-        return $this->purchase->pendings_to_receive;
+        dd($this->purchase->details());
+        return $this->purchase->details();
     }
 
     public function calculateMaxDate()
@@ -178,5 +170,10 @@ class Receipts extends Component
             $this->tax = round(($this->amount * ($this->tax_porcentage/100)),2);
             $this->total = round($this->amount + $this->tax,2);
         }
+    }
+
+    public function destroy(Receipt $receipt){
+        $receipt->details()->delete();
+        $receipt->delete();
     }
 }
