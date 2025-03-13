@@ -8,13 +8,15 @@
                         <label for="purchase_id"
                             class="block text-sm font-medium text-gray-700">{{ __('Purchase Order') }}</label>
                         <select wire:model="purchase_id"
-                            {{-- wire:change="read_purchase"  --}}
-                            id="purchase_id"
-                            class="mt-1 block w-auto border rounded p-2" required>
+                                id="purchase_id"
+                            class="mt-1 block w-full border rounded p-2"
+                            {{ $lock_purchase_id_on_edit ? 'disabled' : '' }} required>
                             <option value="">{{ __('Select') }}</option>
                             @if ($purchases)
                                 @foreach ($purchases as $purchase)
-                                    <option value="{{ $purchase->id }}">{{ $purchase->folio }}</option>
+                                    <option value="{{ $purchase->id }}"
+                                        {{ $purchase_id == $purchase->id ? 'selected' : '' }}>{{ $purchase->folio }}
+                                    </option>
                                 @endforeach
                             @endif
                         </select>
@@ -28,7 +30,7 @@
                     {{-- Folio --}}
                     <div>
                         <label for="folio"
-                            class="block text-sm font-medium text-gray-700">{{ __('Folio') }}</label>
+                            class="block w-full text-sm font-medium text-gray-700">{{ __('Folio') }}</label>
                         <input type="text" wire:model="folio" id="folio" placeholder="Folio"
                             class="mt-1 block w-20 border rounded p-2" required>
                         @error('folio')
@@ -41,11 +43,9 @@
                     {{-- Fecha --}}
                     <div>
                         <label for="date"
-                            class="block text-sm font-medium text-gray-700">{{ __('Date') }}</label>
+                            class="block w-full text-sm font-medium text-gray-700">{{ __('Date') }}</label>
                         <input type="date" wire:model="date" id="date"
-                            class="mt-1 block w-full border rounded p-2"
-                            max="{{ $max_date }}"
-                            required>
+                            class="mt-1 block w-full border rounded p-2" max="{{ $max_date }}" required>
 
                         @error('date')
                             <div class="text-md text-red-500">
@@ -53,6 +53,7 @@
                             </div>
                         @enderror
                     </div>
+
                     {{-- Referencia --}}
                     <div>
                         <label for="reference"
@@ -65,15 +66,48 @@
                             </div>
                         @enderror
                     </div>
+
+                </div>
+                <div class="flex flex-row justify-between items-center gap-6">
+
                     {{-- Importe --}}
                     <div>
                         <label for="amount"
                             class="block text-sm font-medium text-gray-700">{{ __('Amount') }}</label>
-                        <input type="text" wire:model="amount" id="amount" placeholder="0.00"
-                            class="mt-1 block w-24 border rounded p-2" required
+                        <input type="text"
+                                wire:model="amount"
+                                wire:keyup ="calculateTaxAndTotal"
+                                id="amount"
+                                placeholder="0.00"
+                            class="mt-1 block w-full border rounded p-2" required
                             oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"
-                            onblur="if (!/^\d+(\.\d{1,2})?$/.test(this.value)) { this.value = parseFloat(this.value).toFixed(2); }">
+                            onblur="if (!/^\d+(\.\d{1,2})?$/.test(this.value)) { this.value = parseFloat(this.value).toFixed(2); } : '0.00'">
                         @error('amount')
+                            <div class="text-md text-red-500">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+                    {{-- IVA --}}
+                    <div>
+                        <label for="tax"
+                            class="block text-sm font-medium text-gray-700">{{ __('Tax') }}</label>
+                        <input type="text" wire:model="tax" id="tax" placeholder="0.00"
+                            class="mt-1 block w-full border rounded p-2 text-right" required disabled>
+                        @error('tax')
+                            <div class="text-md text-red-500">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+                    {{-- TOTAL --}}
+                    <div>
+                        <label for="tax"
+                            class="block text-sm font-medium text-gray-700">{{ __('Total') }}</label>
+                        <input type="text" wire:model="total" id="total" placeholder="0.00"
+                            class="mt-1 block w-full border rounded p-2 text-right" required disabled
+                            style="align-content: end">
+                        @error('total')
                             <div class="text-md text-red-500">
                                 {{ $message }}
                             </div>
@@ -113,7 +147,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($purchase_details as $purchase_detail)
+                            @foreach ($purchase_details as $purchase_detail)
                                 <tr
                                     class="odd:bg-white even:bg-gray-100 dark:odd:bg-neutral-900 dark:even:bg-neutral-800">
                                     <td

@@ -66,7 +66,6 @@ class Purchase extends Model
      }
 
 
-
     public function partial_receive_items(): HasMany
     {
         return $this->hasMany(PurchaseDetail::class)->where('status', StatusPurchaseDetailEnum::parcial);
@@ -86,6 +85,10 @@ class Purchase extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function recepts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
+    }
 
     /**
      * Actualiza Estado

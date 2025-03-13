@@ -19,7 +19,9 @@ return new class extends Migration
             $table->foreignIdFor(Purchase::class)->comment('Orden de compra');
             $table->string('folio',20)->nullable()->default(null)->comment('Folio interno');
             $table->date('date')->nullable()->default(null)->comment('Fecha Recepción');
-            $table->decimal('amount',10,2)->default(0)->comment('Importe');
+            $table->decimal('amount',8,2)->default(0)->comment('Importe');
+            $table->decimal('tax',6,2)->default(0)->comment('Iva');
+            $table->decimal('total',8,2)->default(0)->comment('Total');
             $table->string('reference',30)->nullable()->default(null)->comment('Referencia');
             $table->mediumText('notes')->nullable()->default(null)->comment('Notas');
             $table->foreignIdFor(User::class)->comment('Usuario que crea o modifica');

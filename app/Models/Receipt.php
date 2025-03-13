@@ -19,6 +19,8 @@ class Receipt extends Model
         'folio',
         'date',
         'amount',
+        'tax',
+        'total',
         'reference',
         'notes',
         'user_id',
@@ -44,8 +46,6 @@ class Receipt extends Model
         return $this->belongsTo(User::class, 'user_authorizer_id');
     }
 
-
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -54,6 +54,11 @@ class Receipt extends Model
     public function details(): HasMany
     {
         return $this->hasMany(ReceiptDetail::class);
+    }
+
+    public function has_details(): bool
+    {
+        return $this->details()->count() > 0;
     }
 
     /**

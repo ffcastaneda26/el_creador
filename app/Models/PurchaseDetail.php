@@ -9,6 +9,7 @@ use App\Enums\Enums\StatusPurchaseDetailEnum;
 
 class PurchaseDetail extends Model
 {
+    protected $table = 'purchase_details';
     protected $fillable =  [
         'purchase_id',
         'product_id',
