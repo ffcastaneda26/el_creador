@@ -8,14 +8,17 @@
     <form wire:submit="store">
         <x-slot name="content">
             {{-- <x-validation-errors></x-validation-errors> --}}
-            @include('livewire.receipts.form_content')
+            <div class="container">
+                @include('livewire.receipts.form_content')
+
+            </div>
         </x-slot>
 
         <x-slot name="footer">
             <div class="flex jutify-between items-center gap-10">
                 <div>
                     <x-danger-button wire:click="$toggle('showModal')" wire:loading.attr="disabled">
-                        {{ __('Cancel') }}
+                        {{ $record_id ? __('Close')  : __('Cancel') }}
                     </x-danger-button>
                 </div>
 
@@ -24,7 +27,7 @@
                             wire:click="store_receipt"
                             wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="store_receipt">
-                                {{ __('Save') }}
+                                {{ $record_id ? __('Update')  : __('Save') }}
                             </span>
                             <span wire:loading wire:target="store_receipt">
                                 {{__('Processing')}}

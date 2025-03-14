@@ -1,15 +1,13 @@
 <div class="w-full">
     <div class="overflow-x-auto">
-        <div class="p-4 max-w-3xl mx-auto">
+        <div class="max-w-3xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
                 <div class="flex flex-row justify-around items-center gap-4 mb-2">
                     {{-- Orden de compra --}}
                     <div>
                         <label for="purchase_id"
                             class="block text-sm font-medium text-gray-700">{{ __('Purchase Order') }}</label>
-                        <select wire:model="purchase_id"
-                                id="purchase_id"
-                            class="mt-1 block w-full border rounded p-2"
+                        <select wire:model="purchase_id" id="purchase_id" class="mt-1 block w-full border rounded p-2"
                             {{ $lock_purchase_id_on_edit ? 'disabled' : '' }} required>
                             <option value="">{{ __('Select') }}</option>
                             @if ($purchases)
@@ -74,12 +72,8 @@
                     <div>
                         <label for="amount"
                             class="block text-sm font-medium text-gray-700">{{ __('Amount') }}</label>
-                        <input type="text"
-                                wire:model="amount"
-                                wire:keyup ="calculateTaxAndTotal"
-                                id="amount"
-                                placeholder="0.00"
-                            class="mt-1 block w-full border rounded p-2" required
+                        <input type="text" wire:model="amount" wire:keyup ="calculateTaxAndTotal" id="amount"
+                            placeholder="0.00" class="mt-1 block w-full border rounded p-2" required
                             oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"
                             onblur="if (!/^\d+(\.\d{1,2})?$/.test(this.value)) { this.value = parseFloat(this.value).toFixed(2); } : '0.00'">
                         @error('amount')
@@ -120,59 +114,73 @@
                 </div>
             </div>
         </div>
-        @if ($purchase_details)
-            <div class="p-4 max-w-3xl mx-auto">
-                <div class="p-2 max-w-3xl mx-auto">
-                    {{ __('Pending Purchase Order Items') }}
-                </div>
-                <div class="flex flex-col">
-                    <table class="divide-y divide-gray-200 dark:divide-neutral-700">
-                        <thead>
-                            <tr>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
-                                    {{ __('Product') }}</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
-                                    {{ __('Quantity') }}</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
-                                    {{ __('Received') }}</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
-                                    {{ __('Pending') }}</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
-                                    {{ __('Actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($purchase_details as $purchase_detail)
-                                <tr
-                                    class="odd:bg-white even:bg-gray-100 dark:odd:bg-neutral-900 dark:even:bg-neutral-800">
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
-                                        {{ $purchase_detail->product->name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
-                                        {{ $purchase_detail->quantity }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
-                                        {{ $purchase_detail->quantity_received }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
-                                        {{ $purchase_detail->quantity - $purchase_detail->quantity_received }}</td>
 
-                                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
-                                        <x-button wire:click="edit({{ $purchase_detail->id }})"
-                                            class="h-6 w-auto text-white bg-orange-500 hover:bg-orange-700 text-center">
-                                            {{ __('Edit') }}
-                                        </x-button>
-                                    </td>
-                                </tr>
-                            @endforeach
+        @if ($record_id && $purchase_details)
+            <div class="max-w-3xl mx-auto">
+                <div class="flex flex-column gap-4 mb-2">
+                    <label for="purchase_detail_id">{{ __('Product') }}:</label>
 
-                        </tbody>
-                    </table>
+                    <select wire:model="purchase_detail_id" wire:click="read_purchase_item" id="purchase_detail_id"
+                        class="mt-1 block w-1/2 border rounded p-2">
+                        <option value="">{{ __('Select') }}</option>
+                        @foreach ($purchase_details as $purchase_detail)
+                            <option value="{{ $purchase_detail->id }}">
+                                {{ $purchase_detail->product->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
+                @if ($purchase_detail_id)
+                    <div>
+                        <div class="flex flex-row justify-between gap-2">
+                            <div>{{ $receipt_product_id }}</div>
+                            <div>{{ $receipt_product_name }}</div>
+                            <div>
+                                <input wire:model="receipt_quantity"
+                                    type="number"
+                                    min="1"
+                                    max="{{ $max_receipt_quantity }}"
+                                    class="mt-1 block w-20 border rounded p-2"
+                                    required>
+                                @error('receipt_quantity')
+                                    <div class="text-md text-red-500">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                            <div>
+                                <input type="text"
+                                    wire:model="receipt_cost"
+                                    class="mt-1 block w-20 border rounded p-2"
+                                    required
+                                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"
+                                    onblur="if (!/^\d+(\.\d{1,2})?$/.test(this.value)) { this.value = parseFloat(this.value).toFixed(2); } : '0.00'">
+                                @error('receipt_cost')
+                                    <div class="text-md text-red-500">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+
+
+                            </div>
+                            <div>
+
+                                <x-button class="ms-3 bg-green-400 hover:bg-green-800" wire:click="store_receipt_detail"
+                                    wire:loading.attr="disabled">
+                                    <span wire:loading.remove wire:target="store_receipt_detail">
+                                        {{ $product_in_receipt ? __('Update') : __('Save') }}
+                                    </span>
+                                    <span wire:loading wire:target="store_receipt_detail">
+                                        {{ __('Processing') }}
+                                    </span>
+                                </x-button>
+
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         @endif
+
     </div>
 </div>
