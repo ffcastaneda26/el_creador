@@ -36,9 +36,10 @@ class Receipts extends Component
 
     // Productos de la recepción:
     public $receipt_id = null;
-    public $receipt_detail,$receipt_detail_id;
-    public $receipt_product_id, $receipt_quantity, $receipt_cost, $receipt_product_name,$max_receipt_quantity;
+    public $receipt_detail, $receipt_detail_id;
+    public $receipt_product_id, $receipt_quantity, $receipt_cost, $receipt_product_name, $max_receipt_quantity;
     public $product_in_receipt = false;
+    public $receipt_details;
 
 
 
@@ -119,6 +120,7 @@ class Receipts extends Component
         $this->calculateMaxDate();
         $this->resetPurchaseDetailFields();
         $this->reset('purchase_detail_id');
+        $this->receipt      = $record;
         $this->record_id    = $record->id;
         $this->receipt_id   = $record->id;
         $this->purchase_id  = $record->purchase_id;
@@ -132,12 +134,18 @@ class Receipts extends Component
         $this->lock_purchase_id_on_edit = $record->has_details();
         $this->showModal = true;
         $this->read_purchase_details($record->purchase_id);
+        $this->receipt_details = $record->details;
     }
 
-    private function resetPurchaseDetailFields(){
-        $this->reset('receipt_detail_id','product_in_receipt','receipt_product_id','receipt_quantity','receipt_cost','receipt_product_name','max_receipt_quantity');
-
+    private function resetPurchaseDetailFields()
+    {
+        $this->reset('receipt_detail_id', 'product_in_receipt', 'receipt_product_id', 'receipt_quantity', 'receipt_cost', 'receipt_product_name', 'max_receipt_quantity');
     }
+    /**
+     * Lee detalle, partidas de la recepción
+     */
+
+
     private function resetInputFields()
     {
         $this->reset('record_id');
@@ -231,51 +239,69 @@ class Receipts extends Component
         if ($this->purchase_detail_id) {
             $this->purchase_item = PurchaseDetail::findOrFail($this->purchase_detail_id);
         }
-
         if ($this->purchase_item) {
+            $this->max_receipt_quantity =  $this->purchase_item->quantity - $this->purchase_item->quantity_received;
+
             $this->receipt_detail = ReceiptDetail::where('receipt_id', $this->receipt_id)
                 ->where('product_id', $this->purchase_item->product_id)
                 ->first();
-                if($this->receipt_detail){
-                    $this->receipt_detail_id =  $this->receipt_detail->id;
-                    $this->receipt_product_id = $this->receipt_detail->product_id;
-                    $this->receipt_quantity = $this->receipt_detail->quantity;
-                    $this->receipt_cost = $this->receipt_detail->cost;
-                    $this->receipt_product_name =  $this->receipt_detail->product->name;
+            if ($this->receipt_detail) {
+                $this->receipt_detail_id =  $this->receipt_detail->id;
+                $this->receipt_product_id = $this->receipt_detail->product_id;
+                $this->receipt_quantity = $this->receipt_detail->quantity;
+                $this->receipt_cost = $this->receipt_detail->cost;
+                $this->receipt_product_name =  $this->receipt_detail->product->name;
+            } else {
+                $this->receipt_detail_id =  null;
+                $this->receipt_product_id = $this->purchase_item->product_id;
+                $this->receipt_quantity = $this->purchase_item->quantity;
+                $this->receipt_cost = $this->purchase_item->cost;
+                $this->receipt_product_name = $this->purchase_item->product->name;
+            }
 
-                }else{
-                    $this->receipt_detail_id =  null;
-                    $this->receipt_product_id = $this->purchase_item->product_id;
-                    $this->receipt_quantity = $this->purchase_item->quantity;
-                    $this->receipt_cost = $this->purchase_item->cost;
-                    $this->receipt_product_name = $this->purchase_item->product->name;
-                }
-
-            $this->max_receipt_quantity =  $this->purchase_item->quantity - $this->purchase_item->quantity_received;
         }
         $this->product_in_receipt = $this->receipt_detail ? true : false;
     }
 
+    public function read_receipt_item(ReceiptDetail $receiptDetail){
+        $purchase_item = PurchaseDetail::where('purchase_id', $receiptDetail->receipt->purchase_id)
+                                ->where('product_id',$receiptDetail->product_id)
+                                ->firstOr();
+        $this->purchase_detail_id = $purchase_item->id;
+        $this->read_purchase_item();
 
+        // $this->max_receipt_quantity =  $purchase_item->quantity - $purchase_item->quantity_received;
 
-    public function store_receipt_detail(){
+        // $this->resetPurchaseDetailFields();
+        // if($receiptDetail){
+        //     $this->receipt_detail_id =  $receiptDetail->id;
+        //     $this->receipt_product_id = $receiptDetail->product_id;
+        //     $this->receipt_quantity = $receiptDetail->quantity;
+        //     $this->receipt_cost = $receiptDetail->cost;
+        //     $this->receipt_product_name =  $receiptDetail->product->name;
+        //     $this->max_receipt_quantity = $receiptDetail->receipt->purchase;
+        // }
+    }
+
+    public function store_receipt_detail(ReceiptDetail $receipt_detail)
+    {
 
         $this->validate([
-            'receipt_product_id'=>'required',
+            'receipt_product_id' => 'required',
             'receipt_cost' => 'required',
-            'receipt_quantity'=>'required|min:1,numeric'
+            'receipt_quantity' => 'required|min:1,numeric'
         ]);
 
-        // dd('id='.  $this->receipt_detail_id,'Producto: ' .  $this->receipt_product_id , 'Cantidad='.$this->receipt_quantity,'Costo='. $this->receipt_cost  );
         try {
-            if($this->receipt_detail_id){
+            if ($this->receipt_detail_id) {
                 $receipt_detail  = ReceiptDetail::findOrFail($this->receipt_detail_id);
-                if($receipt_detail){
-                   $receipt_detail->quantity=$this->receipt_quantity;
-                   $receipt_detail->cost= $this->receipt_cost;
+                if ($receipt_detail) {
+                    $receipt_detail->quantity = $this->receipt_quantity;
+                    $receipt_detail->cost = $this->receipt_cost;
                     $receipt_detail->save();
-                }
-            }else{
+                    $this->reset('receipt_details');
+               }
+            } else {
                 $receipt_detail = ReceiptDetail::create([
                     'receipt_id'    => $this->receipt_id,
                     'product_id'    => $this->receipt_product_id,
@@ -285,11 +311,21 @@ class Receipts extends Component
             }
             $this->resetPurchaseDetailFields();
             $this->reset('purchase_detail_id');
-
+            $this->receipt_details = $this->receipt->details;
         } catch (\Exception $e) {
             Log::error('Error al crear o actualizar Producto en Recepción de Material:', ['error' => $e->getMessage()]);
             $this->addError('error', 'Error al crear o actualizar Producto en Recepción de Material:');
         }
-
     }
+
+    /**
+     * Eliminar partida de la recepción de material
+     */
+
+     public function destroy_receipt_detail(ReceiptDetail $receipt_detail){
+        $receipt_detail->delete();
+        $this->resetPurchaseDetailFields();
+        $this->reset('purchase_detail_id');
+        $this->receipt_details = $this->receipt->details;
+     }
 }

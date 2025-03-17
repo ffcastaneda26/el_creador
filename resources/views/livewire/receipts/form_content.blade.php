@@ -115,11 +115,11 @@
             </div>
         </div>
 
+
         @if ($record_id && $purchase_details)
             <div class="max-w-3xl mx-auto">
                 <div class="flex flex-column gap-4 mb-2">
                     <label for="purchase_detail_id">{{ __('Product') }}:</label>
-
                     <select wire:model="purchase_detail_id" wire:click="read_purchase_item" id="purchase_detail_id"
                         class="mt-1 block w-1/2 border rounded p-2">
                         <option value="">{{ __('Select') }}</option>
@@ -130,17 +130,14 @@
                         @endforeach
                     </select>
                 </div>
+                {{-- Si se seleccionó un artículo --}}
                 @if ($purchase_detail_id)
-                    <div>
+                    <div class="mb-4">
                         <div class="flex flex-row justify-between gap-2">
-                            <div>{{ $receipt_product_id }}</div>
                             <div>{{ $receipt_product_name }}</div>
                             <div>
-                                <input wire:model="receipt_quantity"
-                                    type="number"
-                                    min="1"
-                                    max="{{ $max_receipt_quantity }}"
-                                    class="mt-1 block w-20 border rounded p-2"
+                                <input wire:model="receipt_quantity" type="number" min="1"
+                                    max="{{ $max_receipt_quantity }}" class="mt-1 block w-20 border rounded p-2"
                                     required>
                                 @error('receipt_quantity')
                                     <div class="text-md text-red-500">
@@ -149,10 +146,8 @@
                                 @enderror
                             </div>
                             <div>
-                                <input type="text"
-                                    wire:model="receipt_cost"
-                                    class="mt-1 block w-20 border rounded p-2"
-                                    required
+                                <input type="text" wire:model="receipt_cost"
+                                    class="mt-1 block w-20 border rounded p-2" required
                                     oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"
                                     onblur="if (!/^\d+(\.\d{1,2})?$/.test(this.value)) { this.value = parseFloat(this.value).toFixed(2); } : '0.00'">
                                 @error('receipt_cost')
@@ -165,12 +160,13 @@
                             </div>
                             <div>
 
-                                <x-button class="ms-3 bg-green-400 hover:bg-green-800" wire:click="store_receipt_detail"
+                                <x-button class="ms-3 bg-green-400 hover:bg-green-800"
+                                    wire:click="store_receipt_detail({{ $receipt_detail_id }})"
                                     wire:loading.attr="disabled">
-                                    <span wire:loading.remove wire:target="store_receipt_detail">
-                                        {{ $product_in_receipt ? __('Update') : __('Save') }}
+                                    <span wire:loading.remove wire:target="store_receipt_detail({{ $receipt_detail_id }})">
+                                        {{ $product_in_receipt ? __('Update') : __('Add') }}
                                     </span>
-                                    <span wire:loading wire:target="store_receipt_detail">
+                                    <span wire:loading wire:target="store_receipt_detail({{ $receipt_detail_id }})">
                                         {{ __('Processing') }}
                                     </span>
                                 </x-button>
@@ -180,6 +176,61 @@
                     </div>
                 @endif
             </div>
+        @endif
+
+
+
+        {{-- Si la recepción tiene partidas --}}
+        @if ($receipt_details)
+            <div class="max-w-3xl mx-auto">
+                <div class="w-full">
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead
+                                class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr class="bg-gray-300 text-center ">
+                                    <th scope="col" class="px-4 py-3">{{ __('Product') }}</th>
+                                    <th scope="col" class="px-4 py-3">{{ __('Quantity') }}</th>
+                                    <th scope="col" class="px-4 py-3">{{ __('Cost') }}</th>
+                                    <th scope="col" class="px-4 py-3">{{ __('Amount') }}</th>
+                                    <th  colspan="2" class="px-4 py-3">{{ __('Actions') }} </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($receipt_details as $receipt_detail)
+                                    <tr class="py-2 border-b dark:border-gray-700 hover:bg-gray-100">
+                                        <td class="py-2">{{ $receipt_detail->product->name }}</td>
+                                        <td class="text-end py-2">{{ $receipt_detail->quantity }}</td>
+                                        <td class="text-end py-2">
+                                            {{ number_format($receipt_detail->cost, 2, '.', ',') }}
+                                        </td>
+
+                                        <td class="text-end px-4 py-2">
+                                            {{ number_format(round($receipt_detail->quantity * $receipt_detail->cost, 2), 2, '.', ',') }}
+                                        </td>
+                                        <td class="py-2">
+                                            <button wire:click="read_receipt_item({{ $receipt_detail->id }})"
+                                                class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 text-xs rounded">
+                                                {{ __('Edit') }}
+                                            </button>
+                                        </td>
+                                        <td class="py-2">
+                                            <button wire:click="destroy_receipt_detail({{ $receipt_detail->id }})"
+                                                class="bg-red-500 hover:bg-red-200 text-white font-bold py-1 px-2 text-xs rounded">
+                                                {{ __('Delete') }}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+
         @endif
 
     </div>
