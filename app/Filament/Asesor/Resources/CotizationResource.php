@@ -95,7 +95,7 @@ class CotizationResource extends Resource
                                 $iva = 00.00;
                                 $tax = $get('tax');
                                 if ($tax) {
-                                    $iva = round($subtotal * 0.16, 2);
+                                    $iva = round(($subtotal+$envio) * 0.16, 2);
                                 }
                                 $set('iva', $iva);
                                 $total = round($subtotal + $iva - $descuento + $envio, 2);
@@ -115,7 +115,7 @@ class CotizationResource extends Resource
                                     $iva = 0.00;
                                     $tax = $get('tax');
                                     if ($tax) {
-                                        $iva = round($state * 0.16, 2);
+                                        $iva = round(($state+$envio) * 0.16, 2);
                                     }
                                     $set('iva', $iva);
                                     $total = round($state + $iva - $descuento + $envio, 2);
@@ -141,7 +141,13 @@ class CotizationResource extends Resource
                                 ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
                                     $subtotal = $get('subtotal');
                                     $descuento = $get('descuento');
-                                    $iva = $get('iva');
+                                    $subtotal = $get('subtotal');
+                                    $tax = $get('tax');
+                                    $iva = 0.00;
+                                    if ($tax) {
+                                        $iva = round(($state+$subtotal) * 0.16, 2);
+                                    }
+                                    $set('iva', $iva);
                                     $total = round($subtotal +  $iva - $descuento + $state, 2);
                                     $set('total', $total);
                                 }),
@@ -271,5 +277,10 @@ class CotizationResource extends Resource
             'create' => Pages\CreateCotization::route('/create'),
             'edit' => Pages\EditCotization::route('/{record}/edit'),
         ];
+    }
+
+    private static function calculateTax()
+    {
+
     }
 }
