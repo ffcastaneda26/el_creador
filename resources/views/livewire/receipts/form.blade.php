@@ -23,7 +23,7 @@
                 </div>
 
                 <div>
-                    <x-button class="ms-3 bg-green-400 hover:bg-green-800"
+                    <x-button class="ms-3 bg-green-400 hover:bg-green-800 {{ $can_edit_receipt ? '' : 'hidden' }}"
                             wire:click="store_receipt"
                             wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="store_receipt">

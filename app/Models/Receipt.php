@@ -64,11 +64,33 @@ class Receipt extends Model
     /**
      * Actualiza Estado
      */
-    public function updateStatus()
+    public function updateStatus($status)
     {
+        $this->status = $status;
 
         $this->save();
     }
 
+    public function checkAmount(){
+
+        return $this->amount ==  $this->getDetailAmount();
+
+    }
+
+    /**
+     * Obtiene el total del detalle de las partidas
+     */
+
+     public function getDetailAmount(){
+        $sum_deatil_amount = 0;
+        foreach($this->details as $detail){
+            $sum_deatil_amount +=  round($detail->quantity * $detail->cost,2);
+        }
+        return  round($sum_deatil_amount,2);
+     }
+
+
 
 }
+
+

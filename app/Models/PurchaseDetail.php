@@ -68,4 +68,9 @@ class PurchaseDetail extends Model
     {
         return $this->pendings_to_supply()->count() > 0;
     }
+
+    public function updateQuantityReceived($quantity){
+        $this->quantity_received +=$quantity;
+        $this->save();
+    }
 }

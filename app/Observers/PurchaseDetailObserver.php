@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\Enums\StatusPurchaseDetailEnum;
 use App\Models\PurchaseDetail;
 
 class PurchaseDetailObserver
@@ -22,6 +23,7 @@ class PurchaseDetailObserver
         $this->updatePurchaseAmount($purchaseDetail);
     }
 
+
     /**
      * Handle the PurchaseDetail "deleted" event.
      */
@@ -32,11 +34,13 @@ class PurchaseDetailObserver
 
     private function updatePurchaseAmount(PurchaseDetail $purchaseDetail): void
     {
+
         $purchase = $purchaseDetail->purchase;
         $purchase->amount = $purchase->details->sum(function ($detail) {
-            return round($detail->cost * $detail->quantity,2);
+            return round($detail->cost * $detail->quantity, 2);
         });
         $purchase->save();
     }
+
 
 }
