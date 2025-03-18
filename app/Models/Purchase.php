@@ -35,7 +35,6 @@ class Purchase extends Model
     }
 
 
-
     public function authorizer_user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_authorizer_id');
@@ -53,6 +52,16 @@ class Purchase extends Model
     public function has_pendings_to_receive(): bool
     {
         return $this->pendings_to_receive()->count() > 0;
+    }
+
+    public function partial_received()
+    {
+        return $this->hasMany(PurchaseDetail::class)->where('status',StatusPurchaseDetailEnum::parcial);
+    }
+
+    public function has_partial_received()
+    {
+        return $this->partial_received()->count() > 0;
     }
 
     public function details_received(): HasMany

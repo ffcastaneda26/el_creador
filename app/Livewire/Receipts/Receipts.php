@@ -31,8 +31,8 @@ class Receipts extends Component
     public $showModal = false;
     public $search, $record_id;
     public  $lock_purchase_id_on_edit = false;
-    public $can_edit_receipt = true;
     public $show_select_purchase_items = true;
+    public $can_edit_receipt = true;
     public $can_create_receipt = false;
     public $tax_porcentage = 16;
 
@@ -48,7 +48,6 @@ class Receipts extends Component
     public $receipt_product_id, $receipt_quantity, $receipt_cost, $receipt_product_name, $max_receipt_quantity;
     public $product_in_receipt = false;
     public $receipt_details;
-
 
 
     protected function rules()
@@ -71,6 +70,8 @@ class Receipts extends Component
 
     public function render()
     {
+        $this->getPurchases();
+
         return view('livewire.receipts.receipts', [
             'records' => $this->getRecords(),
         ])->title(__('Material Receptions'));
@@ -80,7 +81,8 @@ class Receipts extends Component
     {
         $qry  = Receipt::query();
         $qry = $qry->when($this->search, function ($query) {
-            return $query->where('folio', 'like', "%{$this->search}%");
+            return $query->where('folio', 'like', "%{$this->search}%")
+                ->orWhere('reference', 'like', "%{$this->search}%");
         });
         return  $qry->paginate($this->pagination);
     }
@@ -92,7 +94,12 @@ class Receipts extends Component
 
     public function getPurchases()
     {
-        $this->purchases = Purchase::status('pendiente')->select('id', 'folio')->get();
+        // $this->purchases = Purchase::status('pendiente')->select('id', 'folio')->get();
+        $this->purchases = Purchase::where('status',StatusPurchaseEnum::pendiente)
+                                  ->orWhere('status',StatusPurchaseEnum::parcial)
+                                  ->select('id','folio')
+                                  ->get();
+
         $this->can_create_receipt = $this->purchases->count();
     }
 
@@ -106,9 +113,9 @@ class Receipts extends Component
         $this->showModal();
         $this->resetErrorBag();
         $this->resetInputFields();
-        $this->getPurchases();
         $this->calculateMaxDate();
         $this->resetPurchaseDetailFields();
+        $this->getPurchases();
 
         $this->date = Carbon::now()->format('Y-m-d'); // Asigna la fecha actual
         $maxFolio = Receipt::max('folio');
@@ -157,7 +164,7 @@ class Receipts extends Component
     {
         $this->reset('record_id');
         $this->reset('can_edit_receipt');
-       $this->reset('purchase_details');
+        $this->reset('purchase_details');
         $this->reset('purchase_id', 'folio', 'date', 'reference', 'notes', 'amount', 'tax', 'total');
     }
     /**
@@ -354,10 +361,13 @@ class Receipts extends Component
                         ->where('product_id', $receipt_detail->product_id)
                         ->first();
                     $purchase_item->updateQuantityReceived($receipt_detail->quantity);
-                    if( $purchase_item->quantity ==  $purchase_item->quantity_received){
+                    if ($purchase_item->quantity ==  $purchase_item->quantity_received) {
                         $purchase_item->status = StatusPurchaseDetailEnum::surtida;
-                        $purchase_item->save();
+                    }else{
+                        $purchase_item->status = StatusPurchaseDetailEnum::parcial;
                     }
+                    $purchase_item->save();
+
                     // Localiza producto en almacen y actualiza: Existencia, Existencia disponible, último precio de compra y costo promedio
                     $product_warehouse = ProductWarehouse::where('warehouse_id', $warehouse->id)
                         ->where('product_id', $receipt_detail->product_id)
@@ -401,5 +411,4 @@ class Receipts extends Component
             dd('Se presentó un error al estar recibiendo el material ', $th->getMessage());
         }
     }
-
 }
