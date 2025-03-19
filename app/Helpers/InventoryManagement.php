@@ -45,18 +45,19 @@ class InventoryManagement
         }
     }
     static private function   calculateNewStock($key_movement,$currentStock,$quantity,$type='normal'){
-        $isTypeI = $key_movement->isTypeI();
+        $isTypeInput = $key_movement->isTypeInput();
 
         if($type == 'normal'){
-           return  $isTypeI ? $currentStock + $quantity : $currentStock - $quantity;
+           return  $isTypeInput ? $currentStock + $quantity : $currentStock - $quantity;
         }
         if($type =='delete'){
-            return $isTypeI ? $currentStock - $quantity : $currentStock + $quantity;
+            return $isTypeInput ? $currentStock - $quantity : $currentStock + $quantity;
         }
 
     }
-    static public function calculateAverageCost($product,$movement,$type='normal')
+    static public function calculateAverageCost($movement,$type='normal')
     {
+        $product = self::getProduct($movement);
         $currentTotalCost = self::getTotalCost($product->stock,$product->average_cost);
         $amountMovement = self::getAmountMovement($movement->quantity,$movement->cost);
 
@@ -109,4 +110,6 @@ class InventoryManagement
         return  $last_purchase ? $last_purchase->cost : 0;
 
     }
+
+
 }

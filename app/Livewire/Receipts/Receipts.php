@@ -95,10 +95,10 @@ class Receipts extends Component
     public function getPurchases()
     {
         // $this->purchases = Purchase::status('pendiente')->select('id', 'folio')->get();
-        $this->purchases = Purchase::where('status',StatusPurchaseEnum::pendiente)
-                                  ->orWhere('status',StatusPurchaseEnum::parcial)
-                                  ->select('id','folio')
-                                  ->get();
+        $this->purchases = Purchase::where('status', StatusPurchaseEnum::pendiente)
+            ->orWhere('status', StatusPurchaseEnum::parcial)
+            ->select('id', 'folio')
+            ->get();
 
         $this->can_create_receipt = $this->purchases->count();
     }
@@ -109,18 +109,26 @@ class Receipts extends Component
      */
     public function create_receipt()
     {
-
-        $this->showModal();
-        $this->resetErrorBag();
-        $this->resetInputFields();
-        $this->calculateMaxDate();
-        $this->resetPurchaseDetailFields();
-        $this->getPurchases();
-
-        $this->date = Carbon::now()->format('Y-m-d'); // Asigna la fecha actual
-        $maxFolio = Receipt::max('folio');
-        $this->folio = $maxFolio ? $maxFolio + 1 : 1; // Si no hay registros, asigna 1
-
+        try {
+            $this->showModal();
+            $this->resetErrorBag();
+            $this->resetInputFields();
+            $this->calculateMaxDate();
+            $this->resetPurchaseDetailFields();
+            $this->getPurchases();
+            $this->reset('receipt_details');
+            $this->date = Carbon::now()->format('Y-m-d');
+            $maxFolio = Receipt::max('folio');
+            $this->folio = $maxFolio ? $maxFolio + 1 : 1;
+            if ($this->purchases->count() == 1) {
+                foreach ($this->purchases as $purchase_unique) {
+                    $this->purchase_id = $purchase_unique->id;
+                }
+            }
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            session()->flash('error', 'Ocurrió un error: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -249,7 +257,7 @@ class Receipts extends Component
     public function read_purchase_item()
     {
         $this->resetErrorBag();
-        $this->reset('purchase_item', 'receipt_detail');
+        $this->reset('purchase_item', 'receipt_detail', 'max_receipt_quantity');
         $this->resetPurchaseDetailFields();
         if ($this->purchase_detail_id) {
             $this->purchase_item = PurchaseDetail::findOrFail($this->purchase_detail_id);
@@ -269,7 +277,7 @@ class Receipts extends Component
             } else {
                 $this->receipt_detail_id =  null;
                 $this->receipt_product_id = $this->purchase_item->product_id;
-                $this->receipt_quantity = $this->purchase_item->quantity;
+                $this->receipt_quantity = $this->max_receipt_quantity;
                 $this->receipt_cost = $this->purchase_item->cost;
                 $this->receipt_product_name = $this->purchase_item->product->name;
             }
@@ -281,7 +289,7 @@ class Receipts extends Component
     {
         $purchase_item = PurchaseDetail::where('purchase_id', $receiptDetail->receipt->purchase_id)
             ->where('product_id', $receiptDetail->product_id)
-            ->firstOr();
+            ->first();
         $this->purchase_detail_id = $purchase_item->id;
         $this->read_purchase_item();
     }
@@ -312,7 +320,9 @@ class Receipts extends Component
                     'cost'          => $this->receipt_cost,
                 ]);
             }
-            $this->resetPurchaseDetailFields();
+            // $this->resetErrorBag();
+            // $this->reset('purchase_item', 'receipt_detail','max_receipt_quantity');
+            // $this->resetPurchaseDetailFields();
             $this->reset('purchase_detail_id');
             $this->receipt_details = $this->receipt->details;
         } catch (\Exception $e) {
@@ -349,6 +359,7 @@ class Receipts extends Component
 
     public function receive_receipt(Receipt $receipt)
     {
+
         try {
             $warehouse = Warehouse::first();
             $key_movement = KeyMovement::where('short', 'Comp')->first();
@@ -357,49 +368,38 @@ class Receipts extends Component
                 foreach ($receipt->details as $receipt_detail) {
 
                     // Lee y actualiza la cantidad recibida
-                    $purchase_item = PurchaseDetail::where('purchase_id', $receipt->purchase_id)
+                    $purchase_detail = PurchaseDetail::where('purchase_id', $receipt->purchase_id)
                         ->where('product_id', $receipt_detail->product_id)
                         ->first();
-                    $purchase_item->updateQuantityReceived($receipt_detail->quantity);
-                    if ($purchase_item->quantity ==  $purchase_item->quantity_received) {
-                        $purchase_item->status = StatusPurchaseDetailEnum::surtida;
-                    }else{
-                        $purchase_item->status = StatusPurchaseDetailEnum::parcial;
+                    $purchase_detail->quantity_received += $receipt_detail->quantity;
+                    if ($purchase_detail->quantity == $purchase_detail->quantity_received) {
+                        $purchase_detail->status = StatusPurchaseDetailEnum::surtida;
+                    } else {
+                        $purchase_detail->status = StatusPurchaseDetailEnum::parcial;
                     }
-                    $purchase_item->save();
+                    $purchase_detail->save();
 
-                    // Localiza producto en almacen y actualiza: Existencia, Existencia disponible, último precio de compra y costo promedio
                     $product_warehouse = ProductWarehouse::where('warehouse_id', $warehouse->id)
                         ->where('product_id', $receipt_detail->product_id)
                         ->first();
-                    $current_total_cost =  round($product_warehouse->average_cost * $product_warehouse->stock, 2);
-
-                    $product_warehouse->stock +=  $receipt_detail->quantity;
-                    $product_warehouse->stock_available +=  $receipt_detail->quantity;
-                    $product_warehouse->last_purchase_price +=  $receipt_detail->cost;
-
-                    $amount_item = round($receipt_detail->quantity * $receipt_detail->cost, 2);
-                    $new_total_cost =  round($current_total_cost + $amount_item, 2);
-                    $product_warehouse->average_cost = round($new_total_cost / $product_warehouse->stock, 6);
-                    $product_warehouse->save();
-                    // Genera el movimiento
                     $movement = Movement::create([
-                        'warehouse_id' => $product_warehouse->warehouse_id,
-                        'product_id' => $receipt_detail->product_id,
-                        'key_movement_id' => $key_movement->id,
-                        'date' => now(),
-                        'quantity' => $receipt_detail->quantity,
-                        'cost' => $receipt_detail->cost,
-                        'amount' =>  $amount_item,
-                        'reference' => $receipt->reference,
-                        'status' => 'Aplicado',
-                        'user_id' => Auth::user()->id,
+                        'warehouse_id'      => $product_warehouse->warehouse_id,
+                        'product_id'        => $receipt_detail->product_id,
+                        'key_movement_id'   => $key_movement->id,
+                        'date'              => now(),
+                        'quantity'          => $receipt_detail->quantity,
+                        'cost'              => $receipt_detail->cost,
+                        'amount'            =>  round($receipt_detail->quantity * $receipt_detail->cost, 2),
+                        'reference'         => $receipt->reference,
+                        'status'            => 'Aplicado',
+                        'user_id'           => Auth::user()->id,
                     ]);
                 }
                 // Marca como terminada la recepción
                 $receipt->updateStatus(StatusReceiptEnum::terminado);
                 // Si la orden de compra ya no tiene partidas pendientes la pone como SURTIDA
                 $purchase = $receipt->purchase;
+
                 if (!$purchase->has_pendings_to_receive()) {
                     $purchase->status = StatusPurchaseEnum::surtido;
                     $purchase->save();
@@ -410,5 +410,19 @@ class Receipts extends Component
             DB::rollBack();
             dd('Se presentó un error al estar recibiendo el material ', $th->getMessage());
         }
+    }
+
+    private function updatePurchaseDetail($purchase_id, $product_id, $quantity)
+    {
+        $purchase_detail = PurchaseDetail::where('purchase_id', $purchase_id)
+            ->where('product_id', $product_id)
+            ->first();
+        $purchase_detail->quantity_received += $quantity;
+        if ($purchase_detail->quantity == $purchase_detail->quantity_received) {
+            $purchase_detail->status = StatusPurchaseDetailEnum::surtida;
+        } else {
+            $purchase_detail->status = StatusPurchaseDetailEnum::parcial;
+        }
+        $purchase_detail->save();
     }
 }

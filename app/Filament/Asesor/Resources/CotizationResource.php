@@ -170,7 +170,7 @@ class CotizationResource extends Resource
                     ])->columns(2),
 
                     Section::make()->schema([
-                        Toggle::make('aprobada'),
+                        Toggle::make('aprobada')->label('¿Aprobada?'),
                         DatePicker::make('fecha_aprobada')
                             ->afterOrEqual('fecha')
                             ->format('Y-m-d')

@@ -6,23 +6,35 @@
                 <label for="purchase_id"
                     class="block text-sm font-medium text-gray-700">{{ __('Purchase Order') }}</label>
                 @if ($can_edit_receipt)
-                    <select wire:model="purchase_id" id="purchase_id" class="mt-1 block w-full border rounded p-2"
-                        {{ $lock_purchase_id_on_edit ? 'disabled' : '' }}
-                        {{ $can_edit_receipt ? '' : 'disabled' }}
-                        {{ $purchases->count() == 1 ? 'disabled' : '' }}
-                        required>
-                        <option value="">{{ __('Select') }}</option>
-                        @if ($purchases)
-                            @foreach ($purchases as $purchase)
-                                <option value="{{ $purchase->id }}"
-                                    {{ $purchase_id == $purchase->id ? 'selected' : '' }}
-                                    {{ $purchases->count() == 1 ? 'selected' : '' }}
-                                >
-                                    {{ $purchase->folio }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
+                    @if ($purchases->count() == 1)
+                        <select wire:model="purchase_id" id="purchase_id" class="mt-1 block w-full border rounded p-2"
+                            {{ $lock_purchase_id_on_edit ? 'disabled' : '' }}
+                            disabled
+                            required>
+                            @if ($purchases)
+                                @foreach ($purchases as $purchase)
+                                    <option value="{{ $purchase->id }}"
+                                        selected>
+                                        {{ $purchase->folio }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                    @else
+                        <select wire:model="purchase_id" id="purchase_id" class="mt-1 block w-full border rounded p-2"
+                            {{ $lock_purchase_id_on_edit ? 'disabled' : '' }} {{ $can_edit_receipt ? '' : 'disabled' }}
+                            required>
+                            <option value="">{{ __('Select') }}</option>
+                            @if ($purchases)
+                                @foreach ($purchases as $purchase)
+                                    <option value="{{ $purchase->id }}"
+                                        {{ $purchase_id == $purchase->id ? 'selected' : '' }}>
+                                        {{ $purchase->folio }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                    @endif
                 @else
                     <input type="text" disabled value={{ $purchase_id }}>
                 @endif
@@ -38,8 +50,7 @@
                 <label for="folio"
                     class="block w-full text-sm font-medium text-gray-700">{{ __('Folio') }}</label>
                 <input type="number" min="1" wire:model="folio" id="folio" placeholder="Folio"
-                    class="mt-1 block w-20 border rounded p-2" {{ $can_edit_receipt ? '' : 'disabled' }}
-                    required>
+                    class="mt-1 block w-20 border rounded p-2" {{ $can_edit_receipt ? '' : 'disabled' }} required>
                 @error('folio')
                     <div class="text-md text-red-500">
                         {{ $message }}
@@ -51,9 +62,8 @@
             <div>
                 <label for="date"
                     class="block w-full text-sm font-medium text-gray-700">{{ __('Date') }}</label>
-                <input type="date" wire:model="date" id="date"
-                    class="mt-1 block w-full border rounded p-2" max="{{ $max_date }}"
-                    {{ $can_edit_receipt ? '' : 'disabled' }} required>
+                <input type="date" wire:model="date" id="date" class="mt-1 block w-full border rounded p-2"
+                    max="{{ $max_date }}" {{ $can_edit_receipt ? '' : 'disabled' }} required>
 
                 @error('date')
                     <div class="text-md text-red-500">
@@ -64,8 +74,7 @@
 
             {{-- Referencia --}}
             <div>
-                <label for="reference"
-                    class="block text-sm font-medium text-gray-700">{{ __('Reference') }}</label>
+                <label for="reference" class="block text-sm font-medium text-gray-700">{{ __('Reference') }}</label>
                 <input type="text" wire:model="reference" id="reference" placeholder="{{ __('Reference') }}"
                     class="mt-1 block w-full border rounded p-2" maxlength="30"
                     {{ $can_edit_receipt ? '' : 'disabled' }} required>
@@ -80,8 +89,7 @@
         <div class="flex flex-row justify-between items-center gap-6">
             {{-- Importe --}}
             <div>
-                <label for="amount"
-                    class="block text-sm font-medium text-gray-700">{{ __('Amount') }}</label>
+                <label for="amount" class="block text-sm font-medium text-gray-700">{{ __('Amount') }}</label>
                 <input type="text" wire:model="amount" wire:keyup ="calculateTaxAndTotal" id="amount"
                     placeholder="0.00" class="mt-1 block w-full border rounded p-2"
                     {{ $can_edit_receipt ? '' : 'disabled' }} required
@@ -95,8 +103,7 @@
             </div>
             {{-- IVA --}}
             <div>
-                <label for="tax"
-                    class="block text-sm font-medium text-gray-700">{{ __('Tax') }}</label>
+                <label for="tax" class="block text-sm font-medium text-gray-700">{{ __('Tax') }}</label>
                 <input type="text" wire:model="tax" id="tax" placeholder="0.00"
                     class="mt-1 block w-full border rounded p-2 text-right" required disabled>
                 @error('tax')
@@ -107,8 +114,7 @@
             </div>
             {{-- TOTAL --}}
             <div>
-                <label for="tax"
-                    class="block text-sm font-medium text-gray-700">{{ __('Total') }}</label>
+                <label for="tax" class="block text-sm font-medium text-gray-700">{{ __('Total') }}</label>
                 <input type="text" wire:model="total" id="total" placeholder="0.00"
                     class="mt-1 block w-full border rounded p-2 text-right" required disabled
                     style="align-content: end">

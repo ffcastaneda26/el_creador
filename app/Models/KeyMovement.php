@@ -31,7 +31,7 @@ class KeyMovement extends Model
         ];
     }
 
-    public function isTypeI(): bool
+    public function isTypeInput(): bool
     {
         return $this->type === KeyMovementTypeEnum::I;
     }

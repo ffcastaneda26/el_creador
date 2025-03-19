@@ -1,5 +1,6 @@
 <div class="w-full">
     <div class="overflow-x-auto">
+
         @include('livewire.receipts.form_receipt_head')
 
 

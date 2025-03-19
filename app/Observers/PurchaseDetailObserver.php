@@ -21,6 +21,8 @@ class PurchaseDetailObserver
     public function updated(PurchaseDetail $purchaseDetail): void
     {
         $this->updatePurchaseAmount($purchaseDetail);
+        // $this->updatePurchaseStatus($purchaseDetail);
+        // return;
     }
 
 
@@ -34,7 +36,6 @@ class PurchaseDetailObserver
 
     private function updatePurchaseAmount(PurchaseDetail $purchaseDetail): void
     {
-
         $purchase = $purchaseDetail->purchase;
         $purchase->amount = $purchase->details->sum(function ($detail) {
             return round($detail->cost * $detail->quantity, 2);
@@ -42,5 +43,22 @@ class PurchaseDetailObserver
         $purchase->save();
     }
 
+    private function updatePurchaseStatus(PurchaseDetail $purchaseDetail)
+    {
+        if($purchaseDetail->quantity_received == 0){
+            $purchaseDetail->status = StatusPurchaseDetailEnum::pendiente;
+        }
+
+        if($purchaseDetail->quantity_received > 0 && $purchaseDetail->quantity_received != $purchaseDetail->quantity)
+        {
+            $purchaseDetail->status = StatusPurchaseDetailEnum::parcial;
+        }
+
+        if($purchaseDetail->quantity == $purchaseDetail->quantity_received ){
+            $purchaseDetail->status = StatusPurchaseDetailEnum::surtida;
+        }
+        $purchaseDetail->save();
+        return;
+    }
 
 }
