@@ -91,6 +91,7 @@ class PdfController extends Controller
      */
     public function cotizacion($record)
     {
+        // TODO: ¿Se va agregar en algun lado la retención ISR?
         $data = Cotization::findOrFail($record);
         $filePath = public_path('pdfs/cotizacion formal.pdf');
         $outputFilePath = public_path("output.pdf");

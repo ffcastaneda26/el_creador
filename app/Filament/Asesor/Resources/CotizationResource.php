@@ -80,6 +80,7 @@ class CotizationResource extends Resource
                         ->format('Y-m-d')
                         ->after('fecha'),
                     Section::make()->schema([
+
                         Select::make('tax')
                             ->options([
                                 true => __('Yes'),
@@ -95,7 +96,7 @@ class CotizationResource extends Resource
                                 $iva = 00.00;
                                 $tax = $get('tax');
                                 if ($tax) {
-                                    $iva = round(($subtotal+$envio) * 0.16, 2);
+                                    $iva = round(($subtotal + $envio) * 0.16, 2);
                                 }
                                 $set('iva', $iva);
                                 $total = round($subtotal + $iva - $descuento + $envio, 2);
@@ -115,10 +116,12 @@ class CotizationResource extends Resource
                                     $iva = 0.00;
                                     $tax = $get('tax');
                                     if ($tax) {
-                                        $iva = round(($state+$envio) * 0.16, 2);
+                                        $iva = round(($state + $envio) * 0.16, 2);
                                     }
                                     $set('iva', $iva);
-                                    $total = round($state + $iva - $descuento + $envio, 2);
+                                    $retencion_isr = round($state - $envio * env('PERCENTAGE_RETENCION_ISR',1.25)/100,2);
+                                    $set('retencion_isr', $retencion_isr);
+                                    $total = round($state + $iva - $descuento + $envio -$retencion_isr , 2);
                                     $set('total', $total);
                                 }),
                             TextInput::make('descuento')
@@ -145,28 +148,32 @@ class CotizationResource extends Resource
                                     $tax = $get('tax');
                                     $iva = 0.00;
                                     if ($tax) {
-                                        $iva = round(($state+$subtotal) * 0.16, 2);
+                                        $iva = round(($state + $subtotal) * 0.16, 2);
                                     }
                                     $set('iva', $iva);
+                                    $retencion_isr = round($state - $subtotal * env('PERCENTAGE_RETENCION_ISR',1.25)/100,2);
+                                    $set('retencion_isr', $retencion_isr);
+
                                     $total = round($subtotal +  $iva - $descuento + $state, 2);
                                     $set('total', $total);
                                 }),
-                        ])->columns(3),
+                            TextInput::make('iva')
+                                ->required()
+                                ->translateLabel()
+                                ->inputMode('decimal')
+                                ->disabled(),
 
-                        TextInput::make('iva')
+                        ])->columns(4),
+                        TextInput::make('retencion_isr')
                             ->required()
                             ->translateLabel()
                             ->inputMode('decimal')
-                            ->disabled()
-                            ->inlinelabel(),
-
+                            ->disabled(),
                         TextInput::make('total')
                             ->required()
                             ->disabled()
                             ->translateLabel()
-                            ->inputMode('decimal')
-                            ->inlinelabel(),
-
+                            ->inputMode('decimal'),
                     ])->columns(2),
 
                     Section::make()->schema([
@@ -236,8 +243,11 @@ class CotizationResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('envio')
                     ->formatStateUsing(fn(string $state): string => number_format($state, 2))
-                    ->alignEnd()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->alignEnd(),
+                TextColumn::make('retencion_isr')
+                    ->translateLabel()
+                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
+                    ->alignEnd(),
                 TextColumn::make('total')
                     ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd()
@@ -279,8 +289,5 @@ class CotizationResource extends Resource
         ];
     }
 
-    private static function calculateTax()
-    {
-
-    }
+    private static function calculateTax() {}
 }

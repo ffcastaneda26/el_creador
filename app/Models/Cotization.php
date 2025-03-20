@@ -22,6 +22,7 @@ class Cotization extends Model
         'iva',
         'descuento',
         'envio',
+        'retencion_isr',
         'converted_to_order',
         'total',
         'fecha_entrega',
