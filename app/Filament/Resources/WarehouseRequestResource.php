@@ -143,7 +143,7 @@ class WarehouseRequestResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make()->button()->color('info'),
                 Tables\Actions\EditAction::make()->button()->color('indigo'),
-                Action::make('authorize')
+                    Action::make('authorize')
                     ->translateLabel()
                     ->button()
                     ->icon('heroicon-s-hand-thumb-up')
@@ -160,7 +160,7 @@ class WarehouseRequestResource extends Resource
                         $record->status = StatusWarehouseRequestEnum::autorizado;
                         $record->user_auhtorizer_id = Auth::user()->id;
                         $record->save();
-                    }),
+                    })->slideOver(),
                 // ->slideOver()
 
                 Action::make('open')
@@ -175,16 +175,19 @@ class WarehouseRequestResource extends Resource
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalIconColor('success')
-                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::autorizado  && !$record->has_pendings_to_suply())
+                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::autorizado  && $record->can_open_again())
                     // ->visible(function(WarehouseRequest $record){
                     //     return $record->status === StatusWarehouseRequestEnum::autorizado && $record->has_pendings_to_suply();
 
                     // })
 
-                    ->action(action: function (WarehouseRequest $record) {
+                ->action(action: function (WarehouseRequest $record) {
                         $record->status = StatusWarehouseRequestEnum::abierto;
                         $record->save();
-                    }),
+                    })->slideOver(),
+                    Tables\Actions\DeleteAction::make()->button()->color('danger')
+                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::abierto),
+
                 // ->slideOver()
             ]);
     }

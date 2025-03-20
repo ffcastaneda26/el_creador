@@ -58,8 +58,11 @@ class WarehouseRequest extends Model
     {
         return $this->partial_supply_items()->count() > 0;
     }
-    
 
+    public function can_open_again()
+    {
+        return $this->pendings_to_supply()->count() == $this->details()->count();
+    }
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
