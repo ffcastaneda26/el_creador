@@ -106,11 +106,14 @@ class ClientResource extends Resource
                     ])->visible(fn(Get $get): bool => $get('type') === 'Moral')
                         ->columnSpanFull(),
 
-
-
-
-
                     Section::make()->schema([
+                        Radio::make('tax_type')
+                            ->options([
+                                'Iva' => 'Iva',
+                                'Retención' => 'Retención',
+                            ])
+                            ->translateLabel()
+                            ->inline(),
                         TextInput::make('curp')
                             ->translateLabel()
                             ->nullable()
@@ -123,7 +126,7 @@ class ClientResource extends Resource
                             ->nullable()
                             ->minLength(13)
                             ->maxLength(13),
-                    ])->columns(2),
+                    ])->columns(3),
 
                 ])->columns(2),
 
@@ -365,7 +368,7 @@ class ClientResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->button()
                     ->size('xs')
-                    ->disabled(function(Client $record) {
+                    ->disabled(function (Client $record) {
                         return $record->cotizations()->exists() || $record->orders()->exists();
                     }),
 

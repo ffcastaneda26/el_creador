@@ -28,6 +28,7 @@ class Client extends Model
         'colony',
         'zipcode',
         'type',
+        'tax_type',
         'street',
         'number',
         'interior_number',
