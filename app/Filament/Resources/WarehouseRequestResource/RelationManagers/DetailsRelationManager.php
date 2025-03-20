@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\WarehouseRequestResource\RelationManagers;
 
+use App\Enums\Enums\StatusWarehouseRequestEnum;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -23,8 +24,12 @@ class DetailsRelationManager extends RelationManager
                     ->relationship(name: 'product', titleAttribute: 'name')
                     ->preload()
                     ->searchable(['name', 'code'])
+                    ->unique(ignoreRecord: true)
                     ->required()
-                    ->translateLabel(),
+                    ->translateLabel()
+                    ->validationMessages([
+                        'unique' => 'El Producto ya está incluido necesita editarlo.',
+                    ]),
                 Forms\Components\TextInput::make('quantity')
                     ->required()
                     ->numeric()
@@ -85,16 +90,37 @@ class DetailsRelationManager extends RelationManager
 
                 Tables\Actions\CreateAction::make()
                     ->label(__('Add') . ' ' . __('Product'))
-                    ->modalHeading(__('Add') . ' ' . __('Product') . ' ' .  __('to a Warehouse Request')),
+                    ->modalHeading(__('Add') . ' ' . __('Product') . ' ' .  __('to a Warehouse Request'))
+                    ->visible(function (DetailsRelationManager $livewire): bool {
+                        $wareHouseRequest = $livewire->getOwnerRecord();
+                        return $wareHouseRequest->status === StatusWarehouseRequestEnum::abierto;
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->button()->color('warning')->modalHeading(__('Edit') . ' ' . __('Product') . ' ' .  __('to a Warehouse Request')),
-                Tables\Actions\DeleteAction::make()->button(),
+                Tables\Actions\EditAction::make()
+                    ->button()->color('warning')
+                    ->modalHeading(__('Edit') . ' ' . __('Product') . ' ' .  __('to a Warehouse Request'))
+                    ->visible(function (DetailsRelationManager $livewire): bool {
+                        $wareHouseRequest = $livewire->getOwnerRecord();
+                        return $wareHouseRequest->status === StatusWarehouseRequestEnum::abierto;
+                    }),
+                Tables\Actions\DeleteAction::make()
+                    ->button()
+                    ->visible(function (DetailsRelationManager $livewire): bool {
+                        $wareHouseRequest = $livewire->getOwnerRecord();
+                        return $wareHouseRequest->status === StatusWarehouseRequestEnum::abierto;
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function is_visible($record): bool
+    {
+        $ownerRecord = $record->getOwnerRecord();
+        return $ownerRecord->status === StatusWarehouseRequestEnum::abierto;
     }
 }
