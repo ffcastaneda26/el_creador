@@ -103,24 +103,45 @@
 
           <!-- Tipo de Persona-->
             <div class="flex gap-2 w-full">
-                <label for="type">{{__('Type')}}</label>
-                <div class="flex flex-col justify-start gap-2 w-full">
-                    <div>
-                        <select wire:model="type"
-                                class="w-full rounded-md border border-gray-300 @error('type') border-2 border-red-500 @enderror"
-                                required>
-                            <option value="">{{(__('Type'))}}</option>
-                            <option value="Física">{{(__('Física'))}}</option>
-                            <option value="Moral">{{(__('Moral'))}}</option>
-                        </select>
-                    </div>
-
-                    @error('type')
-                        <div class="text-md text-red-500">
-                            {{ $message }}
+                <div>
+                    <label for="type">{{__('Type')}}</label>
+                    <div class="flex flex-col justify-start gap-2 w-full">
+                        <div>
+                            <select wire:model="type"
+                                    class="w-full rounded-md border border-gray-300 @error('type') border-2 border-red-500 @enderror"
+                                    required>
+                                <option value="">{{(__('Type'))}}</option>
+                                <option value="Física">{{(__('Física'))}}</option>
+                                <option value="Moral">{{(__('Moral'))}}</option>
+                            </select>
                         </div>
-                    @enderror
 
+                        @error('type')
+                            <div class="text-md text-red-500">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+                </div>
+                <div>
+                    <label for="type">{{__('Tax type')}}</label>
+                    <div class="flex flex-col justify-start gap-2 w-full">
+                        <div>
+                            <select wire:model="tax_type"
+                                    class="w-full rounded-md border border-gray-300 @error('type') border-2 border-red-500 @enderror"
+                                    required>
+                                <option value="">{{__('Tax type')}}</option>
+                                <option value="Iva">Iva</option>
+                                <option value="Retención">Retención</option>
+                            </select>
+                        </div>
+
+                        @error('tax_type')
+                            <div class="text-md text-red-500">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
                 </div>
             </div>
 

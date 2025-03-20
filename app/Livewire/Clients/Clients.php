@@ -33,7 +33,7 @@ class Clients extends Component
     #[Validate('required|numeric')]
     public $phone;
     #[Validate('required')]
-    public $type;
+    public $type,$tax_type;
 
     public function mount(){
         $this->countries = Country::Include()->pluck('id','country');
@@ -202,6 +202,7 @@ class Clients extends Component
                         'ine'           => $this->ine,
                         'rfc'           => $this->rfc,
                         'type'          => $this->type,
+                        'tax_type'      => $this->tax_type,
                         'address'       => $this->address,
                         'colony'        => $this->colony,
                         'references'    => $this->references,
@@ -246,6 +247,7 @@ class Clients extends Component
         $this->ine      = $record->ine;
         $this->rfc      = $record->rfc;
         $this->type     = $record->type;
+        $this->tax_type     = $record->tax_type;
         $this->address  = $record->address;
         $this->colony   = $record->colony;
         $this->references= $record->references;
@@ -268,7 +270,7 @@ class Clients extends Component
     private function resetInputFields()
     {
         $this->reset('record_id');
-        $this->reset('name','email','phone','mobile','curp','ine','rfc','type','address','colony','references','zipcode','notes');
+        $this->reset('name','email','phone','mobile','curp','ine','rfc','type','tax_type','address','colony','references','zipcode','notes');
         $this->reset('state_id','municipality_id','city_id');
         $this->reset('states','municipalities','cities','colonies');
         $this->read_states();
