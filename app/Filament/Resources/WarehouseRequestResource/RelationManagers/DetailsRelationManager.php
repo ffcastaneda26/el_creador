@@ -26,10 +26,7 @@ class DetailsRelationManager extends RelationManager
                     ->searchable(['name', 'code'])
                     ->unique(ignoreRecord: true)
                     ->required()
-                    ->translateLabel()
-                    ->validationMessages([
-                        'unique' => 'El Producto ya está incluido necesita editarlo.',
-                    ]),
+                    ->translateLabel(),
                 Forms\Components\TextInput::make('quantity')
                     ->required()
                     ->numeric()
