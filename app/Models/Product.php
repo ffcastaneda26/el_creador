@@ -57,7 +57,7 @@ class Product extends Model
         return self::count();
     }
 
-    public function purchase_etails(): HasMany
+    public function purchase_details(): HasMany
     {
         return $this->hasMany(PurchaseDetail::class,'product_id');
     }

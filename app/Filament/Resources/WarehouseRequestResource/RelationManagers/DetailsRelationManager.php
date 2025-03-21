@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\WarehouseRequestResource\RelationManagers;
 
-use App\Enums\Enums\StatusWarehouseRequestEnum;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use App\Models\Product;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Enums\Enums\StatusWarehouseRequestEnum;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class DetailsRelationManager extends RelationManager
 {
@@ -19,14 +20,18 @@ class DetailsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                // TODO: Validar para que no se duplique en la misma solicitud
                 Forms\Components\Select::make('product_id')
-                    ->relationship(name: 'product', titleAttribute: 'name')
-                    ->preload()
-                    ->searchable(['name', 'code'])
-                    ->unique(ignoreRecord: true)
+                    ->label(__('Product'))
+                    ->options(function (DetailsRelationManager $livewire): array {
+                        $existingProductIds = $livewire->getOwnerRecord()->details->pluck('product_id')->toArray();
+                        return Product::whereNotIn('id', $existingProductIds)
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
                     ->required()
-                    ->translateLabel(),
+                    ->searchable()
+                    ->getSearchResultsUsing(fn (string $search) => Product::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())
+                    ->getOptionLabelUsing(fn ($value): ?string => Product::find($value)?->name),
                 Forms\Components\TextInput::make('quantity')
                     ->required()
                     ->numeric()
@@ -34,7 +39,7 @@ class DetailsRelationManager extends RelationManager
                     ->maxValue(9999)
                     ->translateLabel(),
 
-            ])->columns(3);
+            ])->columns(2);
     }
 
     public function table(Table $table): Table
