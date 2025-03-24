@@ -112,8 +112,11 @@ class ClientResource extends Resource
                                 'Iva' => 'Iva',
                                 'Retención' => 'Retención',
                             ])
+                            ->translateLabel(),
+                        TextInput::make('rfc')
                             ->translateLabel()
-                            ->inline(),
+                            ->maxLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)
+                            ->minLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12),
                         TextInput::make('curp')
                             ->translateLabel()
                             ->nullable()
@@ -126,7 +129,7 @@ class ClientResource extends Resource
                             ->nullable()
                             ->minLength(13)
                             ->maxLength(13),
-                    ])->columns(3),
+                    ])->columns(2),
 
                 ])->columns(2),
 

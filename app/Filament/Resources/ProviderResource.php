@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProviderResource\RelationManagers;
 use App\Models\Country;
 use App\Models\State;
+use Filament\Forms\Get;
 
 class ProviderResource extends Resource
 {
@@ -60,8 +61,8 @@ class ProviderResource extends Resource
                             ->maxLength(100),
                         Forms\Components\TextInput::make('rfc')
                             ->translateLabel()
-                            ->maxLength(13)
-                            ->minLength(13),
+                            ->maxLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)
+                            ->minLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12),
                         Forms\Components\Radio::make('type')
                             ->inline()
                             ->options([

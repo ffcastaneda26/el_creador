@@ -63,6 +63,7 @@ class WareHouseResource extends Resource
                 Forms\Components\TextInput::make('rfc')
                     ->maxLength(13)
                     ->translateLabel(),
+
                 Forms\Components\Toggle::make('active')
                     ->translateLabel()
                     ->required(),
