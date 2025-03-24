@@ -47,9 +47,29 @@ class Product extends Model
         return $this->hasMany(ManufacturingProduct::class);
     }
 
+    public function has_manufacturings()
+    {
+        return $this->manufacturings()->count();
+    }
+    public function has_warehouses(){
+        return $this->warehouses()->count();
+    }
     public function warehouse_requests(): hasMany
     {
         return $this->hasMany(WarehouseRequestDetail::class,'product_id');
+    }
+
+    public function has_requests()
+    {
+        return $this->warehouse_requests()->count();
+    }
+    public function has_purchases()
+    {
+        return $this->warehouse_requests()->count();
+    }
+    public function has_movements()
+    {
+        return $this->movements()->count();
     }
 
     public static function hasRecords()
@@ -67,19 +87,18 @@ class Product extends Model
         return $this->hasMany(ReceiptDetail::class,'product_id');
     }
 
-    // public function warehouses(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Product::class)
-    //             ->withPivot('price',
-    //                                 'last_purchase_price',
-    //                                 'stock',
-    //                                 'stock_available',
-    //                                 'stock_compromised',
-    //                                 'stock_min',
-    //                                 'stock_max',
-    //                                 'stock_reorder',
-    //                                 'average_cost',
-    //                                 'active',
-    //                                 'user_id');
-    // }
+    public function has_receptions()
+    {
+        return $this->reception_details()->count();
+    }
+
+
+    public function can_delete(){
+        return !$this->has_warehouses()
+            && !$this->has_manufacturings()
+            && !$this->has_requests()
+            && !$this->has_movements()
+            && !$this->has_purchases()
+            && !$this->has_receptions();
+    }
 }

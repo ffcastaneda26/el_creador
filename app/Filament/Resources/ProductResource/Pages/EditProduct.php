@@ -6,7 +6,6 @@ use App\Filament\Resources\ProductResource;
 use App\Models\Product;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class EditProduct extends EditRecord
@@ -17,8 +16,8 @@ class EditProduct extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-            ->hidden(function(Product $record){
-                return $record->warehouses->count() || $record->movements->count() ;
+            ->visible(function(Product $record){
+                return $record->can_delete();
             }),
         ];
 

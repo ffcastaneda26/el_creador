@@ -105,6 +105,10 @@ class ProductResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->visible(function(Product $record){
+                    return $record->can_delete() ;
+                }),
             ]);
     }
 

@@ -61,5 +61,8 @@ class ProductWarehouse extends Model
 
         $this->save();
     }
-    
+
+    public function can_delete(){
+        return $this->product->can_delete();
+    }
 }

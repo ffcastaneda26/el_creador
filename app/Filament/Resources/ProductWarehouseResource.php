@@ -39,7 +39,7 @@ class ProductWarehouseResource extends Resource
     protected static ?int $navigationSort = 22;
     public static function shouldRegisterNavigation(): bool
     {
-        return (Auth::user()->hasRole('Administrador') || Auth::user()->hasRole('Gerente')) && Warehouse::hasRecords() &&  Product::hasRecords() ;
+        return (Auth::user()->hasRole('Administrador') || Auth::user()->hasRole('Gerente')) && Warehouse::hasRecords() &&  Product::hasRecords();
     }
 
     // public static function getNavigationParentItem(): ?string
@@ -263,10 +263,8 @@ class ProductWarehouseResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->disabled(function (ProductWarehouse $record) {
-                        return Movement::where('warehouse_id', $record->warehouse_id)
-                            ->where('product_id', $record->product_id)
-                            ->count();
+                    ->visible(function (ProductWarehouse $record) {
+                        return $record->can_delete();
                     }),
 
             ]);
@@ -287,6 +285,4 @@ class ProductWarehouseResource extends Resource
             'edit' => Pages\EditProductWarehouse::route('/{record}/edit'),
         ];
     }
-
-
 }

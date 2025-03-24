@@ -24,4 +24,14 @@ class Unit extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function has_products(): bool
+    {
+        return $this->products()->exists();
+    }
+
+    public function can_delete() : bool
+    {
+        return !$this->has_products();
+    }
 }
