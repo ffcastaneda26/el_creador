@@ -13,4 +13,11 @@ class Metric extends Model
         'description',
         'measure'
     ];
+
+    public function goals()
+    {
+        return $this->hasMany(Goal::class);
+    }
+
+
 }

@@ -24,7 +24,7 @@ class MetricResource extends Resource
 
     public static function getNavigationGroup(): string
     {
-        return __('Goals');
+        return __('Goal Achievement');
     }
 
     public static function getModelLabel(): string
@@ -63,8 +63,12 @@ class MetricResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->translateLabel()
+                    ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('measure'),
+                Tables\Columns\TextColumn::make('measure')
+                ->translateLabel()
+                ->sortable(),
             ])
             ->filters([
                 //
