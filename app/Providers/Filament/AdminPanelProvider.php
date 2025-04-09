@@ -41,8 +41,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
                 CalendarWidget::class,
             ])
             ->resources([
@@ -52,7 +52,8 @@ class AdminPanelProvider extends PanelProvider
             // ->brandName('Filament Demo')
             // ->brandLogo(asset('images/logo.jpg'))
             ->brandLogo(fn () => view('filament.admin.logo'))
-            ->brandLogoHeight('3rem')
+            ->favicon(fn () => asset('images/Logo.png'))
+            ->brandLogoHeight('4rem')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -75,7 +76,91 @@ class AdminPanelProvider extends PanelProvider
                     ->timezone(config('app.timezone'))
                     ->locale(config('app.locale'))
                     ->plugins([])
-                    ->config([])
+                    ->config([
+                        'firstDay' => 1,
+                        'headerToolbar' => [
+                            'right' => 'timeGridWeek,timeGridDay,dayGridMonth,yesterday,today',
+                            'center' => 'title',
+                            'left' => 'prev,next',
+                        ],
+                        'buttonText' => [
+                            'today' => 'Hoy',
+                            'month' => 'Mes',
+                            'week' => 'Semana',
+                            'day' => 'Día',
+                        ],
+                        'footerToolbar' => [
+                            'start' => 'prev,next',
+                            'center' => '',
+                            // 'end' => 'prev,next',
+                            'end' => 'timeGridWeek,timeGridDay,dayGridMonth,yesterday,today',
+                        ],
+                        'buttonIcons' => [
+                            'prev' => 'chevron-left',
+                            'next' => 'chevron-right',
+                        ],
+                        'views' => [
+                            'timeGridWeek' => [
+                                'titleFormat' => [
+                                    'year' => 'numeric',
+                                    'month' => 'short',
+                                    'day' => 'numeric',
+                                ],
+                            ],
+                            'timeGridDay' => [
+                                'titleFormat' => [
+                                    'year' => 'numeric',
+                                    'month' => 'short',
+                                    'day' => 'numeric',
+                                ],
+                            ],
+                            'dayGridMonth' => [
+                                'titleFormat' => [
+                                    'year' => 'numeric',
+                                    'month' => 'long',
+                                ],
+                            ],
+                        ],
+                        'slotDuration' => '00:15:00',
+                        'slotMinTime' => '08:00:00',
+                        'slotMaxTime' => '20:00:00',
+                        'allDaySlot' => false,
+                        'nowIndicator' => true,
+                        'eventTimeFormat' => [
+                            'hour' => 'numeric',
+                            'minute' => '2-digit',
+                            'hour12' => false,
+                        ],
+                        'eventClick' => 'function(info) {
+                            console.log(info.event);
+                        }',
+                        'eventDrop' => 'function(info) {
+                            console.log(info.event);
+                        }',
+                        'eventResize' => 'function(info) {
+                            console.log(info.event);
+                        }',
+                        'select' => 'function(info) {
+                            console.log(info.startStr, info.endStr);
+                        }',
+                        'selectAllow' => 'function(info) {
+                            return info.start.getTime() > new Date().getTime();
+                        }',
+                        'selectMinDistance' => '15',
+                        'selectOverlap' => false,
+                        'selectConstraint' => 'businessHours',
+                        'selectConstraint' => [
+                            'start' => '08:00',
+                            'end' => '20:00',
+                        ],
+                        'selectLongPressDelay' => '1000',
+
+                    ])
+
             );
     }
+
+    /**
+     * firstDay: Día de inicio de la semana. 0: domingo, 1: lunes, 2: martes, 3: miércoles 4: jueves 4: viernes 7: sábado etc.
+     */
 }
