@@ -1,5 +1,8 @@
 {
-    "Created at": "Creado el",
+    "Is active": "¿Está Activo?",
+    "Payment Methods": "Métodos de Pago",
+    "Payment Method": "Método de Pago",
+    "Payment Methods Table": "Tabla de Métodos de Pago",
     "Metric id": "Métrica",
     "User id": "Usuario",
     "Period": "Periodo",
