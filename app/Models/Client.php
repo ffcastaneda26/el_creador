@@ -119,6 +119,11 @@ class Client extends Model
         return $this->belongsTo(Zipcode::class,'zipcode');
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     /**
      * Busca clientes
      */

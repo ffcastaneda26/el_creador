@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentMethod extends Model
 {
@@ -19,6 +20,10 @@ class PaymentMethod extends Model
         'active' => 'boolean',
     ];
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
     public function scopeActive($query)
     {
         return $query->where('active', true);

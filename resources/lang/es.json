@@ -1,4 +1,10 @@
 {
+    "Check number": "Número de Cheque",
+    "Card number": "Número de Tarjeta",
+    "Order": "Orden de Compra",
+    "Payment method": "Método de Pago",
+    "Payments": "Pagos",
+    "Payment": "Pago",
     "Is active": "¿Está Activo?",
     "Payment Methods": "Métodos de Pago",
     "Payment Method": "Método de Pago",
