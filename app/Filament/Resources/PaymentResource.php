@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PaymentResource\Pages;
 use App\Filament\Resources\PaymentResource\RelationManagers;
+use App\Models\Client;
+use App\Models\Order;
 use App\Models\Payment;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -45,28 +47,31 @@ class PaymentResource extends Resource
                         ->relationship(
                             name: 'client',
                             titleAttribute: 'name',
+                            modifyQueryUsing: fn($query) => $query->whereHas('pending_orders'),
                         )
                         ->required()
+                        ->reactive()
                         ->preload()
+                        ->translateLabel()
                         ->searchable(['name', 'phone', 'email'])
-                        ->translateLabel(),
-                    // TODO: Filtrar por las órdenes de compra del cliente que aún tengan saldo pendiente
+                        ->afterStateUpdated(fn(callable $set) => $set('order_id', null)),
 
                     Forms\Components\Select::make('order_id')
-                        ->relationship(
-                            name: 'order',
-                            titleAttribute: 'id',
-                        )
+                        ->translateLabel()
                         ->required()
-                        ->preload()
-                        ->translateLabel(),
-                    // Forms\Components\TextInput::make('amount')
-                    //     ->default(0.00)
-                    //     ->required()
-                    //     ->translateLabel()
-                    //     ->live(onBlur: true)
-                    //     ->inputMode('decimal')
-                    //     ->numeric(),
+                        ->reactive()
+                        ->options(function (callable $get) {
+                            $client = Client::find($get('client_id'));
+                            if (!$client) {
+                                return;
+                            }
+                            // return $client->pending_orders->pluck('date', 'id');
+                            return $client->pending_orders->mapWithKeys(function ($order) {
+                                return [$order->id => $order->date->format('Y-m-d')];
+                            });
+                        }),
+
+
                     Forms\Components\TextInput::make('amount')
                         ->required()
                         ->numeric()
@@ -75,12 +80,14 @@ class PaymentResource extends Resource
                         ->formatStateUsing(fn($state) => number_format($state, 2, '.', ''))
                         ->default(0.00)
                         ->dehydrateStateUsing(fn($state) => round(floatval($state), 2))
-                        ->rules(['numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/']),
+                        ->rules(['numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'])
+                        ->maxValue(fn($get) => Order::find($get('order_id'))?->pending_balance ?? 0),
                     Forms\Components\TextInput::make('reference')
                         ->maxLength(50)
                         ->translateLabel(),
 
                 ])->columns(2),
+
                 Forms\Components\Group::make()->schema([
                     Forms\Components\DatePicker::make('date')
                         ->required()
@@ -119,38 +126,62 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('client_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('client.name')
+                    ->translateLabel()
+                    ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('order_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('order.date')
+                    ->translateLabel()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('payment_method_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('paymentMethod.name')
+                    ->translateLabel()
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date')
                     ->date()
+                    ->translateLabel()
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
-                    ->numeric()
-                    ->sortable(),
+                    ->translateLabel()
+                    ->searchable()
+                    ->alignEnd()
+                    ->sortable()
+                    ->money('MXP', true),
+                // ->formatStateUsing(fn(string $state): string => number_format($state, 2)),
                 Tables\Columns\TextColumn::make('reference')
-                    ->searchable(),
+                    ->translateLabel()
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('card_number')
-                    ->searchable(),
+                    ->translateLabel()
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('voucher_file')
-                    ->searchable(),
+                    ->translateLabel()
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
+                    ->translateLabel()
                     ->sortable()
+                    ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->translateLabel()
                     ->sortable()
+                    ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                tables\Filters\SelectFilter::make('client')
+                    ->relationship('client', 'name')
+                    ->translateLabel()
+                    ->searchable()
+                    ->preload()
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

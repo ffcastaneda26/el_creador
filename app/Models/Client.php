@@ -99,6 +99,10 @@ class Client extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function pending_orders(): HasMany
+    {
+        return $this->hasMany(Order::class)->where('pending_balance', '>', 0);
+    }
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
