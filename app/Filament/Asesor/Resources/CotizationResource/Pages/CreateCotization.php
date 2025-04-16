@@ -17,15 +17,17 @@ class CreateCotization extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $subtotal = round($data['subtotal'],2);
-        $retencion_isr= round($subtotal * env('PERCENTAGE_RETENCION_ISR',1-25)/100,2);
-
         $descuento = round($data['descuento'],2);
         $envio = round($data['envio'],2);
-
+        $retencion_isr = 0;
         $iva = 0;
 
         if($data['tax']){
             $iva = round($subtotal * 0.16,2);
+            $percentage_retencion =  env('PERCENTAGE_RETENCION_ISR', 1.25);
+            $base_retencion = round($subtotal - $envio);
+            $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
+
         }
         $total = round($subtotal + $iva - $descuento + $envio,2);
         $data['subtotal']   = $subtotal;
