@@ -90,9 +90,9 @@ class CotizationResource extends Resource
                             ->reactive()
                             ->label('¿Va a Requerir Factura?')
                             ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
-                                $subtotal = $get('subtotal');
-                                $descuento = $get('descuento');
-                                $envio = $get('envio');
+                                $subtotal = floatval($get('subtotal'));
+                                $descuento = floatval($get('descuento'));
+                                $envio = floatval($get('envio'));
                                 $iva = 00.00;
                                 $tax = $get('tax');
                                 $retencion_isr = 0;
@@ -152,7 +152,6 @@ class CotizationResource extends Resource
                                 ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
                                     $subtotal =floatval($get('subtotal'));
                                     $descuento = floatval($get('descuento'));
-                                    $subtotal = floatval($get('subtotal'));
                                     $tax = $get('tax');
                                     $iva = 0.00;
                                     $retencion_isr = 0.00;
