@@ -116,8 +116,8 @@ class CotizationResource extends Resource
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
                                 ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
-                                    $descuento = $get('descuento');
-                                    $envio = $get('envio');
+                                    $descuento = floatval($get('descuento'));
+                                    $envio = floatval($get('envio'));
                                     $iva = 0.00;
                                     $retencion_isr = 0.00;
                                     $tax = $get('tax');
@@ -128,7 +128,7 @@ class CotizationResource extends Resource
                                         $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
                                     }
                                     $set('iva', $iva);
-                                    $set('retencion_isr', $retencion_isr);
+                                    $set('retencion_isr', floatval($retencion_isr));
                                     $total = round($state + $iva - $descuento + $envio - $retencion_isr, 2);
                                     $set('total', $total);
                                 }),
@@ -138,9 +138,9 @@ class CotizationResource extends Resource
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
                                 ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
-                                    $subtotal = $get('subtotal');
-                                    $envio = $get('envio');
-                                    $iva = $get('iva');
+                                    $subtotal = floatval($get('subtotal'));
+                                    $envio = floatval($get('envio'));
+                                    $iva = floatval($get('iva'));
                                     $total = round($subtotal +  $iva - $state + $envio, 2);
                                     $set('total', $total);
                                 }),
@@ -150,9 +150,9 @@ class CotizationResource extends Resource
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
                                 ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
-                                    $subtotal = $get('subtotal');
-                                    $descuento = $get('descuento');
-                                    $subtotal = $get('subtotal');
+                                    $subtotal =floatval($get('subtotal'));
+                                    $descuento = floatval($get('descuento'));
+                                    $subtotal = floatval($get('subtotal')=;
                                     $tax = $get('tax');
                                     $iva = 0.00;
                                     $retencion_isr = 0.00;
