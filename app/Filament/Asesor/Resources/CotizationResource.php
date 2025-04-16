@@ -88,7 +88,7 @@ class CotizationResource extends Resource
                             ])
                             ->live(onBlur: true)
                             ->reactive()
-                            ->label('¿Incluir Iva?')
+                            ->label('¿Va a Requerir Factura?')
                             ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
                                 $subtotal = $get('subtotal');
                                 $descuento = $get('descuento');
@@ -104,7 +104,7 @@ class CotizationResource extends Resource
                                 $retencion_isr = round($base_retencion * ( $percentage_retencion/100),2);
 
                                 $set('retencion_isr', $retencion_isr);
-                                $total = round($subtotal + $iva - $descuento + $envio, 2);
+                                $total = round($subtotal + $iva - $descuento + $envio -$retencion_isr, 2);
                                 $set('total', $total);
                             })
                             ->columnSpan(2),
@@ -130,7 +130,7 @@ class CotizationResource extends Resource
                                     $retencion_isr = round($base_retencion * ( $percentage_retencion/100),2);
                                     $set('retencion_isr', $retencion_isr);
 
-                                    $total = round($state + $iva - $descuento + $envio -$retencion_isr , 2);
+                                    $total = round($state + $iva - $descuento + $envio - $retencion_isr , 2);
                                     $set('total', $total);
                                 }),
                             TextInput::make('descuento')
