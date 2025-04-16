@@ -97,7 +97,7 @@ class CotizationResource extends Resource
                                 $tax = $get('tax');
                                 $retencion_isr = 0;
                                 if ($tax) {
-                                    $iva = round(($subtotal + $envio) * 0.16, 2);
+                                    $iva = round(($subtotal - $descuento + $envio) * 0.16, 2);
                                     $percentage_retencion =  env('PERCENTAGE_RETENCION_ISR', 1.25);
                                     $base_retencion = round($subtotal - $envio);
                                     $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
@@ -122,7 +122,7 @@ class CotizationResource extends Resource
                                     $retencion_isr = 0.00;
                                     $tax = $get('tax');
                                     if ($tax) {
-                                        $iva = round(($state + $envio) * 0.16, 2);
+                                        $iva = round(($state + $envio - $descuento) * 0.16, 2);
                                         $percentage_retencion =  env('PERCENTAGE_RETENCION_ISR', 1.25);
                                         $base_retencion = round($state - $envio);
                                         $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
