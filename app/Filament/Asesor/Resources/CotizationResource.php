@@ -152,7 +152,7 @@ class CotizationResource extends Resource
                                 ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
                                     $subtotal =floatval($get('subtotal'));
                                     $descuento = floatval($get('descuento'));
-                                    $subtotal = floatval($get('subtotal')=;
+                                    $subtotal = floatval($get('subtotal'));
                                     $tax = $get('tax');
                                     $iva = 0.00;
                                     $retencion_isr = 0.00;
