@@ -140,8 +140,18 @@ class CotizationResource extends Resource
                                 ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
                                     $subtotal = floatval($get('subtotal'));
                                     $envio = floatval($get('envio'));
-                                    $iva = floatval($get('iva'));
-                                    $total = round($subtotal +  $iva - $state + $envio, 2);
+                                    $iva = 0.00;
+                                    $retencion_isr = 0.00;
+                                    $tax = $get('tax');
+                                    if ($tax) {
+                                        $iva = round(($subtotal + $envio) * 0.16, 2);
+                                        $percentage_retencion =  env('PERCENTAGE_RETENCION_ISR', 1.25);
+                                        $base_retencion = round($subtotal - $envio);
+                                        $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
+                                    }
+                                    $set('iva', $iva);
+                                    $set('retencion_isr', floatval($retencion_isr));
+                                    $total = round($subtotal + $iva - $state + $envio - $retencion_isr, 2);
                                     $set('total', $total);
                                 }),
                             TextInput::make('envio')

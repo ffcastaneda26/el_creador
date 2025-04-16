@@ -29,7 +29,7 @@ class CreateCotization extends CreateRecord
             $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
 
         }
-        $total = round($subtotal + $iva - $descuento + $envio,2);
+        $total = round($subtotal + $iva - $descuento + $envio - $retencion_isr,2);
         $data['subtotal']   = $subtotal;
         $data['descuento']  = $descuento;
         $data['iva']        = $iva;
