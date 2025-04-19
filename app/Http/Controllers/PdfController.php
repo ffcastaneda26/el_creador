@@ -13,7 +13,7 @@ use setasign\Fpdi\Fpdi;
 class PdfController extends Controller
 {
 
-    public function index($record,string $document="aviso")
+    public function index($record, string $document = "aviso")
     {
         switch ($document) {
             case 'aviso':
@@ -23,8 +23,8 @@ class PdfController extends Controller
                 $this->cotizacion($record);
                 break;
             case 'contrato':
-                    $this->contrato($record);
-                    break;
+                $this->contrato($record);
+                break;
             default:
                 dd('Otro Documento:' . $document);
                 break;
@@ -52,32 +52,32 @@ class PdfController extends Controller
         $count = $fpdi->setSourceFile($filePath);
 
 
-        for ($i=1; $i<=$count; $i++) {
+        for ($i = 1; $i <= $count; $i++) {
             $template = $fpdi->importPage($i);
             $size = $fpdi->getTemplateSize($template);
             $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
             $fpdi->useTemplate($template);
-            $fpdi->SetXY(134,22);
+            $fpdi->SetXY(134, 22);
 
-            $fpdi->Write(0,now()->format('d'));
-            $fpdi->Text(152,23,GeneralHelp::spanish_month(now(),'s'));
+            $fpdi->Write(0, now()->format('d'));
+            $fpdi->Text(152, 23, GeneralHelp::spanish_month(now(), 's'));
 
-            if($data){
+            if ($data) {
                 $standard_name = GeneralHelp::normalize_text($data->name);
                 $standard_name = ucwords($standard_name);
 
-                $fpdi->Text(42,133,$standard_name);    // Nombre
-                $fpdi->Text(44,145,$data->phone);   // Teléfono
-                $fpdi->Text(61,157,strtolower($data->email)); // Correo
+                $fpdi->Text(42, 133, $standard_name);    // Nombre
+                $fpdi->Text(44, 145, $data->phone);   // Teléfono
+                $fpdi->Text(61, 157, strtolower($data->email)); // Correo
                 $address = $data->address . ' Col: ' . $data->colony . ' en ' . $data->city->name; // Calle y número
                 // $address = strtr($address, array_combine($buscar, $reemplazar));
                 $address = GeneralHelp::normalize_text($address);
-                $fpdi->Text(44,170,$address);
-                $municipality_state = $data->municipality->name . ',' . $data->state->abbreviated . '   C.P. ' .$data->zipcode;
-                $fpdi->Text(44,175,$municipality_state);
-                $fpdi->Text(90,183,$data->rfc); // RFC
-                $fpdi->Text(64,195,$data->ine); // INE
-                $fpdi->Text(40,265,$standard_name); // Nombre para firmar
+                $fpdi->Text(44, 170, $address);
+                $municipality_state = $data->municipality->name . ',' . $data->state->abbreviated . '   C.P. ' . $data->zipcode;
+                $fpdi->Text(44, 175, $municipality_state);
+                $fpdi->Text(90, 183, $data->rfc); // RFC
+                $fpdi->Text(64, 195, $data->ine); // INE
+                $fpdi->Text(40, 265, $standard_name); // Nombre para firmar
             }
         }
         return $fpdi->Output($outputFilePath, 'I');
@@ -103,103 +103,126 @@ class PdfController extends Controller
 
 
 
-        for ($i=1; $i<=$count; $i++) {
-
-        // $fpdi->Image($imgdata);
+        for ($i = 1; $i <= $count; $i++) {
 
             $template = $fpdi->importPage($i);
             $size = $fpdi->getTemplateSize($template);
             $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
             $fpdi->useTemplate($template);
 
-            if($data && $i==1){
-                $fpdi->SetXY(164,27);
+            if ($data && $i == 1) {
+                $fpdi->SetXY(164, 27);
 
-                $fpdi->Write(0,$data->fecha->format('d'));
-                $fpdi->Text(176,28,strtoupper(GeneralHelp::spanish_month($data->fecha,'s')));
+                $fecha_dia = $data->fecha->format('d');
+                $fpdi->Text(166, 28, $fecha_dia);
+
+                $fpdi->Text(175, 28, strtoupper(GeneralHelp::spanish_month($data->fecha, 's')));
                 $standard_name = GeneralHelp::normalize_text($data->client->name);
                 $standard_name = ucwords($standard_name);
-                $fpdi->Text(43,64,$standard_name);                          // Nombre
+                $fpdi->Text(43, 64, $standard_name);                          // Nombre
 
                 $standar_description = GeneralHelp::normalize_text($data->description);
                 $arrayDescripcion = explode("\n", $standar_description);
-                $posx= 52;
-                $posy= 90;
+                $posx = 104;
+                $posy = 90;
 
                 // Descripción
+
                 foreach ($arrayDescripcion as $linea) {
-                    $palabras= wordwrap($linea, 70, "\n", true);
+                    $palabras = wordwrap($linea, 40, "\n", true);
                     $lineasSeparadas = explode("\n", $palabras);
-                    foreach($lineasSeparadas as $linea_separada){
-                        $fpdi->text($posx,$posy,$linea_separada);
-                        $posy=$posy+5;
+                    foreach ($lineasSeparadas as $linea_separada) {
+                        $fpdi->text($posx, $posy, $linea_separada);
+                        $posy = $posy + 5;
                     }
                 }
 
                 $totImagesCotization = $data->images->count();
 
-                if($totImagesCotization){
-                    switch ($totImagesCotization) {
-                        case 1:
-                            $posx=105;
-                            break;
-                        case 2:
-                            $posx=85;
-                            break;
-                        case 3:
-                            $posx=65;
-                            break;
-                        case 4:
-                            $posx=45;
-                            break;
-                        case 5:
-                            $posx=25;
-                            break;
-                        default:
-                            $posx=32;
-                            break;
+                if ($totImagesCotization) {
+                    // switch ($totImagesCotization) {
+                    //     case 1:
+                    //         $posx = 105;
+                    //         break;
+                    //     case 2:
+                    //         $posx = 85;
+                    //         break;
+                    //     case 3:
+                    //         $posx = 65;
+                    //         break;
+                    //     case 4:
+                    //         $posx = 45;
+                    //         break;
+                    //     case 5:
+                    //         $posx = 25;
+                    //         break;
+                    //     default:
+                    //         $posx = 32;
+                    //         break;
+                    // }
+                    $posx = 15;
+
+                    $posy= 90;
+                    foreach ($data->images->sortBy('id') as $image) {
+
+                        $imageUrl = storage_path('app/public/' . $image->image);
+                        $fpdi->Image($imageUrl, $posx, $posy, 15, 15);
+                        $image_description = GeneralHelp::normalize_text($image->description);
+                        $image_description_array = explode("\n", $image_description);
+
+                        foreach ($image_description_array as $linea) {
+                            $palabras = wordwrap($linea, 40, "\n", true);
+                            $lineasSeparadas = explode("\n", $palabras);
+                            foreach ($lineasSeparadas as $linea_separada) {
+                                $fpdi->text($posx+18, $posy, $linea_separada);
+                                $posy = $posy + 5;
+                            }
+                        }
+
+                        $posy = $posy + 10;
                     }
-                    foreach($data->images as $image){
-                        // $imageUrl = 'C:\laragon\www\el_creador\storage\app\public\\' . $image->image;
 
-                        $imageUrl = Storage::url( 'app\public\\'. $image->image);
-                        dd('Imagen Image', $image->image,'Ruta Imagen='. $imageUrl);
-                        $fpdi->Image( $imageUrl,$posx,$posy,15,15);
-                        $fpdi->text($posx,$posy+20,GeneralHelp::normalize_text($image->name));
-
-
-                        $posx= $totImagesCotization > 5 ? $posx+ 30 : $posx+40;
-                    }
                 }
 
 
                 // Fecha de entrega
 
-                if($data->fecha_entrega){
+                if ($data->fecha_entrega) {
                     $fpdi->SetFontSize(14);
-                    $fpdi->text(95,185 ,'Fecha de Entrega: ' . GeneralHelp::spanish_date($data->fecha_entrega,'n','n','dmy') );
+                    $fecha_entrega_espanol = GeneralHelp::normalize_text(GeneralHelp::spanish_date($data->fecha_entrega, 'n', 'n', 'dmy'));
+
+                    $fpdi->text(95, 185, 'Fecha de Entrega: ' . $fecha_entrega_espanol);
                 }
 
                 // Totales
                 $fpdi->SetFontSize(11);
 
-                if($data->envio > 0){
-                    $fpdi->text(194-strlen(number_format($data->envio,2,'.',',')),195,number_format($data->envio,2,'.',','));
+                if ($data->envio > 0) {
+                    $fpdi->text(194 - strlen(number_format($data->envio, 2, '.', ',')), 195, number_format($data->envio, 2, '.', ','));
                 }
 
-                $fpdi->text(194-strlen(number_format($data->subtotal,2,'.',',')),200,number_format($data->subtotal,2,'.',','));
+                $fpdi->text(194 - strlen(number_format($data->subtotal, 2, '.', ',')), 200, number_format($data->subtotal, 2, '.', ','));
 
-                if($data->iva > 0){
-                    $fpdi->text(195-strlen(number_format($data->iva,2)),205,number_format($data->iva,2));
-                }else{
-                    $fpdi->Text(105,212,'NO INCLUYE IVA');
+                if ($data->iva > 0) {
+                    $fpdi->text(195 - strlen(number_format($data->iva, 2)), 205, number_format($data->iva, 2));
+                } else {
+                    $fpdi->Text(105, 212, 'NO INCLUYE IVA');
                 }
 
-                if($data->descuento > 0){
-                    $fpdi->text(192-strlen(number_format($data->descuento)),212,number_format($data->descuento,2));
+
+
+                if($data->retencion_isr > 0){
+                    $texto_retencion_isr = 'RETENCION ISR $' . number_format($data->retencion_isr, 2);
+                    $fpdi->text(104, 218, $texto_retencion_isr);
+
                 }
 
-                $fpdi->text(191-strlen(number_format($data->total)),218,number_format($data->total,2));
+                if ($data->descuento > 0) {
+                    $fpdi->text(192 - strlen(number_format($data->descuento)), 212, number_format($data->descuento, 2));
+                }
+
+
+                $fpdi->text(191 - strlen(number_format($data->total)), 218, number_format($data->total, 2));
             }
         }
         return $fpdi->Output($outputFilePath, 'I');
@@ -210,7 +233,8 @@ class PdfController extends Controller
      * @param mixed $record
      * @return void
      */
-    public function contrato($record){
+    public function contrato($record)
+    {
         $data = Order::findOrFail($record);
 
         $filePath = public_path('pdfs/contrato.pdf');
@@ -227,15 +251,15 @@ class PdfController extends Controller
 
         dd('Son un total de ' . $count . ' Hojas');
 
-        for ($i=1; $i<=$count; $i++) {
+        for ($i = 1; $i <= $count; $i++) {
             dd('Agregamos la hoja ' . $i);
             $template = $fpdi->importPage($i);
             $size = $fpdi->getTemplateSize($template);
             $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
             $fpdi->useTemplate($template);
 
-            if($data && $i==1){
-                $fpdi->text(50,30,$data->client->name);
+            if ($data && $i == 1) {
+                $fpdi->text(50, 30, $data->client->name);
             }
 
         }
