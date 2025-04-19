@@ -163,6 +163,7 @@ class PdfController extends Controller
                         // $imageUrl = 'C:\laragon\www\el_creador\storage\app\public\\' . $image->image;
 
                         $imageUrl = Storage::url( 'app\public\\'. $image->image);
+                        dd('Imagen Image', $image->image,'Ruta Imagen='. $imageUrl);
                         $fpdi->Image( $imageUrl,$posx,$posy,15,15);
                         $fpdi->text($posx,$posy+20,GeneralHelp::normalize_text($image->name));
 
