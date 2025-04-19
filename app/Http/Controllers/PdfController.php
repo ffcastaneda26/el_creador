@@ -160,8 +160,9 @@ class PdfController extends Controller
                             break;
                     }
                     foreach($data->images as $image){
+                        // $imageUrl = 'C:\laragon\www\el_creador\storage\app\public\\' . $image->image;
+
                         $imageUrl = Storage::url( 'app\public\\'. $image->image);
-                        $imageUrl = 'C:\laragon\www\el_creador\storage\app\public\\' . $image->image;
                         $fpdi->Image( $imageUrl,$posx,$posy,15,15);
                         $fpdi->text($posx,$posy+20,GeneralHelp::normalize_text($image->name));
 
@@ -187,7 +188,7 @@ class PdfController extends Controller
 
                 $fpdi->text(194-strlen(number_format($data->subtotal,2,'.',',')),200,number_format($data->subtotal,2,'.',','));
 
-                if($data->iva> 0){
+                if($data->iva > 0){
                     $fpdi->text(195-strlen(number_format($data->iva,2)),205,number_format($data->iva,2));
                 }else{
                     $fpdi->Text(105,212,'NO INCLUYE IVA');
@@ -196,6 +197,7 @@ class PdfController extends Controller
                 if($data->descuento > 0){
                     $fpdi->text(192-strlen(number_format($data->descuento)),212,number_format($data->descuento,2));
                 }
+
                 $fpdi->text(191-strlen(number_format($data->total)),218,number_format($data->total,2));
             }
         }
