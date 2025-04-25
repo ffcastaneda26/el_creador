@@ -108,12 +108,6 @@ class OrderResource extends Resource
                                         ->translateLabel()
                                         ->live(onBlur: true)
                                         ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
-                                    Forms\Components\TextInput::make('tax')
-                                        ->required()
-                                        ->numeric()
-                                        ->default(0.00)
-                                        ->translateLabel()
-                                        ->disabled(),
                                     Forms\Components\TextInput::make('discount')
                                         ->required()
                                         ->numeric()
@@ -122,6 +116,18 @@ class OrderResource extends Resource
                                         ->translateLabel()
                                         ->live(onBlur: true)
                                         ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
+
+                                    Forms\Components\TextInput::make('tax')
+                                        ->required()
+                                        ->numeric()
+                                        ->default(0.00)
+                                        ->translateLabel()
+                                        ->disabled(),
+                                    Forms\Components\TextInput::make('retencion_isr')
+                                        ->required()
+                                        ->translateLabel()
+                                        ->inputMode('decimal')
+                                        ->disabled(),
                                     Forms\Components\TextInput::make('total')
                                         ->required()
                                         ->numeric()
@@ -159,63 +165,61 @@ class OrderResource extends Resource
                         Tabs\Tab::make(__('Delivery'))
                             ->schema([
                                 Group::make()->schema([
-                                        Forms\Components\TextInput::make('zipcode')
-                                            ->maxLength(5)
-                                            ->translateLabel()
-                                            ->live(onBlur: true)
-                                            ->afterstateupdated(function (callable $get, callable $set) {
-                                                $set('country', null);
-                                                $set('state', null);
-                                                $set('municipality', null);
-                                                $set('city', null);
+                                    Forms\Components\TextInput::make('zipcode')
+                                        ->maxLength(5)
+                                        ->translateLabel()
+                                        ->live(onBlur: true)
+                                        ->afterstateupdated(function (callable $get, callable $set) {
+                                            $set('country', null);
+                                            $set('state', null);
+                                            $set('municipality', null);
+                                            $set('city', null);
 
-                                                $zipcode = OrderResource::getZipcode($get('zipcode'));
-                                                if ($zipcode) {
-                                                    // dd($zipcode);
-                                                    $set('country', $zipcode->country);
-                                                    $set('state', $zipcode->state);
-                                                    $set('municipality', $zipcode->municipality);
-                                                    $set('city', $zipcode->city);
-                                                    $colonies = OrderResource::getColonies($get('zipcode'));
-                                                    $colonyvalue = $get('colony');
-                                                    if ($colonyvalue || strlen($colonyvalue) > 0) {
-                                                        if ($colonyvalue && is_array($colonies) && in_array($colonyvalue, array_keys($colonies))) {
-                                                            return;
-                                                        } else {
-                                                            $set('colony', null);
-                                                        }
+                                            $zipcode = OrderResource::getZipcode($get('zipcode'));
+                                            if ($zipcode) {
+                                                // dd($zipcode);
+                                                $set('country', $zipcode->country);
+                                                $set('state', $zipcode->state);
+                                                $set('municipality', $zipcode->municipality);
+                                                $set('city', $zipcode->city);
+                                                $colonies = OrderResource::getColonies($get('zipcode'));
+                                                $colonyvalue = $get('colony');
+                                                if ($colonyvalue || strlen($colonyvalue) > 0) {
+                                                    if ($colonyvalue && is_array($colonies) && in_array($colonyvalue, array_keys($colonies))) {
+                                                        return;
+                                                    } else {
+                                                        $set('colony', null);
                                                     }
                                                 }
-                                            }),
+                                            }
+                                        }),
 
+                                    Forms\Components\TextInput::make('country')
+                                        ->translateLabel()
+                                        ->disabled(),
+                                    Forms\Components\TextInput::make('state')
+                                        ->translateLabel()
+                                        ->disabled(),
+                                    Forms\Components\TextInput::make('municipality')
+                                        ->translateLabel()
+                                        ->disabled(),
+                                    Forms\Components\TextInput::make('city')
+                                        ->translateLabel()
+                                        ->disabled(),
+                                    Forms\Components\Select::make('colony')
+                                        ->translateLabel()
+                                        // ->required()
+                                        ->searchable()
+                                        ->disabled(fn(Get $get): bool => !OrderResource::zipcodeExists($get('zipcode')))
+                                        ->options(function (callable $get, callable $set) {
+                                            $colonies = OrderResource::getColonies($get('zipcode'));
+                                            if (count($colonies)) {
+                                                return $colonies;
+                                            }
+                                            $set('colony', null);
+                                            return null;
 
-
-                                        Forms\Components\TextInput::make('country')
-                                            ->translateLabel()
-                                            ->disabled(),
-                                        Forms\Components\TextInput::make('state')
-                                            ->translateLabel()
-                                            ->disabled(),
-                                        Forms\Components\TextInput::make('municipality')
-                                            ->translateLabel()
-                                            ->disabled(),
-                                        Forms\Components\TextInput::make('city')
-                                            ->translateLabel()
-                                            ->disabled(),
-                                        Forms\Components\Select::make('colony')
-                                            ->translateLabel()
-                                            ->required()
-                                            ->searchable()
-                                            ->disabled(fn(Get $get): bool => !OrderResource::zipcodeExists($get('zipcode')))
-                                            ->options(function (callable $get, callable $set) {
-                                                $colonies = OrderResource::getColonies($get('zipcode'));
-                                                if(count($colonies)){
-                                                    return $colonies;
-                                                }
-                                                $set('colony',null);
-                                                return null;
-
-                                            }),
+                                        }),
 
 
                                 ])->columns(2),
@@ -380,13 +384,27 @@ class OrderResource extends Resource
 
     public static function calculateTotals(Set $set, Get $get)
     {
-        $tax = 0;
-        if ($get('require_invoice')) {
-            $tax = round($get('subtotal') * 0.16, 2);
+        $require_invoice = $get('require_invoice');
+        $subtotal = round(floatval($get('subtotal')), 2);
+        $descuento = round(floatval($get('discount')), 2);
+        $anticipo = round(floatval($get('advance')), 2);
+        $retencion_isr = 00.00;
+        $tax = 00.00;
+        if ($require_invoice) {
+            $percentage_iva = round(env('PERCENTAGE_IVA', 16) / 100, 2);
+            $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
+            $base_retencion = round($subtotal - $descuento , 2);
+            $tax = round($base_retencion * $percentage_iva, 2);
+            $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
         }
+
+        $total = round($subtotal - $descuento + $tax,2);
+        $pending_balance = round($total - $anticipo, 2);
+
         $set('tax', $tax);
-        $set('total', round($get('subtotal') + $tax - $get('discount'), 2));
-        $set('pending_balance', round($get('total') - $get('advance'), 2));
+        $set('retencion_isr', $retencion_isr);
+        $set('total', $total);
+        $set('pending_balance',$pending_balance);
     }
 
     public static function getClient(Set $set, Get $get, $client_id)
