@@ -71,43 +71,26 @@ class CotizationResource extends Resource
                         ->columnSpan(2),
                 ]),
                 Group::make()->schema([
-                    DatePicker::make('fecha')
-                        ->required()
-                        ->default(now())
-                        ->format('Y-m-d'),
-                    DatePicker::make('vigencia')
-                        ->required()
-                        ->format('Y-m-d')
-                        ->after('fecha'),
                     Section::make()->schema([
-
-                        Select::make('tax')
-                            ->options([
-                                true => __('Yes'),
-                                false => 'No',
-                            ])
+                        DatePicker::make('fecha')
+                            ->required()
+                            ->default(now())
+                            ->format('Y-m-d'),
+                        DatePicker::make('vigencia')
+                            ->required()
+                            ->format('Y-m-d')
+                            ->after('fecha'),
+                        Toggle::make('require_invoice')
+                            ->required()
+                            ->translateLabel()
                             ->live(onBlur: true)
                             ->reactive()
-                            ->label('¿Va a Requerir Factura?')
-                            ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
-                                $subtotal = floatval($get('subtotal'));
-                                $descuento = floatval($get('descuento'));
-                                $envio = floatval($get('envio'));
-                                $iva = 00.00;
-                                $tax = $get('tax');
-                                $retencion_isr = 0;
-                                if ($tax) {
-                                    $iva = round(($subtotal - $descuento + $envio) * 0.16, 2);
-                                    $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-                                    $base_retencion = round($subtotal - $envio);
-                                    $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
-                                }
-                                $set('iva', $iva);
-                                $set('retencion_isr', $retencion_isr);
-                                $total = round($subtotal + $iva - $descuento + $envio - $retencion_isr, 2);
-                                $set('total', $total);
-                            })
-                            ->columnSpan(2),
+                            ->disabled(fn(Get $get) => !$get('client_id'))
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+                    ])->columns(3),
+
+                    Section::make()->schema([
+
                         Section::make()->schema([
                             TextInput::make('subtotal')
                                 ->default(0.00)
@@ -115,75 +98,43 @@ class CotizationResource extends Resource
                                 ->translateLabel()
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
-                                ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
-                                    $descuento = floatval($get('descuento'));
-                                    $envio = floatval($get('envio'));
-                                    $iva = 0.00;
-                                    $retencion_isr = 0.00;
-                                    $tax = $get('tax');
-                                    if ($tax) {
-                                        $iva = round(($state + $envio - $descuento) * 0.16, 2);
-                                        $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-                                        $base_retencion = round($state - $envio);
-                                        $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
-                                    }
-                                    $set('iva', $iva);
-                                    $set('retencion_isr', floatval($retencion_isr));
-                                    $total = round($state + $iva - $descuento + $envio - $retencion_isr, 2);
-                                    $set('total', $total);
-                                }),
+                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
                             TextInput::make('descuento')
                                 ->default(0.00)
                                 ->translateLabel()
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
-                                ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
-                                    $subtotal = floatval($get('subtotal'));
-                                    $envio = floatval($get('envio'));
-                                    $iva = 0.00;
-                                    $retencion_isr = 0.00;
-                                    $tax = $get('tax');
-                                    if ($tax) {
-                                        $iva = round(($subtotal + $envio) * 0.16, 2);
-                                        $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-                                        $base_retencion = round($subtotal - $envio);
-                                        $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
-                                    }
-                                    $set('iva', $iva);
-                                    $set('retencion_isr', floatval($retencion_isr));
-                                    $total = round($subtotal + $iva - $state + $envio - $retencion_isr, 2);
-                                    $set('total', $total);
-                                }),
+                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
                             TextInput::make('envio')
                                 ->default(0.00)
                                 ->translateLabel()
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
-                                ->afterStateUpdated(function (callable $get, Set $set, ?string $state) {
-                                    $subtotal = floatval($get('subtotal'));
-                                    $descuento = floatval($get('descuento'));
-                                    $tax = $get('tax');
-                                    $iva = 0.00;
-                                    $retencion_isr = 0.00;
-                                    if ($tax) {
-                                        $iva = round(($state + $subtotal) * 0.16, 2);
-                                        $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-                                        $base_retencion = round($subtotal - $state);
-                                        $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
-                                    }
-                                    $set('iva', $iva);
-                                    $set('retencion_isr', $retencion_isr);
+                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
 
-                                    $total = round($subtotal + $iva - $descuento + $state, 2);
-                                    $set('total', $total);
-                                }),
-                            TextInput::make('iva')
-                                ->required()
-                                ->translateLabel()
-                                ->inputMode('decimal')
-                                ->disabled(),
+                        ])->columns(3),
 
-                        ])->columns(4),
+                        // Section::make()->schema([
+                        //     TextInput::make('base_retencion')
+                        //         ->label('Base Retención')
+                        //         ->inputMode('decimal')
+                        //         ->disabled(),
+                        //     TextInput::make('percentage_retencion')
+                        //         ->label('% Retención')
+                        //         ->inputMode('decimal')
+                        //         ->disabled(),
+                        //     TextInput::make('percentage_iva')
+                        //         ->label('% IVA')
+                        //         ->inputMode('decimal')
+                        //         ->disabled(),
+                        // ])
+                        // ->columns(3)
+                        // ->hidden(),
+                        TextInput::make('iva')
+                            ->required()
+                            ->translateLabel()
+                            ->inputMode('decimal')
+                            ->disabled(),
                         TextInput::make('retencion_isr')
                             ->required()
                             ->translateLabel()
@@ -194,7 +145,7 @@ class CotizationResource extends Resource
                             ->disabled()
                             ->translateLabel()
                             ->inputMode('decimal'),
-                    ])->columns(2),
+                    ])->columns(3),
 
                     Section::make()->schema([
                         Toggle::make('aprobada')->label('¿Aprobada?'),
@@ -212,7 +163,7 @@ class CotizationResource extends Resource
                             ->after('fecha')
                             ->format('Y-m-d'),
                     ])->columns(3)
-                ])->columns(2),
+                ])->columns(3),
             ]);
     }
 
@@ -318,5 +269,30 @@ class CotizationResource extends Resource
 
     private static function calculateTax()
     {
+    }
+
+    public static function calculateTotals(Set $set, Get $get)
+    {
+        $require_invoice = $get('require_invoice');
+        $subtotal = round(floatval($get('subtotal')), 2);
+        $descuento = round(floatval($get('descuento')), 2);
+        $envio = round(floatval($get('envio')), 2);
+        $iva = 00.00;
+        $retencion_isr = 00.00;
+
+        if ($require_invoice) {
+            $percentage_iva = round(env('PERCENTAGE_IVA', 16) / 100, 2);
+            $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
+            $base_retencion = round($subtotal - $descuento + $envio, 2);
+            $iva = round($base_retencion * $percentage_iva, 2);
+            $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
+        }
+        $set('iva', $iva);
+        $set('retencion_isr', $retencion_isr);
+        $total = round($subtotal + $iva - $descuento + $envio - $retencion_isr, 2);
+        $set('total', $total);
+        // $set('base_retencion', $base_retencion);
+        // $set('percentage_retencion', $percentage_retencion);
+        // $set('percentage_iva', $percentage_iva);
     }
 }
