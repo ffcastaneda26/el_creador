@@ -122,18 +122,18 @@ class OrderResource extends Resource
                                         ->numeric()
                                         ->default(0.00)
                                         ->translateLabel()
-                                        ->disabled(),
+                                        ->readOnly(),
                                     Forms\Components\TextInput::make('retencion_isr')
                                         ->required()
                                         ->translateLabel()
                                         ->inputMode('decimal')
-                                        ->disabled(),
+                                        ->readOnly(),
                                     Forms\Components\TextInput::make('total')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
                                         ->translateLabel()
-                                        ->disabled()
+                                        ->readOnly()
                                         ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
                                     Forms\Components\TextInput::make('advance')
                                         ->required()
@@ -141,15 +141,13 @@ class OrderResource extends Resource
                                         ->default(0.00)
                                         ->translateLabel()
                                         ->live(onBlur: true)
-                                        ->afterStateUpdated(function (Set $set, Get $get, ?string $state) {
-                                            $set('pending_balance', round($get('total') - $get('advance'), 2));
-                                        }),
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
                                     Forms\Components\TextInput::make('pending_balance')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
                                         ->translateLabel()
-                                        ->disabled(),
+                                        ->readOnly(),
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
                                     ->columns(7),
 
@@ -240,9 +238,10 @@ class OrderResource extends Resource
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
                                     ->inlineLabel()
                             ])->columns(2),
-                    ])->columnSpanFull(),
-
-
+                    ])->columnSpanFull()
+                    ->afterStateHydrated(function (Set $set, Get $get) {
+                        OrderResource::calculateTotals($set, $get);
+                    }),
             ]);
     }
 
@@ -250,7 +249,7 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('client.name')
+                Tables\Columns\TextColumn::make('client.full_name')
                     ->numeric()
                     ->sortable()
                     ->label(__('Client')),
@@ -261,17 +260,39 @@ class OrderResource extends Resource
                     ->date('d M y'),
                 Tables\Columns\IconColumn::make('approved')
                     ->boolean()
-                    ->translateLabel(),
+                    ->translateLabel()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('date_approved')
                     ->translateLabel()
                     ->searchable()
                     ->sortable()
-                    ->date('d M y'),
+                    ->date('d M y')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('subtotal')
                     ->sortable()
                     ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd(),
+                Tables\Columns\TextColumn::make('discount')
+                    ->sortable()
+                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
+                    ->alignEnd()
+                    ->translateLabel()
+                    ->visible(fn($record): bool => $record !== null && $record->discount > 0),
+                Tables\Columns\TextColumn::make('tax')
+                    ->sortable()
+                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
+                    ->alignEnd()
+                    ->translateLabel()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('retencion_isr')
+                    ->sortable()
+                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
+                    ->alignEnd()
+                    ->translateLabel()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('advance')
+                    ->sortable()
+                    ->translateLabel()
                     ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd(),
                 Tables\Columns\TextColumn::make('pending_balance')
@@ -279,18 +300,8 @@ class OrderResource extends Resource
                     ->alignEnd()
                     ->label(__('Pending')),
 
-                Tables\Columns\TextColumn::make('tax')
-                    ->sortable()
-                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
-                    ->alignEnd()
-                    ->translateLabel()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('discount')
-                    ->sortable()
-                    ->formatStateUsing(fn(string $state): string => number_format($state, 2))
-                    ->alignEnd()
-                    ->translateLabel()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
+
                 Tables\Columns\TextColumn::make('total')
                     ->numeric()
                     ->sortable(),
@@ -393,18 +404,18 @@ class OrderResource extends Resource
         if ($require_invoice) {
             $percentage_iva = round(env('PERCENTAGE_IVA', 16) / 100, 2);
             $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-            $base_retencion = round($subtotal - $descuento , 2);
+            $base_retencion = round($subtotal - $descuento, 2);
             $tax = round($base_retencion * $percentage_iva, 2);
             $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
         }
 
-        $total = round($subtotal - $descuento + $tax,2);
+        $total = round($subtotal - $descuento + $tax - $retencion_isr, 2);
         $pending_balance = round($total - $anticipo, 2);
 
         $set('tax', $tax);
         $set('retencion_isr', $retencion_isr);
         $set('total', $total);
-        $set('pending_balance',$pending_balance);
+        $set('pending_balance', $pending_balance);
     }
 
     public static function getClient(Set $set, Get $get, $client_id)

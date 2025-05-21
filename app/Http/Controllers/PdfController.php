@@ -162,7 +162,7 @@ class PdfController extends Controller
                     // }
                     $posx = 15;
 
-                    $posy= 90;
+                    $posy = 90;
                     foreach ($data->images->sortBy('id') as $image) {
 
                         $imageUrl = storage_path('app/public/' . $image->image);
@@ -174,7 +174,7 @@ class PdfController extends Controller
                             $palabras = wordwrap($linea, 40, "\n", true);
                             $lineasSeparadas = explode("\n", $palabras);
                             foreach ($lineasSeparadas as $linea_separada) {
-                                $fpdi->text($posx+18, $posy, $linea_separada);
+                                $fpdi->text($posx + 18, $posy, $linea_separada);
                                 $posy = $posy + 5;
                             }
                         }
@@ -211,7 +211,7 @@ class PdfController extends Controller
 
 
 
-                if($data->retencion_isr > 0){
+                if ($data->retencion_isr > 0) {
                     $texto_retencion_isr = 'RETENCION ISR $' . number_format($data->retencion_isr, 2);
                     $fpdi->text(104, 218, $texto_retencion_isr);
 
@@ -235,8 +235,7 @@ class PdfController extends Controller
      */
     public function contrato($record)
     {
-        $data = Order::findOrFail($record);
-
+        $data = Order::find($record)->with('client')->first();
         $filePath = public_path('pdfs/contrato.pdf');
         $outputFilePath = public_path("output.pdf");
 
@@ -246,20 +245,60 @@ class PdfController extends Controller
         $fpdi->SetFontSize(8);
         $fpdi->SetTextColor(0, 0, 0);
 
-
         $count = $fpdi->setSourceFile($filePath);
 
-        dd('Son un total de ' . $count . ' Hojas');
-
         for ($i = 1; $i <= $count; $i++) {
-            dd('Agregamos la hoja ' . $i);
             $template = $fpdi->importPage($i);
             $size = $fpdi->getTemplateSize($template);
             $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
             $fpdi->useTemplate($template);
 
             if ($data && $i == 1) {
-                $fpdi->text(50, 30, $data->client->name);
+                $fpdi->SetFont("arial", "B", 12);
+                $fpdi->text(100, 43, $data->client->full_name);
+                $fpdi->SetFont("arial", "", 12);
+                $fpdi->text(145, 166, $data->client->rfc);
+
+                // Dirección del cliente
+                if ($data->client->interior_number) {
+                    $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Int:  ' . $data->client->interior_number;
+                    $direccion .= ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
+
+                } else {
+                    $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
+                }
+                $largo_direccion = strlen($direccion);
+                if ($largo_direccion > 70) {
+                    if ($data->client->interior_number) {
+                        $direccion_1 = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Int:  ' . $data->client->interior_number;
+                        $direccion_2 = ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
+                    }
+                }
+                $telefono_correo = 'Número Telefónico: ' . $data->client->phone . ' Correo electrónico ' . $data->client->email;
+                $telefono_correo = GeneralHelp::normalize_text($telefono_correo);
+                if ($largo_direccion > 70) {
+                    $fpdi->text(73, 174, $direccion_1);
+                    $fpdi->text(30, 179, $direccion_2);
+                    $fpdi->text(30, 185, $telefono_correo);
+                } else {
+                    $fpdi->text(73, 174, $direccion);
+                    $fpdi->text(30, 182, $telefono_correo);
+                }
+
+
+                // Fecha de la orden de compra
+                $orden_dia = $data->date->format('d');
+                $orden_mes = GeneralHelp::spanish_month($data->date, 's');
+                $order_axo = $data->date->format('Y');
+                $fecha_orden = $orden_dia . '-' . $orden_mes . '-' . $order_axo;
+                $fpdi->Text(112, 227, $fecha_orden);
+                $fpdi->Text(148, 227, $data->id);
+
+                // Precio:
+                $precio = "(" . GeneralHelp::normalize_text(GeneralHelp::to_letters($data->subtotal)) . ")";
+                $fpdi->SetFont("arial", "B", 12);
+                $fpdi->Text(35, 241, $precio);
+                $fpdi->SetFont("arial", "", 12);
             }
 
         }

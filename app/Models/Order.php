@@ -20,6 +20,7 @@ class Order extends Model
         'pending_balance',
         'subtotal',
         'tax',
+        'retencion_isr',
         'discount',
         'total',
         'delivery_date',

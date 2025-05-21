@@ -92,4 +92,49 @@ class GeneralHelp
         return ucwords(strtolower($converter->toInvoice($number,$decimals,$text))) . 'M/N';
     }
 
+
+    /**
+     * Regresa el número convertido a letras
+     * @return string
+     */
+    /**
+     * Regresa el número convertido a letras
+     * @return string
+     */
+    static public function to_letters($number, $decimals = 2, $text = null)
+    {
+        if (!$text) {
+            $text = 'Pesos';
+        }
+        $converter = new NumerosALetras();
+        $converter->anexar = null;
+        return ucwords(strtolower($converter->toInvoice($number, $decimals, $text))) . 'M/N';
+    }
+
+    /**
+     * Convierte un número a letras solo con la parte entera y los decimales como fracción sobre 100
+     * @param float $number
+     * @param string|null $text
+     * @return string
+     */
+    static public function number_to_letters_fraction($number, $text = null)
+    {
+        if (!$text) {
+            $text = 'Pesos';
+        }
+
+        // Separar parte entera y decimal
+        $integer_part = floor($number);
+        $decimal_part = round(($number - $integer_part) * 100);
+
+        // Convertir parte entera a letras
+        $converter = new NumerosALetras();
+        $converter->anexar = null;
+        $integer_text = $converter->toInvoice($integer_part, 0, $text);
+
+        // Formatear decimales como fracción
+        $fraction_text = $decimal_part . '/100';
+
+        return ucwords(strtolower($integer_text)) . ' ' . $fraction_text . ' M/N';
+    }
 }
