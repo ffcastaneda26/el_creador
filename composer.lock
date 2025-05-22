@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b198df4c7002ec3205fb1c94e1f57d69",
+    "content-hash": "476a70ed03e84c14c6f97bc25e846a89",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -5560,6 +5560,30 @@
                 }
             ],
             "time": "2025-02-05T13:22:35+00:00"
+        },
+        {
+            "name": "setasign/fpdi_pdf-parser",
+            "version": "2.1.4",
+            "dist": {
+                "type": "zip",
+                "url": "https://www.setasign.com/downloads/6913817/FPDI_PDF-Parser-2.1.4.zip"
+            },
+            "require": {
+                "setasign/fpdi": "^2.6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "setasign\\FpdiPdfParser\\": "src/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "support": {
+                "email": "support@setasign.com"
+            },
+            "time": "2024-12-10T00:00:00+00:00"
         },
         {
             "name": "spatie/color",
