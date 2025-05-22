@@ -18,7 +18,7 @@
         "saade/filament-fullcalendar": "3.2",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.6",
-        "setasign/fpdi_pdf-parser": "2.1.4",
+        "setasign/fpdi_pdf-parser": "^2.1",
         "spatie/laravel-permission": "^6.9"
     },
     "require-dev": {
