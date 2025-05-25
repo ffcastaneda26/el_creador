@@ -255,49 +255,55 @@ class PdfController extends Controller
 
             if ($data && $i == 1) {
                 $fpdi->SetFont("arial", "B", 12);
-                $fpdi->text(100, 43, $data->client->full_name);
-                $fpdi->SetFont("arial", "", 12);
-                $fpdi->text(145, 166, $data->client->rfc);
+                $fpdi->text(80, 26, $data->client->full_name);
+                $fpdi->SetFont("arial", "", size: 9);
+                $fpdi->text(144, 96, $data->client->rfc);
 
                 // Dirección del cliente
                 if ($data->client->interior_number) {
                     $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Int:  ' . $data->client->interior_number;
                     $direccion .= ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
-
                 } else {
                     $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
                 }
-                $largo_direccion = strlen($direccion);
-                if ($largo_direccion > 70) {
-                    if ($data->client->interior_number) {
-                        $direccion_1 = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Int:  ' . $data->client->interior_number;
-                        $direccion_2 = ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
-                    }
-                }
-                $telefono_correo = 'Número Telefónico: ' . $data->client->phone . ' Correo electrónico ' . $data->client->email;
-                $telefono_correo = GeneralHelp::normalize_text($telefono_correo);
-                if ($largo_direccion > 70) {
-                    $fpdi->text(73, 174, $direccion_1);
-                    $fpdi->text(30, 179, $direccion_2);
-                    $fpdi->text(30, 185, $telefono_correo);
-                } else {
-                    $fpdi->text(73, 174, $direccion);
-                    $fpdi->text(30, 182, $telefono_correo);
-                }
 
 
+                $fpdi->text(50, 100.5, $direccion);
+                $fpdi->text(45, 107, $data->client->phone);
+                $fpdi->text(105, 107, $data->client->email);
+
+                $fpdi->text(30, 129, "UNA BOTARGA (30,129)");
                 // Fecha de la orden de compra
                 $orden_dia = $data->date->format('d');
                 $orden_mes = GeneralHelp::spanish_month($data->date, 's');
                 $order_axo = $data->date->format('Y');
                 $fecha_orden = $orden_dia . '-' . $orden_mes . '-' . $order_axo;
-                $fpdi->Text(112, 227, $fecha_orden);
-                $fpdi->Text(148, 227, $data->id);
+                $fpdi->SetFont("arial", "", size: 10);
+                $fpdi->Text(104, 133.5, $fecha_orden);
+                $fpdi->Text(144, 133.5, $data->id);
 
                 // Precio:
-                $precio = "(" . GeneralHelp::normalize_text(GeneralHelp::to_letters($data->subtotal)) . ")";
-                $fpdi->SetFont("arial", "B", 12);
-                $fpdi->Text(35, 241, $precio);
+                $valor_precio = (int) $data->subtotal;
+                $precio = GeneralHelp::normalize_text(GeneralHelp::to_letters_rounded((int) $data->subtotal));
+
+                // Tamaño de la fuente según el largo del precio
+                $fontSizes = [
+                    45 => 7,  // Largo > 45:Tamaño 7
+                    35 => 9,  // Largo > 35:Tamaño 9
+                    0 => 11  // Defecto (Largo <= 35):Tamaño 11
+                ];
+
+                $fontSize = 11; // Tamaño por defecto
+                foreach ($fontSizes as $lengthThreshold => $size) {
+                    if (strlen($precio) > $lengthThreshold) {
+                        $fontSize = $size;
+                        break;
+                    }
+                }
+
+                $fpdi->SetFont("arial", "B", $fontSize);
+
+                $fpdi->Text(27, 142, $precio);
                 $fpdi->SetFont("arial", "", 12);
             }
 
