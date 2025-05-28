@@ -454,14 +454,42 @@ class PdfController extends Controller
         $fpdi->text(165, 93.5, $data->client->mobile);
 
         // Correo Electrónico
-        if($data->client->email && strlen($data->client->email) > 23){
+        if ($data->client->email && strlen($data->client->email) > 23) {
             $fpdi->SetFont("arial", "B", 10);
         }
 
-            if($data->client->email && strlen($data->client->email) > 30){
+        if ($data->client->email && strlen($data->client->email) > 30) {
             $fpdi->SetFont("arial", "", 9);
         }
         $fpdi->text(153.5, 99.5, $data->client->email);
+
+        // Fecha de entrega
+        $fpdi->SetFont("arial", "B", 11);
+        $fpdi->Text(45, 239, $data->delivery_date->format('d'));
+        $nombre_mes = GeneralHelp::spanish_month($data->delivery_date, 'l');
+        if (strlen($nombre_mes) > 7) {
+            $fpdi->SetFont("arial", "B", 7);
+        }
+        $fpdi->Text(61, 239, $nombre_mes);
+        $fpdi->SetFont("arial", "B", 10);
+        $fpdi->Text(83.5, 239, $data->delivery_date->format('Y'));
+
+        // Totales
+
+        $fpdi->Text(201 - strlen(number_format($data->total, 2, '.', ',')), 243,  number_format($data->total, 2, '.', ','));
+        $fpdi->Text(202 - strlen(number_format($data->advance, 2, '.', ',')), 248,  number_format($data->advance, 2, '.', ','));
+        $fpdi->Text(201 - strlen(number_format($data->pending_balance, 2, '.', ',')), 253,  number_format($data->pending_balance, 2, '.', ','));
+
+        // Fecha de Envío
+        $fpdi->SetFont("arial", "B", 11);
+        $fpdi->Text(45, 257, $data->delivery_date->format('d'));
+        $nombre_mes = GeneralHelp::spanish_month($data->delivery_date, 'l');
+        if (strlen($nombre_mes) > 7) {
+            $fpdi->SetFont("arial", "B", 7);
+        }
+        $fpdi->Text(61, 257, $nombre_mes);
+        $fpdi->SetFont("arial", "B", 10);
+        $fpdi->Text(83.5, 257, $data->delivery_date->format('Y'));
 
     }
 }
