@@ -94,7 +94,6 @@ class OrderResource extends Resource
                                         ->minDate(fn(Get $get) => $get('date')),
                                     Forms\Components\DatePicker::make('payment_promise_date')
                                         ->translateLabel()
-                                        ->minDate(now())
                                         ->maxDate(fn(Get $get) => $get('delivery_date')),
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
                                     ->inlineLabel()

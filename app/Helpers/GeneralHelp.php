@@ -94,7 +94,7 @@ class GeneralHelp
             $text = 'Pesos';
         }
         $converter = new NumerosALetras();
-        $converter->anexar = null;
+        // $converter->anexar = null;
         return ucwords(strtolower($converter->toInvoice($number, $decimals, $text))) . 'M/N';
     }
 
@@ -124,7 +124,7 @@ class GeneralHelp
         return ucwords(strtolower($converter->toInvoice($number, $decimals)));
     }
 
-        static public function to_letters_rounded($number)
+    static public function to_letters_rounded($number)
     {
         $converter = new NumerosALetras();
         $converter->anexar = null;

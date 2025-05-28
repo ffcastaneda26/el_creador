@@ -6,6 +6,7 @@ use App\Helpers\GeneralHelp;
 use App\Models\Client;
 use App\Models\Cotization;
 use App\Models\Order;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
@@ -254,60 +255,213 @@ class PdfController extends Controller
             $fpdi->useTemplate($template);
 
             if ($data && $i == 1) {
-                $fpdi->SetFont("arial", "B", 12);
-                $fpdi->text(80, 26, $data->client->full_name);
-                $fpdi->SetFont("arial", "", size: 9);
-                $fpdi->text(144, 96, $data->client->rfc);
+                $this->contrato_pagina_1($fpdi, $data);
+            }
+            if ($data && $i == 2) {
+                $this->contrato_pagina_2($fpdi, $data);
+            }
 
-                // Dirección del cliente
-                if ($data->client->interior_number) {
-                    $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Int:  ' . $data->client->interior_number;
-                    $direccion .= ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
-                } else {
-                    $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
-                }
-
-
-                $fpdi->text(50, 100.5, $direccion);
-                $fpdi->text(45, 107, $data->client->phone);
-                $fpdi->text(105, 107, $data->client->email);
-
-                $fpdi->text(30, 129, "UNA BOTARGA (30,129)");
-                // Fecha de la orden de compra
-                $orden_dia = $data->date->format('d');
-                $orden_mes = GeneralHelp::spanish_month($data->date, 's');
-                $order_axo = $data->date->format('Y');
-                $fecha_orden = $orden_dia . '-' . $orden_mes . '-' . $order_axo;
-                $fpdi->SetFont("arial", "", size: 10);
-                $fpdi->Text(104, 133.5, $fecha_orden);
-                $fpdi->Text(144, 133.5, $data->id);
-
-                // Precio:
-                $valor_precio = (int) $data->subtotal;
-                $precio = GeneralHelp::normalize_text(GeneralHelp::to_letters_rounded((int) $data->subtotal));
-
-                // Tamaño de la fuente según el largo del precio
-                $fontSizes = [
-                    45 => 7,  // Largo > 45:Tamaño 7
-                    35 => 9,  // Largo > 35:Tamaño 9
-                    0 => 11  // Defecto (Largo <= 35):Tamaño 11
-                ];
-
-                $fontSize = 11; // Tamaño por defecto
-                foreach ($fontSizes as $lengthThreshold => $size) {
-                    if (strlen($precio) > $lengthThreshold) {
-                        $fontSize = $size;
-                        break;
-                    }
-                }
-
-                $fpdi->SetFont("arial", "B", $fontSize);
-
-                $fpdi->Text(27, 142, $precio);
-                $fpdi->SetFont("arial", "", 12);
+            if ($data && $i == 3) {
+                $this->contrato_pagina_3($fpdi, $data);
             }
 
         }
         return $fpdi->Output($outputFilePath, 'I');
+    }
+
+    private function contrato_pagina_1($fpdi, $data)
+    {
+        $fpdi->SetFont("arial", "B", 12);
+        $fpdi->text(80, 26, $data->client->full_name);
+        $fpdi->SetFont("arial", "", size: 9);
+        $fpdi->text(144, 96, $data->client->rfc);
+
+        // Dirección del cliente
+        if ($data->client->interior_number) {
+            $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Int:  ' . $data->client->interior_number;
+            $direccion .= ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
+        } else {
+            $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
+        }
+
+
+        $fpdi->text(50, 100.5, $direccion);
+        $fpdi->text(45, 107, $data->client->phone);
+        $fpdi->text(105, 107, $data->client->email);
+
+        $fpdi->text(30, 129, "UNA BOTARGA (30,129)");
+        // Fecha de la orden de compra
+        $orden_dia = $data->date->format('d');
+        $orden_mes = GeneralHelp::spanish_month($data->date, 's');
+        $order_axo = $data->date->format('Y');
+        $fecha_orden = $orden_dia . '-' . $orden_mes . '-' . $order_axo;
+        $fpdi->SetFont("arial", "", size: 10);
+        $fpdi->Text(104, 133.5, $fecha_orden);
+        $fpdi->Text(144, 133.5, $data->id);
+
+        $fontSize = 11; // Tamaño por defecto
+        $fpdi->SetFont("arial", "B", $fontSize); // Negritas
+
+        $fontSizes = [
+            45 => 7,  // Largo > 45:Tamaño 7
+            35 => 9,  // Largo > 35:Tamaño 9
+            0 => 11  // Defecto (Largo <= 35):Tamaño 11
+        ];
+
+        $total_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters_rounded((int) $data->total));
+        $anticipo_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters_rounded($data->advance));
+        $pendiente_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters_rounded($data->pending_balance));
+
+
+        // Total
+        foreach ($fontSizes as $lengthThreshold => $size) {
+            if (strlen($total_letras) > $lengthThreshold) {
+                $fontSize = $size;
+                break;
+            }
+        }
+        $fpdi->SetFont("arial", "B", $fontSize); // Negritas
+        $fpdi->Text(27, 142, $total_letras);
+
+        // Anticipo
+        foreach ($fontSizes as $lengthThreshold => $size) {
+            if (strlen($anticipo_letras) > $lengthThreshold) {
+                $fontSize = $size;
+                break;
+            }
+        }
+
+        $fpdi->SetFont("arial", "B", $fontSize);
+        $fpdi->Text(105, 150, $anticipo_letras);
+
+
+        $fontSizes = [
+            40 => 7,  // Largo > 40:Tamaño 7
+            35 => 9,  // Largo > 35:Tamaño 9
+            0 => 10  // Defecto (Largo <= 35):Tamaño 10
+        ];
+        // Pendiente
+        foreach ($fontSizes as $lengthThreshold => $size) {
+            if (strlen($pendiente_letras) > $lengthThreshold) {
+                $fontSize = $size;
+                break;
+            }
+        }
+        $fpdi->SetFont("arial", "B", $fontSize);
+        $fpdi->Text(118, 161, $pendiente_letras);
+
+
+        $fpdi->SetFont("arial", "", 10);
+        // Fecha de promeso ee pago
+
+        $fpdi->Text(50, 168, $data->payment_promise_date->format('d'));
+        $nombre_mes = GeneralHelp::spanish_month($data->payment_promise_date, 'l');
+        if (strlen($nombre_mes) > 7) {
+            $fpdi->SetFont("arial", "B", 7);
+        }
+        $fpdi->Text(82, 167.5, $nombre_mes);
+        $fpdi->SetFont("arial", "", 10);
+
+        $fpdi->Text(107, 168, $data->payment_promise_date->format('Y'));
+
+        // ¿Requiere Factura?
+        $fpdi->SetFont("arial", "", 10);
+        if ($data->require_invoice) {
+            $fpdi->Text(87, 202, 'X');
+        } else {
+            $fpdi->Text(110, 202, 'X');
+        }
+    }
+
+    /**
+     * Página 2
+     * @param mixed $fpdi
+     * @param mixed $data
+     * @return void
+     */
+    private function contrato_pagina_2($fpdi, $data)
+    {
+        $fpdi->SetFont("arial", "", 11);
+        // Plazo de Entrega
+        $deliveryDate = Carbon::parse($data->delivery_date);
+        $date = Carbon::parse($data->date);
+        $daysDifference = $date->diffInDays($deliveryDate);
+        $fpdi->Text(83, 50, $daysDifference);
+
+        // Fecha de Firma
+        $fpdi->Text(113, 257.25, $data->date_approved->format('d'));
+        $nombre_mes = GeneralHelp::spanish_month($data->date_approved, 'l');
+        $fpdi->Text(152, 257.25, $nombre_mes);
+        $fpdi->SetFont("arial", "", 11);
+        $fpdi->Text(22, 261.5, $data->date_approved->format('Y'));
+
+        // Nombre del Comprador
+        $fpdi->SetFont("arial", "B", 12);
+
+        $fpdi->text(45, 273.5, $data->client->full_name);
+
+        // Nombre del Vendedor
+
+        $fpdi->text(125, 273.5, $data->user->name);
+
+    }
+
+    /**
+     * Página 3 Formulario
+     * @param mixed $fpdi
+     * @param mixed $data
+     * @return void
+     */
+    private function contrato_pagina_3($fpdi, $data)
+    {
+        // Folio
+        $fpdi->SetFont("arial", "B", 14);
+        $fpdi->Text(192, 15, $data->id);
+
+        // Vendedor
+        $fpdi->SetFont("arial", "B", 12);
+        $fpdi->Text(90, 55, $data->user->name);
+
+        // Fecha del pedido
+        $fpdi->SetFont("arial", "", 12);
+        $fpdi->Text(15, 73.5, $data->date->format('d'));
+        $nombre_mes = GeneralHelp::spanish_month($data->date, 's');
+        $fpdi->Text(32, 73.5, $nombre_mes);
+        $fpdi->SetFont("arial", "", 11);
+        $fpdi->Text(54, 73.5, $data->date->format('Y'));
+
+        // Nombre del cliente
+        $fpdi->SetFont("arial", "B", 12);
+        $fpdi->text(48, 80, $data->client->full_name);
+        // Rfc
+        $fpdi->text(162, 80.5, $data->client->rfc);
+        // Direccion
+        $address = $data->street . ' ' . $data->number;
+        if ($data->interior_number) {
+            $address .= ' Int ' . $data->interior_number;
+        }
+
+        $address .= ' Col: ' . $data->colony;
+        $address = GeneralHelp::normalize_text($address);
+        $fpdi->text(30, 87, $address);
+
+        // Ciudad
+        $fpdi->text(24, 93.5, $data->city->name);
+
+        // Código postal - Teléfono y Celular
+        $fpdi->text(78, 93.5, $data->zipcode);
+        $fpdi->text(105, 93.5, $data->client->phone);
+        $fpdi->text(165, 93.5, $data->client->mobile);
+
+        // Correo Electrónico
+        if($data->client->email && strlen($data->client->email) > 23){
+            $fpdi->SetFont("arial", "B", 10);
+        }
+
+            if($data->client->email && strlen($data->client->email) > 30){
+            $fpdi->SetFont("arial", "", 9);
+        }
+        $fpdi->text(153.5, 99.5, $data->client->email);
+
     }
 }
