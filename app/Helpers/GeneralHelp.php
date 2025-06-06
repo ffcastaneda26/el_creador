@@ -23,11 +23,9 @@ class GeneralHelp
      * @param string $m_format
      * @param string $d_format
      * @return string
-     * TODO:: Agregar el orden o formato de regreso
      */
     static public function spanish_date($date, string $m_format = 'n', string $d_format = 'n', $return_format = null)
     {
-
         if (!$date) {
             $date = now();
         }
@@ -39,10 +37,8 @@ class GeneralHelp
             $day_name = GeneralHelp::spanish_day($date, 'l');
             return $day_name . ' ' . $date->format('d') . ' de ' . GeneralHelp::spanish_month($date, 'l') . ' del ' . $date->format('Y');
         }
-        return $day . ' ' . ' de ' . $month . ' del ' . $date->format('Y');
-
+        return $day . ' de ' . $month . ' del ' . $date->format('Y');
     }
-
 
     /**
      * Regresa nombre del día en español
@@ -81,44 +77,47 @@ class GeneralHelp
         }
 
         return $format == 's' ? $meses_corto[$date->format('m') - 1] : $meses_largo[$date->format('m') - 1];
-
-
     }
+
     /**
      * Regresa el número convertido a letras
      * @return string
      */
     static public function number_to_letters($number, $decimals = 2, $text = null)
     {
+        if (!is_numeric($number)) {
+            return '';
+        }
         if (!$text) {
             $text = 'Pesos';
         }
         $converter = new NumerosALetras();
         // $converter->anexar = null;
-        return ucwords(strtolower($converter->toInvoice($number, $decimals, $text))) . 'M/N';
+        return ucwords(strtolower($converter->toInvoice($number, $decimals, $text))) . ' M/N';
     }
 
-
-    /**
-     * Regresa el número convertido a letras
-     * @return string
-     */
     /**
      * Regresa el número convertido a letras
      * @return string
      */
     static public function to_letters($number, $decimals = 2, $text = null)
     {
+        if (!is_numeric($number)) {
+            return '';
+        }
         if (!$text) {
             $text = 'Pesos';
         }
         $converter = new NumerosALetras();
         $converter->anexar = null;
-        return ucwords(strtolower($converter->toInvoice($number, $decimals, $text))) . 'M/N';
+        return ucwords(strtolower($converter->toInvoice($number, $decimals, $text))) . ' M/N';
     }
 
     static public function to_letters_whitout_text($number, $decimals = 2)
     {
+        if (!is_numeric($number)) {
+            return '';
+        }
         $converter = new NumerosALetras();
         $converter->anexar = null;
         return ucwords(strtolower($converter->toInvoice($number, $decimals)));
@@ -126,10 +125,15 @@ class GeneralHelp
 
     static public function to_letters_rounded($number)
     {
-        $converter = new NumerosALetras();
+        if (!is_numeric($number) || $number == 0) {
+            return 'Cero Pesos M/N';
+        }
+        $converter = new \jmencoder\NumerosALetras\NumerosALetras();
         $converter->anexar = null;
-        return ucwords(strtolower($converter->toLetters($number)));
+        return ucwords(strtolower($converter->toWords($number)));
     }
+
+
     /**
      * Convierte un número a letras solo con la parte entera y los decimales como fracción sobre 100
      * @param float $number
@@ -138,6 +142,9 @@ class GeneralHelp
      */
     static public function number_to_letters_fraction($number, $text = null)
     {
+        if (!is_numeric($number)) {
+            return '';
+        }
         if (!$text) {
             $text = 'Pesos';
         }
