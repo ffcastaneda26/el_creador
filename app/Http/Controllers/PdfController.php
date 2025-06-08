@@ -416,87 +416,107 @@ class PdfController extends Controller
      * @param mixed $data
      * @return void
      */
-    private function contrato_pagina_3($fpdi, $data)
-    {
-        // Folio
-        $fpdi->SetFont("arial", "B", 14);
-        $fpdi->Text(192, 15, $data->id);
+private function contrato_pagina_3($fpdi, $data)
+{
+    // Folio
+    $fpdi->SetFont("arial", "B", 14);
+    $fpdi->Text(192, 15, $data->id);
 
-        // Vendedor
-        $fpdi->SetFont("arial", "B", 12);
-        $fpdi->Text(90, 55, $data->user->name);
+    // Vendedor
+    $fpdi->SetFont("arial", "B", 12);
+    $fpdi->Text(90, 55, $data->user->name);
 
-        // Fecha del pedido
-        $fpdi->SetFont("arial", "", 12);
-        $fpdi->Text(15, 73.5, $data->date->format('d'));
-        $nombre_mes = GeneralHelp::spanish_month($data->date, 's');
+    // Fecha del pedido
+    $fpdi->SetFont("arial", "", 12);
+    if ($data->date) {
+        $pedido_date = Carbon::parse($data->date);
+        $fpdi->Text(15, 73.5, $pedido_date->format('d'));
+        $nombre_mes = GeneralHelp::spanish_month($pedido_date, 's');
         $fpdi->Text(32, 73.5, $nombre_mes);
         $fpdi->SetFont("arial", "", 11);
-        $fpdi->Text(54, 73.5, $data->date->format('Y'));
+        $fpdi->Text(54, 73.5, $pedido_date->format('Y'));
+    } else {
+        // En caso de que no tenga fecha
+        $fpdi->Text(15, 73.5, 'N/A');
+        $fpdi->Text(32, 73.5, 'N/A');
+        $fpdi->Text(54, 73.5, 'N/A');
+    }
 
-        // Nombre del cliente
-        $fpdi->SetFont("arial", "B", 12);
-        $fpdi->text(48, 80, $data->client->full_name);
-        // Rfc
-        $fpdi->text(162, 80.5, $data->client->rfc);
-        // Direccion
-        $address = $data->street . ' ' . $data->number;
-        if ($data->interior_number) {
-            $address .= ' Int ' . $data->interior_number;
-        }
+    // Nombre del cliente
+    $fpdi->SetFont("arial", "B", 12);
+    $fpdi->text(48, 80, $data->client->full_name ?? '');
 
-        $address .= ' Col: ' . $data->colony;
-        $address = GeneralHelp::normalize_text($address);
-        $fpdi->text(30, 87, $address);
+    // Rfc
+    $fpdi->text(162, 80.5, $data->client->rfc ?? '');
 
-        // Ciudad
-        $fpdi->text(24, 93.5, $data->city->name);
+    // Direccion
+    $address = $data->street . ' ' . $data->number;
+    if ($data->interior_number) {
+        $address .= ' Int ' . $data->interior_number;
+    }
+    $address .= ' Col: ' . $data->colony;
+    $address = GeneralHelp::normalize_text($address);
+    $fpdi->text(30, 87, $address);
 
-        // Código postal - Teléfono y Celular
-        $fpdi->text(78, 93.5, $data->zipcode);
-        $fpdi->text(105, 93.5, $data->client->phone);
-        $fpdi->text(165, 93.5, $data->client->mobile);
+    // Ciudad
+    $fpdi->text(24, 93.5, $data->city->name ?? '');
 
-        // Correo Electrónico
-        if ($data->client->email && strlen($data->client->email) > 23) {
-            $fpdi->SetFont("arial", "B", 10);
-        }
+    // Código postal - Teléfono y Celular
+    $fpdi->text(78, 93.5, $data->zipcode ?? '');
+    $fpdi->text(105, 93.5, $data->client->phone ?? '');
+    $fpdi->text(165, 93.5, $data->client->mobile ?? '');
 
-        if ($data->client->email && strlen($data->client->email) > 30) {
-            $fpdi->SetFont("arial", "", 9);
-        }
-        $fpdi->text(153.5, 99.5, $data->client->email);
+    // Correo Electrónico
+    if (!empty($data->client->email) && strlen($data->client->email) > 23) {
+        $fpdi->SetFont("arial", "B", 10);
+    }
 
-        // Fecha promesa de entrega
-        if ($data->delivery_date) {
-            $delivery_date = Carbon::parse($data->delivery_date);
-            $fpdi->SetFont("arial", "B", 11);
-            $fpdi->Text(45, 239, $delivery_date->format('d'));
-            $nombre_mes = GeneralHelp::spanish_month($delivery_date, 'l');
-            if (strlen($nombre_mes) > 7) {
-                $fpdi->SetFont("arial", "B", 7);
-            }
-            $fpdi->Text(61, 239, $nombre_mes);
-            $fpdi->SetFont("arial", "B", 10);
-            $fpdi->Text(83.5, 239, $delivery_date->format('Y'));
-        }
+    if (!empty($data->client->email) && strlen($data->client->email) > 30) {
+        $fpdi->SetFont("arial", "", 9);
+    }
+    $fpdi->text(153.5, 99.5, $data->client->email ?? '');
 
-        // Totales
-
-        $fpdi->Text(201 - strlen(number_format($data->total, 2, '.', ',')), 243, number_format($data->total, 2, '.', ','));
-        $fpdi->Text(202 - strlen(number_format($data->advance, 2, '.', ',')), 248, number_format($data->advance, 2, '.', ','));
-        $fpdi->Text(201 - strlen(number_format($data->pending_balance, 2, '.', ',')), 253, number_format($data->pending_balance, 2, '.', ','));
-
-        // Fecha de Envío
+    // Fecha promesa de entrega
+    if ($data->delivery_date) {
+        $delivery_date = Carbon::parse($data->delivery_date);
         $fpdi->SetFont("arial", "B", 11);
-        $fpdi->Text(45, 257, $data->delivery_date->format('d'));
-        $nombre_mes = GeneralHelp::spanish_month($data->delivery_date, 'l');
+        $fpdi->Text(45, 239, $delivery_date->format('d'));
+        $nombre_mes = GeneralHelp::spanish_month($delivery_date, 'l');
         if (strlen($nombre_mes) > 7) {
             $fpdi->SetFont("arial", "B", 7);
         }
-        $fpdi->Text(61, 257, $nombre_mes);
+        $fpdi->Text(61, 239, $nombre_mes);
         $fpdi->SetFont("arial", "B", 10);
-        $fpdi->Text(83.5, 257, $data->delivery_date->format('Y'));
-
+        $fpdi->Text(83.5, 239, $delivery_date->format('Y'));
+    } else {
+        // Si no hay fecha, mostrar N/A o dejar vacío
+        $fpdi->Text(45, 239, 'N/A');
+        $fpdi->Text(61, 239, 'N/A');
+        $fpdi->Text(83.5, 239, 'N/A');
     }
+
+    // Totales
+    $fpdi->Text(201 - strlen(number_format($data->total ?? 0, 2, '.', ',')), 243, number_format($data->total ?? 0, 2, '.', ','));
+    $fpdi->Text(202 - strlen(number_format($data->advance ?? 0, 2, '.', ',')), 248, number_format($data->advance ?? 0, 2, '.', ','));
+    $fpdi->Text(201 - strlen(number_format($data->pending_balance ?? 0, 2, '.', ',')), 253, number_format($data->pending_balance ?? 0, 2, '.', ','));
+
+    // Fecha de Envío
+    if ($data->delivery_date) {
+        $delivery_date_envio = Carbon::parse($data->delivery_date);
+        $fpdi->SetFont("arial", "B", 11);
+        $fpdi->Text(45, 257, $delivery_date_envio->format('d'));
+        $nombre_mes_envio = GeneralHelp::spanish_month($delivery_date_envio, 'l');
+        if (strlen($nombre_mes_envio) > 7) {
+            $fpdi->SetFont("arial", "B", 7);
+        }
+        $fpdi->Text(61, 257, $nombre_mes_envio);
+        $fpdi->SetFont("arial", "B", 10);
+        $fpdi->Text(83.5, 257, $delivery_date_envio->format('Y'));
+    } else {
+        $fpdi->Text(45, 257, 'N/A');
+        $fpdi->Text(61, 257, 'N/A');
+        $fpdi->Text(83.5, 257, 'N/A');
+    }
+}
+
 }
