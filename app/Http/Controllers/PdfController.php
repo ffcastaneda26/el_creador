@@ -467,16 +467,19 @@ class PdfController extends Controller
         }
         $fpdi->text(153.5, 99.5, $data->client->email);
 
-        // Fecha de entrega
-        $fpdi->SetFont("arial", "B", 11);
-        $fpdi->Text(45, 239, $data->delivery_date->format('d'));
-        $nombre_mes = GeneralHelp::spanish_month($data->delivery_date, 'l');
-        if (strlen($nombre_mes) > 7) {
-            $fpdi->SetFont("arial", "B", 7);
+        // Fecha promesa de entrega
+        if ($data->delivery_date) {
+            $delivery_date = Carbon::parse($data->delivery_date);
+            $fpdi->SetFont("arial", "B", 11);
+            $fpdi->Text(45, 239, $delivery_date->format('d'));
+            $nombre_mes = GeneralHelp::spanish_month($delivery_date, 'l');
+            if (strlen($nombre_mes) > 7) {
+                $fpdi->SetFont("arial", "B", 7);
+            }
+            $fpdi->Text(61, 239, $nombre_mes);
+            $fpdi->SetFont("arial", "B", 10);
+            $fpdi->Text(83.5, 239, $delivery_date->format('Y'));
         }
-        $fpdi->Text(61, 239, $nombre_mes);
-        $fpdi->SetFont("arial", "B", 10);
-        $fpdi->Text(83.5, 239, $data->delivery_date->format('Y'));
 
         // Totales
 
