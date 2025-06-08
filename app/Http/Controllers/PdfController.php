@@ -353,16 +353,20 @@ class PdfController extends Controller
 
         $fpdi->SetFont("arial", "", 10);
         // Fecha de promeso ee pago
+        // // Se revisa si tiene fecha de promesa
+        if ($data->payment_promise_date) {
+            $payment_promise_date = Carbon::parse($data->payment_promise_date);
+            $fpdi->Text(50, 168, $payment_promise_date->format('d'));
+            $nombre_mes = GeneralHelp::spanish_month($payment_promise_date, 'l');
+            if (strlen($nombre_mes) > 7) {
+                $fpdi->SetFont("arial", "B", 7);
+            }
+            $fpdi->Text(82, 167.5, $nombre_mes);
+            $fpdi->SetFont("arial", "", 10);
 
-        $fpdi->Text(50, 168, $data->payment_promise_date->format('d'));
-        $nombre_mes = GeneralHelp::spanish_month($data->payment_promise_date, 'l');
-        if (strlen($nombre_mes) > 7) {
-            $fpdi->SetFont("arial", "B", 7);
+            $fpdi->Text(107, 168, $payment_promise_date->format('Y'));
         }
-        $fpdi->Text(82, 167.5, $nombre_mes);
-        $fpdi->SetFont("arial", "", 10);
 
-        $fpdi->Text(107, 168, $data->payment_promise_date->format('Y'));
 
         // ¿Requiere Factura?
         $fpdi->SetFont("arial", "", 10);
@@ -476,9 +480,9 @@ class PdfController extends Controller
 
         // Totales
 
-        $fpdi->Text(201 - strlen(number_format($data->total, 2, '.', ',')), 243,  number_format($data->total, 2, '.', ','));
-        $fpdi->Text(202 - strlen(number_format($data->advance, 2, '.', ',')), 248,  number_format($data->advance, 2, '.', ','));
-        $fpdi->Text(201 - strlen(number_format($data->pending_balance, 2, '.', ',')), 253,  number_format($data->pending_balance, 2, '.', ','));
+        $fpdi->Text(201 - strlen(number_format($data->total, 2, '.', ',')), 243, number_format($data->total, 2, '.', ','));
+        $fpdi->Text(202 - strlen(number_format($data->advance, 2, '.', ',')), 248, number_format($data->advance, 2, '.', ','));
+        $fpdi->Text(201 - strlen(number_format($data->pending_balance, 2, '.', ',')), 253, number_format($data->pending_balance, 2, '.', ','));
 
         // Fecha de Envío
         $fpdi->SetFont("arial", "B", 11);
