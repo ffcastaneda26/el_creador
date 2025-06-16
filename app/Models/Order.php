@@ -38,6 +38,13 @@ class Order extends Model
         'notes',
         'require_invoice',
         'payment_promise_date',
+        'folio',
+        'motley_name',
+        'phone_whatsApp',
+        'days_term',
+        'shipping_company',
+        'shipping_company_address',
+        'shipping_cost',
         'user_id'
     ];
 

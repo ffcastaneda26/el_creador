@@ -152,9 +152,13 @@ class OrderResource extends Resource
 
                                 // ----
                                 Group::make()->schema([
+                                    Forms\Components\TextInput::make('motley_name')
+                                        ->required()
+                                        ->label('Nombre Botarga')
+                                        ->maxLength(40),
                                     Forms\Components\Textarea::make('notes')
                                         ->translateLabel()
-                                        ->columnSpan(3),
+                                        ->columnSpan(2),
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
                                     ->columns(3),
 
@@ -237,6 +241,30 @@ class OrderResource extends Resource
                                 ])->disabled(fn(Get $get) => !$get('client_id'))
                                     ->inlineLabel()
                             ])->columns(2),
+                        Tabs\Tab::make(__('Datos Complementarios para Contrato'))
+                            ->schema([
+                                Group::make()->schema([
+                                    Forms\Components\TextInput::make('folio')
+                                        ->label('Folio'),
+                                    Forms\Components\TextInput::make('days_term')
+                                        ->label('Plazo en Días'),
+                                    Forms\Components\TextInput::make('phone_whatsApp')
+                                        ->label('Teléfono WhatsApp'),
+                                    Forms\Components\TextInput::make('shipping_company')
+                                        ->label('Empresa Envío')
+                                        ->columnSpan(2),
+                                    Forms\Components\TextInput::make('shipping_cost')
+                                        ->label('Costo Envío')
+                                        ->required(fn(Get $get): bool => filled($get('shipping_company'))),
+                                    Forms\Components\TextInput::make('shipping_company_address')
+                                        ->label('Dirección Empresa de Envío')
+                                        ->columnSpanFull()
+                                        ->required(fn(Get $get): bool => filled($get('shipping_company'))),
+                                ])->columns(3),
+
+                            ])->columns(2),
+
+
                     ])->columnSpanFull()
                     ->afterStateHydrated(function (Set $set, Get $get) {
                         OrderResource::calculateTotals($set, $get);
@@ -248,8 +276,10 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('motley_name')
+                    ->sortable()
+                    ->label('Botarga'),
                 Tables\Columns\TextColumn::make('client.full_name')
-                    ->numeric()
                     ->sortable()
                     ->label(__('Client')),
                 Tables\Columns\TextColumn::make('date')

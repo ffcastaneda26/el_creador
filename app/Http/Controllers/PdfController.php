@@ -237,7 +237,7 @@ class PdfController extends Controller
     public function contrato($record)
     {
         $data = null;
-        $data = Order::where('id',$record)->with('client')->first();
+        $data = Order::where('id', $record)->with('client')->first();
         // dd($data);
 
         $filePath = public_path('pdfs/contrato.pdf');
@@ -292,7 +292,7 @@ class PdfController extends Controller
         $fpdi->text(45, 107, $data->client->phone);
         $fpdi->text(105, 107, $data->client->email);
 
-        $fpdi->text(30, 129, "UNA BOTARGA (30,129)");
+        $fpdi->text(30, 129, $data->motley_name);
         // Fecha de la orden de compra
         $orden_dia = $data->date->format('d');
         $orden_mes = GeneralHelp::spanish_month($data->date, 's');
@@ -300,21 +300,26 @@ class PdfController extends Controller
         $fecha_orden = $orden_dia . '-' . $orden_mes . '-' . $order_axo;
         $fpdi->SetFont("arial", "", size: 10);
         $fpdi->Text(104, 133.5, $fecha_orden);
-        $fpdi->Text(144, 133.5, $data->id);
+        if ($data->folio) {
+            $fpdi->Text(144, 133.5, $data->folio);
+        } else {
+            $fpdi->Text(144, 133.5, $data->id);
+        }
 
         $fontSize = 11; // Tamaño por defecto
         $fpdi->SetFont("arial", "B", $fontSize); // Negritas
 
         $fontSizes = [
-            45 => 7,  // Largo > 45:Tamaño 7
+            60 => 6,
+            50 => 7,
+            45 => 8,  // Largo > 45:Tamaño 7
             35 => 9,  // Largo > 35:Tamaño 9
             0 => 11  // Defecto (Largo <= 35):Tamaño 11
         ];
 
-        $total_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters_rounded((int) $data->total));
-        $anticipo_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters_rounded($data->advance));
-        $pendiente_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters_rounded($data->pending_balance));
-
+        $total_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->total));
+        $anticipo_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->advance));
+        $pendiente_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->pending_balance));
 
         // Total
         foreach ($fontSizes as $lengthThreshold => $size) {
@@ -335,13 +340,16 @@ class PdfController extends Controller
         }
 
         $fpdi->SetFont("arial", "B", $fontSize);
+
         $fpdi->Text(105, 150, $anticipo_letras);
 
 
         $fontSizes = [
-            40 => 7,  // Largo > 40:Tamaño 7
-            35 => 9,  // Largo > 35:Tamaño 9
-            0 => 10  // Defecto (Largo <= 35):Tamaño 10
+            60 => 5,
+            50 => 6,
+            45 => 7,  // Largo > 45:Tamaño 7
+            35 => 8,  // Largo > 35:Tamaño 9
+            0 => 10 // Defecto (Largo <= 35):Tamaño 10
         ];
         // Pendiente
         foreach ($fontSizes as $lengthThreshold => $size) {
@@ -370,6 +378,10 @@ class PdfController extends Controller
             $fpdi->Text(107, 168, $payment_promise_date->format('Y'));
         }
 
+        // Whats App
+        if ($data->phone_whatsApp) {
+            $fpdi->text(122, 198, $data->phone_whatsApp);
+        }
 
         // ¿Requiere Factura?
         $fpdi->SetFont("arial", "", 10);
@@ -393,7 +405,50 @@ class PdfController extends Controller
         $deliveryDate = Carbon::parse($data->delivery_date);
         $date = Carbon::parse($data->date);
         $daysDifference = $date->diffInDays($deliveryDate);
-        $fpdi->Text(83, 50, $daysDifference);
+
+        if ($data->days_term) {
+            $fpdi->Text(83, 50, $data->days_term);
+
+        } else {
+            $fpdi->Text(83, 50, $daysDifference);
+        }
+
+        // Empresa de envío
+        if ($data->shipping_company) {
+            if (strlen($data->shipping_company) > 35) {
+                $fpdi->SetFont("arial", "", 9);
+            } else {
+                $fpdi->SetFont("arial", "", 9);
+            }
+            $fpdi->Text(81, 86, $data->shipping_company);
+        }
+
+        // Domicilio empresa envío
+        if ($data->shipping_company_address) {
+            $fpdi->Text(22.5, 90, $data->shipping_company_address);
+        }
+
+        // Costo de envío
+        if ($data->shipping_cost) {
+            $fontSizes = [
+                60 => 6,
+                50 => 7,
+                45 => 8,  // Largo > 45:Tamaño 7
+                35 => 9,  // Largo > 35:Tamaño 9
+                0 => 11  // Defecto (Largo <= 35):Tamaño 11
+            ];
+        }
+
+        $costo_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->shipping_cost));
+
+        foreach ($fontSizes as $lengthThreshold => $size) {
+            if (strlen($costo_letras) > $lengthThreshold) {
+                $fontSize = $size;
+                break;
+            }
+        }
+        $fpdi->SetFont("arial", "B", $fontSize);
+        $fpdi->Text(62, 113, $costo_letras);
 
         // Fecha de Firma
         $fpdi->Text(113, 257.25, $data->date_approved->format('d'));
@@ -422,8 +477,18 @@ class PdfController extends Controller
     private function contrato_pagina_3($fpdi, $data)
     {
         // Folio
-        $fpdi->SetFont("arial", "B", 14);
-        $fpdi->Text(192, 15, $data->id);
+        if (strlen($data->folio) > 6) {
+            $fpdi->SetFont("arial", "B", 10);
+
+        } else {
+            $fpdi->SetFont("arial", "B", 14);
+        }
+
+        if ($data->folio) {
+            $fpdi->Text(192, 15, $data->folio);
+        } else {
+            $fpdi->Text(192, 15, $data->id);
+        }
 
         // Vendedor
         $fpdi->SetFont("arial", "B", 12);
@@ -469,6 +534,22 @@ class PdfController extends Controller
             $fpdi->SetFont("arial", "", 9);
         }
         $fpdi->text(153.5, 99.5, $data->client->email);
+        // Notas de la orden de compra
+        if ($data->notes) {
+            $notes = GeneralHelp::normalize_text($data->notes);
+            $arrayNotes = explode("\n", $notes);
+            $posx = 27;
+            $posy = 110;
+            foreach ($arrayNotes as $linea) {
+                $palabras = wordwrap($linea, 40, "\n", true);
+                $lineasSeparadas = explode("\n", $palabras);
+                foreach ($lineasSeparadas as $linea_separada) {
+                    $fpdi->text($posx, $posy, $linea_separada);
+                    $posy = $posy + 5;
+                }
+            }
+
+        }
 
         // Fecha promesa de entrega
         if ($data->delivery_date) {
