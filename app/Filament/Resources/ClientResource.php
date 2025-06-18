@@ -113,8 +113,8 @@ class ClientResource extends Resource
                         //         'Retención' => 'Retención',
                         //     ])
                         //     ->translateLabel(),
-                       Toggle::make('iva')->inline(),
-                       Toggle::make('retencion')->inline(),
+                        //    Toggle::make('iva')->inline(),
+                        //    Toggle::make('retencion')->inline(),
 
                         TextInput::make('rfc')
                             ->translateLabel()
