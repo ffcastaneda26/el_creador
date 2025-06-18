@@ -288,7 +288,7 @@ class PdfController extends Controller
         }
 
 
-        $fpdi->text(50, 100.5, $direccion);
+        $fpdi->text(50, 100.5, GeneralHelp::normalize_text($direccion));
         $fpdi->text(45, 107, $data->client->phone);
         $fpdi->text(105, 107, $data->client->email);
 
@@ -437,18 +437,21 @@ class PdfController extends Controller
                 35 => 9,  // Largo > 35:Tamaño 9
                 0 => 11  // Defecto (Largo <= 35):Tamaño 11
             ];
-        }
+            $costo_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->shipping_cost));
 
-        $costo_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->shipping_cost));
-
-        foreach ($fontSizes as $lengthThreshold => $size) {
-            if (strlen($costo_letras) > $lengthThreshold) {
-                $fontSize = $size;
-                break;
-            }
+            foreach ($fontSizes as $lengthThreshold => $size) {
+                if (strlen($costo_letras) > $lengthThreshold) {
+                    $fontSize = $size;
+                    break;
+                }
         }
         $fpdi->SetFont("arial", "B", $fontSize);
         $fpdi->Text(62, 113, $costo_letras);
+        }
+
+
+
+
 
         // Fecha de Firma
         $fpdi->Text(113, 257.25, $data->date_approved->format('d'));
@@ -515,6 +518,7 @@ class PdfController extends Controller
 
         $address .= ' Col: ' . $data->colony;
         $address = GeneralHelp::normalize_text($address);
+
         $fpdi->text(30, 87, $address);
 
         // Ciudad
@@ -536,12 +540,13 @@ class PdfController extends Controller
         $fpdi->text(153.5, 99.5, $data->client->email);
         // Notas de la orden de compra
         if ($data->notes) {
+             $fpdi->SetFont("arial", "", 10);
             $notes = GeneralHelp::normalize_text($data->notes);
             $arrayNotes = explode("\n", $notes);
             $posx = 27;
             $posy = 110;
             foreach ($arrayNotes as $linea) {
-                $palabras = wordwrap($linea, 40, "\n", true);
+                $palabras = wordwrap($linea, 50, "\n", true);
                 $lineasSeparadas = explode("\n", $palabras);
                 foreach ($lineasSeparadas as $linea_separada) {
                     $fpdi->text($posx, $posy, $linea_separada);

@@ -107,12 +107,15 @@ class ClientResource extends Resource
                         ->columnSpanFull(),
 
                     Section::make()->schema([
-                        Radio::make('tax_type')
-                            ->options([
-                                'Iva' => 'Iva',
-                                'Retención' => 'Retención',
-                            ])
-                            ->translateLabel(),
+                        // Radio::make('tax_type')
+                        //     ->options([
+                        //         'Iva' => 'Iva',
+                        //         'Retención' => 'Retención',
+                        //     ])
+                        //     ->translateLabel(),
+                       Toggle::make('iva')->inline(),
+                       Toggle::make('retencion')->inline(),
+
                         TextInput::make('rfc')
                             ->translateLabel()
                             ->maxLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)

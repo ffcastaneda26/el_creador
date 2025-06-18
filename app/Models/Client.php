@@ -31,6 +31,8 @@ class Client extends Model
         'zipcode',
         'type',
         'tax_type',
+        'iva',
+        'retencion',
         'street',
         'number',
         'interior_number',
