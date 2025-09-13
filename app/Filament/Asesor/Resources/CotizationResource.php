@@ -55,16 +55,16 @@ class CotizationResource extends Resource
         return $form
             ->schema([
                 Group::make()->schema([
-                    Select::make('client_id')
-                        ->relationship(
-                            name: 'client',
-                            titleAttribute: 'name',
-                        )
-                        ->required()
-                        ->preload()
-                        ->searchable(['name', 'phone', 'email'])
-                        ->translateLabel(),
-
+Select::make('client_id')
+    ->relationship(
+        name: 'client',
+        titleAttribute: 'full_name', // Puedes mantener esto, ya que el método lo sobrescribe
+    )
+    ->required()
+    ->preload()
+    ->searchable(['company_name', 'name', 'last_name', 'mother_surname', 'phone', 'email'])
+    ->getOptionLabelFromRecordUsing(fn ($record) => $record->full_name) // Añade esta línea
+    ->translateLabel(),
                     MarkdownEditor::make('description')
                         ->required()
                         ->translateLabel()

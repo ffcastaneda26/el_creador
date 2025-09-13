@@ -14,7 +14,7 @@ class Client extends Model
     use HasFactory;
     protected $table = 'clients';
 
-    protected $fillable =  [
+    protected $fillable = [
         'name',
         'last_name',
         'mother_surname',
@@ -48,19 +48,32 @@ class Client extends Model
     protected function name(): Attribute
     {
         return Attribute::make(
-            get: fn (string $value) => ucfirst($value),
-            set: fn (string $value) => strtolower($value),
+            get: fn(string $value) => ucfirst($value),
+            set: fn(string $value) => strtolower($value),
         );
     }
 
     protected function fullName(): Attribute
     {
         return Attribute::make(
-            get: fn () => "{$this->name} {$this->last_name} {$this->mother_surname}",
+            get: fn() => "{$this->name} {$this->last_name} {$this->mother_surname}",
         );
     }
+    public function getFullNameAttribute(): string
+    {
+        // Reemplaza 'TYPE' con el nombre real de la columna en tu base de datos
+        // que define si el cliente es 'Moral'.
+        // Asegúrate de que 'company_name', 'name', 'last_name' y 'mother_surname' existan.
 
-//     public function setaddressAttribute($value):
+        if ($this->type === 'Moral') {
+            return $this->company_name;
+        }
+
+        // Concatenación del nombre completo para otros tipos de clientes
+        return trim($this->name . ' ' . $this->last_name . ' ' . $this->mother_surname);
+    }
+
+    //     public function setaddressAttribute($value):
 //     {
 //         $this->attributes['address']  = $this->street . ' ' . $this->number . ' ' . $this->interior_number;
 //    }
@@ -68,11 +81,11 @@ class Client extends Model
 
     public function setaddressAttribute($value)
     {
-        if($this->interior_number){
-            $this->attributes['address'] = ucfirst($this->street) . ' ' .  $this->number . ' -' . $this->interior_number;
+        if ($this->interior_number) {
+            $this->attributes['address'] = ucfirst($this->street) . ' ' . $this->number . ' -' . $this->interior_number;
 
-        }else{
-        $this->attributes['address'] = ucfirst($this->street) . ' ' .  $this->number;
+        } else {
+            $this->attributes['address'] = ucfirst($this->street) . ' ' . $this->number;
 
         }
     }
@@ -122,9 +135,9 @@ class Client extends Model
         return $this->belongsTo(City::class);
     }
 
-    public function zipcode():BelongsTo
+    public function zipcode(): BelongsTo
     {
-        return $this->belongsTo(Zipcode::class,'zipcode');
+        return $this->belongsTo(Zipcode::class, 'zipcode');
     }
 
     public function payments(): HasMany
@@ -135,13 +148,13 @@ class Client extends Model
     /**
      * Busca clientes
      */
-    public function scopeSearch(Builder $query,$search): void
+    public function scopeSearch(Builder $query, $search): void
     {
         $search = trim($search);
         $query->where('name', 'like', "%{$this->search}%")
-                ->orwhere('email', 'like', "%{$this->search}%")
-                ->orwhere('phone', 'like', "%{$this->search}%")
-                ->orwhere('mobile', 'like', "%{$this->search}%");
+            ->orwhere('email', 'like', "%{$this->search}%")
+            ->orwhere('phone', 'like', "%{$this->search}%")
+            ->orwhere('mobile', 'like', "%{$this->search}%");
 
     }
 }
