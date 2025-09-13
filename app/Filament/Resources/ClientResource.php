@@ -29,6 +29,7 @@ use App\Filament\Resources\ClientResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ClientResource\RelationManagers;
 use Filament\Forms\Get;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class ClientResource extends Resource
 {
@@ -67,6 +68,7 @@ class ClientResource extends Resource
                             ->options([
                                 'Física' => 'Física',
                                 'Moral' => 'Moral',
+                                'Sin Efectos Fiscales' => 'Sin Efectos'
                             ])->label(__('Type Person'))
                             ->default('Física'),
                     ])->columnSpanFull(),
@@ -77,19 +79,19 @@ class ClientResource extends Resource
                             ->label(__('Name'))
                             ->maxLength(100),
                         TextInput::make('last_name')
-                            ->required(fn(Get $get): bool => $get('type') === 'Física')
+                            ->required(fn(Get $get): bool => $get('type') === 'Física' ||  $get('type') === 'Sin Efectos Fiscales')
                             ->label(__('Last Name'))
                             ->maxLength(100),
                         TextInput::make('mother_surname')
                             ->label(__('Mother Surname'))
                             ->maxLength(100),
                         TextInput::make('company_name')
-                            ->required()
+                            ->required(fn(Get $get): bool => $get('type') === 'Moral')
                             ->label(__('Company Name'))
                             ->maxLength(100)
                             ->columnSpanFull(),
 
-                    ])->visible(fn(Get $get): bool => $get('type') === 'Física')
+                    ])->visible(fn(Get $get): bool => $get('type') === 'Física' ||  $get('type') === 'Sin Efectos Fiscales')
                         ->columns(3),
 
                     Section::make()->schema([
@@ -119,7 +121,8 @@ class ClientResource extends Resource
                         TextInput::make('rfc')
                             ->translateLabel()
                             ->maxLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)
-                            ->minLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12),
+                            ->minLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)
+                            ->required(fn(Get $get): bool => $get('type') === 'Física' ||  $get('type') === 'Moral'),
                         TextInput::make('curp')
                             ->translateLabel()
                             ->nullable()
