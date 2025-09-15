@@ -61,22 +61,12 @@ class Client extends Model
     }
     public function getFullNameAttribute(): string
     {
-        // Reemplaza 'TYPE' con el nombre real de la columna en tu base de datos
-        // que define si el cliente es 'Moral'.
-        // Asegúrate de que 'company_name', 'name', 'last_name' y 'mother_surname' existan.
-
         if ($this->type === 'Moral') {
             return $this->company_name;
         }
 
-        // Concatenación del nombre completo para otros tipos de clientes
         return trim($this->name . ' ' . $this->last_name . ' ' . $this->mother_surname);
     }
-
-    //     public function setaddressAttribute($value):
-//     {
-//         $this->attributes['address']  = $this->street . ' ' . $this->number . ' ' . $this->interior_number;
-//    }
 
 
     public function setaddressAttribute($value)

@@ -23,6 +23,7 @@ use Filament\Forms\Components\MarkdownEditor;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Asesor\Resources\CotizationResource\Pages;
 use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\ImagesRelationManager;
+use App\Models\Client;
 use Filament\Forms\Get;
 use Filament\Tables\Columns\ImageColumn;
 
@@ -55,16 +56,21 @@ class CotizationResource extends Resource
         return $form
             ->schema([
                 Group::make()->schema([
-Select::make('client_id')
-    ->relationship(
-        name: 'client',
-        titleAttribute: 'full_name', // Puedes mantener esto, ya que el método lo sobrescribe
-    )
-    ->required()
-    ->preload()
-    ->searchable(['company_name', 'name', 'last_name', 'mother_surname', 'phone', 'email'])
-    ->getOptionLabelFromRecordUsing(fn ($record) => $record->full_name) // Añade esta línea
-    ->translateLabel(),
+                    Select::make('client_id')
+                        ->relationship(
+                            name: 'client',
+                            titleAttribute: 'full_name', // Puedes mantener esto, ya que el método lo sobrescribe
+                        )
+                        ->required()
+                        ->preload()
+                        ->searchable(['company_name', 'name', 'last_name', 'mother_surname', 'phone', 'email'])
+                        ->getOptionLabelFromRecordUsing(fn($record) => $record->full_name) // Añade esta línea
+                        ->translateLabel()
+                        ->live() // Añade esta línea
+                        ->afterStateUpdated(function (Set $set, $state) {
+                            $clientModel = Client::find($state);
+                            $set('require_invoice', $clientModel->type !== 'Sin Efectos Fiscales');
+                        }),
                     MarkdownEditor::make('description')
                         ->required()
                         ->translateLabel()
@@ -81,11 +87,20 @@ Select::make('client_id')
                             ->format('Y-m-d')
                             ->after('fecha'),
                         Toggle::make('require_invoice')
-                            ->required()
                             ->translateLabel()
                             ->live(onBlur: true)
                             ->reactive()
-                            ->disabled(fn(Get $get) => !$get('client_id'))
+                            ->disabled() // Lo hacemos de solo lectura deshabilitándolo.
+                            ->dehydrated(true) // Asegura que el valor se guarde aunque esté deshabilitado.
+                            ->afterStateHydrated(function (Set $set, Get $get) {
+                                // Obtenemos el registro actual si existe.
+                                $record = $get('record');
+                                if ($record && $record->client) {
+                                    $client = $record->client;
+                                    // Configuramos el estado basado en el tipo de cliente.
+                                    $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
+                                }
+                            })
                             ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
                     ])->columns(3),
 
@@ -291,8 +306,6 @@ Select::make('client_id')
         $set('retencion_isr', $retencion_isr);
         $total = round($subtotal + $iva - $descuento + $envio - $retencion_isr, 2);
         $set('total', $total);
-        // $set('base_retencion', $base_retencion);
-        // $set('percentage_retencion', $percentage_retencion);
-        // $set('percentage_iva', $percentage_iva);
+
     }
 }
