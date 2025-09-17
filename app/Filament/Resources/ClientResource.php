@@ -1,7 +1,13 @@
 <?php
 
 namespace App\Filament\Resources;
-
+/** 
+ * +-------------+---------+--------------------------------------------------------------------------------------------+
+ * |  Fecha      | Author  | Descripción                                                                                |
+ * +-------------+---------+--------------------------------------------------------------------------------------------+
+ * | 17-Sep-2025 | FCO     | Se agrega el campo para correo electrónico en el formulario                                | 
+ * +-------------+---------+--------------------------------------------------------------------------------------------+
+ */
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\State;
@@ -135,6 +141,11 @@ class ClientResource extends Resource
                             ->nullable()
                             ->minLength(13)
                             ->maxLength(13),
+                        TextInput::make('email')
+                            ->translateLabel()
+                            ->nullable()
+                            ->email()
+                            ->maxLength(100),
                     ])->columns(2),
 
                 ])->columns(2),
@@ -149,6 +160,7 @@ class ClientResource extends Resource
                             ->translateLabel()
                             ->nullable()
                             ->maxLength(15),
+
                         TextInput::make('zipcode')
                             ->required()
                             ->translateLabel()
@@ -347,7 +359,8 @@ class ClientResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('INE')
-                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true),
+
 
             ])
             // TODO:: Hacer los select depndientes
