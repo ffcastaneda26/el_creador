@@ -18,6 +18,8 @@ class Cotization extends Model
         'aprobada',
         'fecha_aprobada',
         'description',
+        'require_invoice',
+        'tax',
         'subtotal',
         'iva',
         'descuento',

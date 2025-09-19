@@ -66,7 +66,7 @@ class CotizationResource extends Resource
                         ->searchable(['company_name', 'name', 'last_name', 'mother_surname', 'phone', 'email'])
                         ->getOptionLabelFromRecordUsing(fn($record) => $record->full_name) // Añade esta línea
                         ->translateLabel()
-                        ->live() // Añade esta línea
+                        ->live()
                         ->afterStateUpdated(function (Set $set, $state) {
                             $clientModel = Client::find($state);
                             $set('require_invoice', $clientModel->type !== 'Sin Efectos Fiscales');
@@ -90,7 +90,6 @@ class CotizationResource extends Resource
                             ->translateLabel()
                             ->live(onBlur: true)
                             ->reactive()
-                            ->disabled() // Lo hacemos de solo lectura deshabilitándolo.
                             ->dehydrated(true) // Asegura que el valor se guarde aunque esté deshabilitado.
                             ->afterStateHydrated(function (Set $set, Get $get) {
                                 // Obtenemos el registro actual si existe.

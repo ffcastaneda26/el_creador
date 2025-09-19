@@ -18,10 +18,6 @@ class EditCotization extends EditRecord
         ];
     }
 
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
-    }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
