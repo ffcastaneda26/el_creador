@@ -115,9 +115,9 @@ class PdfController extends Controller
                 $fpdi->SetXY(164, 27);
 
                 $fecha_dia = $data->fecha->format('d');
-                $fpdi->Text(166, 28, $fecha_dia);
+                $fpdi->Text(165.5, 28.1, $fecha_dia);
 
-                $fpdi->Text(175, 28, strtoupper(GeneralHelp::spanish_month($data->fecha, 's')));
+                $fpdi->Text(175, 28.1, strtoupper(GeneralHelp::spanish_month($data->fecha, 's')));
                 $standard_name = GeneralHelp::normalize_text($data->client->name);
                 $standard_name = ucwords($standard_name);
                 $fpdi->Text(43, 64, $standard_name);                          // Nombre
