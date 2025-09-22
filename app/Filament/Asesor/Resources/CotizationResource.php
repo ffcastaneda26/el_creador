@@ -1,39 +1,35 @@
 <?php
-
 namespace App\Filament\Asesor\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Set;
-use Filament\Forms\Form;
-use App\Models\Cotization;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Section;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\MarkdownEditor;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Asesor\Resources\CotizationResource\Pages;
 use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\ImagesRelationManager;
 use App\Models\Client;
+use App\Models\Cotization;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class CotizationResource extends Resource
 {
-    protected static ?string $model = Cotization::class;
+    protected static ?string $model          = Cotization::class;
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
-    protected static ?int $navigationSort = 31;
+    protected static ?int $navigationSort          = 31;
 
     public static function getNavigationGroup(): string
     {
@@ -44,7 +40,6 @@ class CotizationResource extends Resource
     {
         return __('Cotization');
     }
-
 
     public static function getPluralLabel(): ?string
     {
@@ -59,14 +54,20 @@ class CotizationResource extends Resource
                     Select::make('client_id')
                         ->relationship(
                             name: 'client',
-                            titleAttribute: 'full_name', // Puedes mantener esto, ya que el método lo sobrescribe
+                            titleAttribute: 'full_name',
                         )
                         ->required()
                         ->preload()
                         ->searchable(['company_name', 'name', 'last_name', 'mother_surname', 'phone', 'email'])
-                        ->getOptionLabelFromRecordUsing(fn($record) => $record->full_name) // Añade esta línea
+                        ->getOptionLabelFromRecordUsing(fn($record) => $record->full_name)
                         ->translateLabel()
                         ->live()
+                        ->afterStateHydrated(function (Set $set, Get $get) { // Añade este método
+                            $client = $get('record')?->client;
+                            if ($client) {
+                                $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
+                            }
+                        })
                         ->afterStateUpdated(function (Set $set, $state) {
                             $clientModel = Client::find($state);
                             $set('require_invoice', $clientModel->type !== 'Sin Efectos Fiscales');
@@ -86,26 +87,31 @@ class CotizationResource extends Resource
                             ->required()
                             ->format('Y-m-d')
                             ->after('fecha'),
+
                         Toggle::make('require_invoice')
                             ->translateLabel()
                             ->live(onBlur: true)
                             ->reactive()
-                            ->dehydrated(true) // Asegura que el valor se guarde aunque esté deshabilitado.
                             ->afterStateHydrated(function (Set $set, Get $get) {
-                                // Obtenemos el registro actual si existe.
-                                $record = $get('record');
-                                if ($record && $record->client) {
-                                    $client = $record->client;
-                                    // Configuramos el estado basado en el tipo de cliente.
+                                $client = $get('record')?->client;
+                                if ($client) {
                                     $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
                                 }
                             })
-                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
-                    ])->columns(3),
+                            ->disabled() // Mantén esta línea para que el usuario no lo cambie
+                            ->default(function (Get $get) {
+                                $client = $get('record')?->client;
+                                if ($client) {
+                                    return $client->type !== 'Sin Efectos Fiscales';
+                                }
+                                return true;
+                            })
+                            ->dehydrated(true)
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get))])->columns(3),
 
                     Section::make()->schema([
 
-                        Section::make()->schema([
+                        // Section::make()->schema([
                             TextInput::make('subtotal')
                                 ->default(0.00)
                                 ->required()
@@ -126,34 +132,20 @@ class CotizationResource extends Resource
                                 ->inputMode('decimal')
                                 ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
 
-                        ])->columns(3),
+                        // ])->columns(3),
 
-                        // Section::make()->schema([
-                        //     TextInput::make('base_retencion')
-                        //         ->label('Base Retención')
-                        //         ->inputMode('decimal')
-                        //         ->disabled(),
-                        //     TextInput::make('percentage_retencion')
-                        //         ->label('% Retención')
-                        //         ->inputMode('decimal')
-                        //         ->disabled(),
-                        //     TextInput::make('percentage_iva')
-                        //         ->label('% IVA')
-                        //         ->inputMode('decimal')
-                        //         ->disabled(),
-                        // ])
-                        // ->columns(3)
-                        // ->hidden(),
                         TextInput::make('iva')
                             ->required()
                             ->translateLabel()
                             ->inputMode('decimal')
-                            ->disabled(),
+                            ->disabled()
+                            ->visible(fn(Get $get) => $get('require_invoice')),
                         TextInput::make('retencion_isr')
                             ->required()
                             ->translateLabel()
                             ->inputMode('decimal')
-                            ->disabled(),
+                            ->disabled()
+                             ->visible(fn(Get $get) => $get('require_invoice')),
                         TextInput::make('total')
                             ->required()
                             ->disabled()
@@ -168,7 +160,7 @@ class CotizationResource extends Resource
                             ->format('Y-m-d')
                             ->requiredIf('aprobada', true)
                             ->validationMessages([
-                                'required_if' => 'Debe seleccionar fecha de aprobación si la cotización es aprobada',
+                                'required_if'    => 'Debe seleccionar fecha de aprobación si la cotización es aprobada',
                                 'after_or_equal' => 'La fecha de aproBación debe ser igual o mayor a la fecha de la cotización',
 
                             ]),
@@ -176,7 +168,7 @@ class CotizationResource extends Resource
                         DatePicker::make('fecha_entrega')
                             ->after('fecha')
                             ->format('Y-m-d'),
-                    ])->columns(3)
+                    ])->columns(3),
                 ])->columns(3),
             ]);
     }
@@ -242,21 +234,21 @@ class CotizationResource extends Resource
                     ->alignEnd(),
                 TextColumn::make('total')
                     ->formatStateUsing(fn(string $state): string => number_format($state, 2))
-                    ->alignEnd()
+                    ->alignEnd(),
             ])
             ->filters([
                 SelectFilter::make('client')
                     ->relationship('client', 'name')
                     ->translateLabel()
                     ->searchable()
-                    ->preload()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make(__('Cotization'))
                     ->icon('heroicon-o-document-currency-dollar')
                     ->url(fn(Cotization $record) => route('pdf-document', [$record, 'cotizacion']))
-                    ->openUrlInNewTab()
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -275,9 +267,9 @@ class CotizationResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCotizations::route('/'),
+            'index'  => Pages\ListCotizations::route('/'),
             'create' => Pages\CreateCotization::route('/create'),
-            'edit' => Pages\EditCotization::route('/{record}/edit'),
+            'edit'   => Pages\EditCotization::route('/{record}/edit'),
         ];
     }
 
@@ -288,18 +280,18 @@ class CotizationResource extends Resource
     public static function calculateTotals(Set $set, Get $get)
     {
         $require_invoice = $get('require_invoice');
-        $subtotal = round(floatval($get('subtotal')), 2);
-        $descuento = round(floatval($get('descuento')), 2);
-        $envio = round(floatval($get('envio')), 2);
-        $iva = 00.00;
-        $retencion_isr = 00.00;
+        $subtotal        = round(floatval($get('subtotal')), 2);
+        $descuento       = round(floatval($get('descuento')), 2);
+        $envio           = round(floatval($get('envio')), 2);
+        $iva             = 00.00;
+        $retencion_isr   = 00.00;
 
         if ($require_invoice) {
-            $percentage_iva = round(env('PERCENTAGE_IVA', 16) / 100, 2);
+            $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
             $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-            $base_retencion = round($subtotal - $descuento + $envio, 2);
-            $iva = round($base_retencion * $percentage_iva, 2);
-            $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
+            $base_retencion       = round($subtotal - $descuento + $envio, 2);
+            $iva                  = round($base_retencion * $percentage_iva, 2);
+            $retencion_isr        = round($base_retencion * ($percentage_retencion / 100), 2);
         }
         $set('iva', $iva);
         $set('retencion_isr', $retencion_isr);

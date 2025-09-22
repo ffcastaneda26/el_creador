@@ -2,7 +2,7 @@
 namespace App\Filament\Asesor\Resources\CotizationResource\Pages;
 
 use App\Filament\Asesor\Resources\CotizationResource;
-use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\ImagesRelationManager;
+use App\Models\Client;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,11 +12,14 @@ class CreateCotization extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $subtotal      = round($data['subtotal'], 2);
-        $descuento     = round($data['descuento'], 2);
-        $envio         = round($data['envio'], 2);
-        $retencion_isr = 0;
-        $iva           = 0;
+        $subtotal                = round($data['subtotal'], 2);
+        $descuento               = round($data['descuento'], 2);
+        $envio                   = round($data['envio'], 2);
+        $retencion_isr           = 0;
+        $iva                     = 0;
+        $client                  = Client::find($data['client_id']);
+        $data['require_invoice'] = $client && $client->type !== 'Sin Efectos Fiscales';
+
         if ($data['require_invoice']) {
             $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
             $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
