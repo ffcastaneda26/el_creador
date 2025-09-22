@@ -112,25 +112,25 @@ class CotizationResource extends Resource
                     Section::make()->schema([
 
                         // Section::make()->schema([
-                            TextInput::make('subtotal')
-                                ->default(0.00)
-                                ->required()
-                                ->translateLabel()
-                                ->live(onBlur: true)
-                                ->inputMode('decimal')
-                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
-                            TextInput::make('descuento')
-                                ->default(0.00)
-                                ->translateLabel()
-                                ->live(onBlur: true)
-                                ->inputMode('decimal')
-                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
-                            TextInput::make('envio')
-                                ->default(0.00)
-                                ->translateLabel()
-                                ->live(onBlur: true)
-                                ->inputMode('decimal')
-                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+                        TextInput::make('subtotal')
+                            ->default(0.00)
+                            ->required()
+                            ->translateLabel()
+                            ->live(onBlur: true)
+                            ->inputMode('decimal')
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+                        TextInput::make('descuento')
+                            ->default(0.00)
+                            ->translateLabel()
+                            ->live(onBlur: true)
+                            ->inputMode('decimal')
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+                        TextInput::make('envio')
+                            ->default(0.00)
+                            ->translateLabel()
+                            ->live(onBlur: true)
+                            ->inputMode('decimal')
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
 
                         // ])->columns(3),
 
@@ -145,7 +145,7 @@ class CotizationResource extends Resource
                             ->translateLabel()
                             ->inputMode('decimal')
                             ->disabled()
-                             ->visible(fn(Get $get) => $get('require_invoice')),
+                            ->visible(fn(Get $get) => $get('require_invoice')),
                         TextInput::make('total')
                             ->required()
                             ->disabled()
@@ -154,14 +154,21 @@ class CotizationResource extends Resource
                     ])->columns(3),
 
                     Section::make()->schema([
-                        Toggle::make('aprobada')->label('¿Aprobada?'),
+                        Toggle::make('aprobada')
+                            ->label('¿Aprobada?')
+                            ->afterStateHydrated(function (Toggle $component, $state) {
+                                if ($state) {
+                                    $component->disabled(true);
+                                }
+                            }),
+
                         DatePicker::make('fecha_aprobada')
                             ->afterOrEqual('fecha')
                             ->format('Y-m-d')
                             ->requiredIf('aprobada', true)
                             ->validationMessages([
                                 'required_if'    => 'Debe seleccionar fecha de aprobación si la cotización es aprobada',
-                                'after_or_equal' => 'La fecha de aproBación debe ser igual o mayor a la fecha de la cotización',
+                                'after_or_equal' => 'La fecha de aprobación debe ser igual o mayor a la fecha de la cotización',
 
                             ]),
 
