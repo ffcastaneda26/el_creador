@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +10,7 @@ class Order extends Model
 {
     protected $table = 'orders';
 
-    protected $fillable =  [
+    protected $fillable = [
         'client_id',
         'date',
         'approved',
@@ -45,22 +44,28 @@ class Order extends Model
         'shipping_company',
         'shipping_company_address',
         'shipping_cost',
-        'user_id'
+        'cotization_id',
+        'user_id',
     ];
 
     protected function casts(): array
     {
         return [
-            'date'                  => 'datetime:Y-m-d',
-            'date_approved'         => 'datetime:Y-m-d',
-            'delivery_date'         => 'datetime:Y-m-d',
-            'payment_promise_date'  => 'datetime:Y-m-d',
+            'date'                 => 'datetime:Y-m-d',
+            'date_approved'        => 'datetime:Y-m-d',
+            'delivery_date'        => 'datetime:Y-m-d',
+            'payment_promise_date' => 'datetime:Y-m-d',
         ];
     }
 
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function cotization(): BelongsTo
+    {
+        return $this->belongsTo(Cotization::class);
     }
 
     public function country(): BelongsTo
@@ -93,9 +98,9 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function zipcode():BelongsTo
+    public function zipcode(): BelongsTo
     {
-        return $this->belongsTo(Zipcode::class,'zipcode');
+        return $this->belongsTo(Zipcode::class, 'zipcode');
     }
 
     public function payments(): HasMany

@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('motley_name', 40)->after('payment_promise_date')->comment('Nombre Botarga');
+            $table->string('motley_name', 40)->nullable()->after('payment_promise_date')->comment('Nombre Botarga');
             $table->string('folio', 10)->nullable()->default(null)->after('motley_name')->comment('Folio');
             $table->string('phone_whatsApp', 15)->nullable()->default(null)->after('folio')->comment('Número WhatsApp');
             $table->tinyInteger('days_term')

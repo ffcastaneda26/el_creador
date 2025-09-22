@@ -3,8 +3,11 @@ namespace App\Filament\Asesor\Resources\CotizationResource\Pages;
 
 use App\Filament\Asesor\Resources\CotizationResource;
 use App\Models\Client;
+use App\Models\Cotization;
+use App\Models\Order;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
 
 class CreateCotization extends CreateRecord
 {
@@ -36,6 +39,44 @@ class CreateCotization extends CreateRecord
         $data['total']         = $total;
         $data['user_id']       = Auth::user()->id;
         return $data;
+    }
+
+    protected function handleRecordCreation(array $data): Cotization
+    {
+        // Crea la cotización
+        $cotization = Cotization::create($data);
+
+        // Si la cotización está aprobada, crea la orden de compra
+        if ($cotization->aprobada) {
+            $this->createOrderFromCotization($cotization);
+            Notification::make()->title('Se creó la cotización y la orden de compra')->success()->send();
+            return $cotization;
+        }
+
+        Notification::make()->title('Se creó Cotización')->success()->send();
+        return $cotization;
+    }
+
+    protected function createOrderFromCotization(Cotization $cotization)
+    {
+        // Lógica para mapear los campos de la cotización a la orden
+        $orderData = [
+            'client_id'     => $cotization->client_id,
+            'date'          => now(),
+            'approved'      => false,
+            'subtotal'      => $cotization->subtotal,
+            'tax'           => $cotization->iva,
+            'retencion_isr' => $cotization->retencion_isr,
+            'discount'      => $cotization->descuento,
+            'total'         => $cotization->total,
+            'shipping_cost' => $cotization->envio,
+            'cotization_id' => $cotization->id, // Asigna el ID de la cotización
+            'user_id'       => $cotization->user_id,
+            'require_invoice' => $cotization->require_invoice,
+            // Agrega otros campos de la cotización que necesites mapear a la orden.
+        ];
+
+        Order::create($orderData);
     }
 
 }
