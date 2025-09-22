@@ -186,7 +186,7 @@ class CotizationResource extends Resource
         return $table
             ->columns([
 
-                TextColumn::make('client.name')
+                TextColumn::make('client.full_name')
                     ->searchable()
                     ->sortable()
                     ->label(__('Client')),
