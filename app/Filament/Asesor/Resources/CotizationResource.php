@@ -4,6 +4,7 @@ namespace App\Filament\Asesor\Resources;
 use App\Filament\Asesor\Resources\CotizationResource\Pages;
 use App\Models\Client;
 use App\Models\Cotization;
+use App\Rules\ValidImageExtension;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Group;
@@ -117,11 +118,8 @@ class CotizationResource extends Resource
                     Section::make()->schema([
                         Toggle::make('aprobada')
                             ->label('¿Aprobada?')
-                            ->afterStateHydrated(function (Toggle $component, $state) {
-                                if ($state) {
-                                    $component->disabled(true);
-                                }
-                            }),
+                            ->disabled(fn($state) => $state)
+                            ->dehydrated(true),
                         DatePicker::make('fecha_aprobada')
                             ->afterOrEqual('fecha')
                             ->format('Y-m-d')
@@ -147,6 +145,7 @@ class CotizationResource extends Resource
                                 ->translateLabel()
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
+                                ->minValue(1.00)
                                 ->rules(function (Get $get): array {
                                     return ['numeric', 'lt:' . $get('subtotal')];
                                 })
@@ -184,6 +183,10 @@ class CotizationResource extends Resource
                         Repeater::make('Partidas')
                             ->relationship('details')
                             ->label('')
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Necesitas agregar partidas',
+                            ])
                             ->createItemButtonLabel('Añadir partida')
                             ->schema([
                                 TextInput::make('quantity')
@@ -218,14 +221,12 @@ class CotizationResource extends Resource
                                     ->disk('public')
                                     ->directory('cotizations') // Se corrige el directorio
                                     ->visibility('public')
+                                    ->rules([new ValidImageExtension])
                                     ->getUploadedFileNameForStorageUsing(
                                         fn(TemporaryUploadedFile $file): string => (string) str($file->getClientOriginalName())
                                             ->prepend(time() . '_'),
                                     )
-                                    // ->imageResizeTargetWidth(200)  // Redimensiona la imagen a 200px de ancho
-                                    // ->imageResizeTargetHeight(200) // Redimensiona la imagen a 600px de alto
-                                    // ->imageCropAspectRatio('16:9') // Opcional: Define la relación de aspecto de recorte
-                                     ->columnSpan(1),          // Hace que el campo ocupe todo el ancho de la fila
+                                    ->columnSpan(1),
                             ])
                             ->columns(4)
                             ->columnSpan('full')
