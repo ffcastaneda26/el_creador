@@ -116,17 +116,15 @@ class PdfController extends Controller
                 $standard_name = ucwords($standard_name);
                 $fpdi->Text(43, 64.5, $standard_name); // Nombre completo del cliente
 
-
                 // Partida
-                $posx                = 20;
-                $posy                = 90;
-                  $fpdi->Text( $posx , $posy, 1); // Partida
+                $posx = 20;
+                $posy = 90;
+                $fpdi->Text($posx, $posy, 1); // Partida
 
                 $standar_description = GeneralHelp::normalize_text($data->description);
                 $arrayDescripcion    = explode("\n", $standar_description);
                 $posx                = 104;
                 $posy                = 90;
-
 
                 // Descripción
                 foreach ($arrayDescripcion as $linea) {
@@ -138,51 +136,29 @@ class PdfController extends Controller
                     }
                 }
 
-                $totImagesCotization = $data->images->count();
+                $partidas = $data->details()->get();
 
-                if ($totImagesCotization) {
-                    // switch ($totImagesCotization) {
-                    //     case 1:
-                    //         $posx = 105;
-                    //         break;
-                    //     case 2:
-                    //         $posx = 85;
-                    //         break;
-                    //     case 3:
-                    //         $posx = 65;
-                    //         break;
-                    //     case 4:
-                    //         $posx = 45;
-                    //         break;
-                    //     case 5:
-                    //         $posx = 25;
-                    //         break;
-                    //     default:
-                    //         $posx = 32;
-                    //         break;
-                    // }
-                    $posx = 55;
-                    $posy = 90;
-                    foreach ($data->images->sortBy('id') as $image) {
+                if ($partidas->count() > 0) {
 
-                        $imageUrl = storage_path('app/public/' . $image->image);
-                        $fpdi->Image($imageUrl, $posx, $posy, 25, 25);
-                        // $image_name       = GeneralHelp::normalize_text($image->name);
-                        // $image_name_array = explode("\n", $image_name);
+                    $partida_numero = 1;
+                    $posx           = 38;
+                    $posy           = 90;
+                    foreach ($partidas as $partida) {
+                        $fpdi->Text($posx, $posy, $partida->quantity);
 
-                        // foreach ($image_name_array as $linea) {
-                        //     $palabras        = wordwrap($linea, 40, "\n", true);
-                        //     $lineasSeparadas = explode("\n", $palabras);
-                        //     foreach ($lineasSeparadas as $linea_separada) {
-                        //         $fpdi->text($posx + 18, $posy, $linea_separada);
-                        //         $posy = $posy + 5;
-                        //     }
-                        // }
+                        if ($partida->image) {
+                            $imageUrl = storage_path('app/public/' . $partida->image);
+                            $fpdi->Image($imageUrl, $posx + 25, $posy, 25, 25);
+                        }
+                        $fpdi->text(168, $posy, number_format($partida->price, 2, '.', ','));
+                        $monto = round($partida->quantity * $partida->price, 2);
+                        $fpdi->text(190, $posy, number_format($monto, 2, '.', ','));
 
                         $posy = $posy + 25;
                     }
-
                 }
+
+
 
                 // Fecha de entrega
 
