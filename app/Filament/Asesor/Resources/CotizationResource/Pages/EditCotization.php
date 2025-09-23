@@ -99,28 +99,5 @@ class EditCotization extends EditRecord
         Order::create($orderData);
     }
 
-    // 1. Define los listeners de eventos.
-    protected function getListeners(): array
-    {
-        return array_merge(parent::getListeners(), [
-            'recalculateTotals' => 'recalculateTotals',
-        ]);
-    }
-
-    // 2. Crea el método que se ejecutará al recibir el evento.
-    public function recalculateTotals(): void
-    {
-        // Llama al método de cálculo pasando los detalles desde la base de datos
-        // o la relación que es el origen de la información.
-        CotizationResource::calculateTotals(
-
-            app(\Filament\Forms\Set::class), // Pasa el objeto Set de Filament
-            app(\Filament\Forms\Get::class), // Pasa el objeto Get de Filament
-            $this->record->details();        // Pasa la colección actualizada de detalles
-        );
-
-        // Refresca el formulario
-        $this->form->fill();
-    }
 
 }

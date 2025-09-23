@@ -12,7 +12,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle; // Añadir FileUpload
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -216,16 +216,16 @@ class CotizationResource extends Resource
                                     ->label('Imagen')
                                     ->image()
                                     ->disk('public')
-                                    ->directory('cotizations_details') // Se corrige el directorio
+                                    ->directory('cotizations') // Se corrige el directorio
                                     ->visibility('public')
                                     ->getUploadedFileNameForStorageUsing(
                                         fn(TemporaryUploadedFile $file): string => (string) str($file->getClientOriginalName())
                                             ->prepend(time() . '_'),
                                     )
-                                    ->imageResizeTargetWidth(200)  // Redimensiona la imagen a 200px de ancho
-                                    ->imageResizeTargetHeight(200) // Redimensiona la imagen a 600px de alto
-                                    ->imageCropAspectRatio('16:9') // Opcional: Define la relación de aspecto de recorte
-                                    ->columnSpan(1),          // Hace que el campo ocupe todo el ancho de la fila
+                                    // ->imageResizeTargetWidth(200)  // Redimensiona la imagen a 200px de ancho
+                                    // ->imageResizeTargetHeight(200) // Redimensiona la imagen a 600px de alto
+                                    // ->imageCropAspectRatio('16:9') // Opcional: Define la relación de aspecto de recorte
+                                     ->columnSpan(1),          // Hace que el campo ocupe todo el ancho de la fila
                             ])
                             ->columns(4)
                             ->columnSpan('full')
