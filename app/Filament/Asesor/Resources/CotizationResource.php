@@ -2,16 +2,17 @@
 namespace App\Filament\Asesor\Resources;
 
 use App\Filament\Asesor\Resources\CotizationResource\Pages;
-use App\Filament\Asesor\Resources\CotizationResource\RelationManagers\ImagesRelationManager;
 use App\Models\Client;
 use App\Models\Cotization;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Toggle; // Añadir FileUpload
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -22,6 +23,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class CotizationResource extends Resource
 {
@@ -62,7 +64,7 @@ class CotizationResource extends Resource
                         ->getOptionLabelFromRecordUsing(fn($record) => $record->full_name)
                         ->translateLabel()
                         ->live()
-                        ->afterStateHydrated(function (Set $set, Get $get) { // Añade este método
+                        ->afterStateHydrated(function (Set $set, Get $get) {
                             $client = $get('record')?->client;
                             if ($client) {
                                 $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
@@ -71,12 +73,14 @@ class CotizationResource extends Resource
                         ->afterStateUpdated(function (Set $set, $state) {
                             $clientModel = Client::find($state);
                             $set('require_invoice', $clientModel->type !== 'Sin Efectos Fiscales');
-                        }),
+                        })
+                        ->disabled(fn(Get $get) => $get('aprobada')),
                     MarkdownEditor::make('description')
                         ->required()
                         ->translateLabel()
                         ->columnSpan(2),
                 ]),
+
                 Group::make()->schema([
                     Section::make()->schema([
                         DatePicker::make('fecha')
@@ -98,7 +102,7 @@ class CotizationResource extends Resource
                                     $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
                                 }
                             })
-                            ->disabled() // Mantén esta línea para que el usuario no lo cambie
+                            ->disabled()
                             ->default(function (Get $get) {
                                 $client = $get('record')?->client;
                                 if ($client) {
@@ -107,50 +111,7 @@ class CotizationResource extends Resource
                                 return true;
                             })
                             ->dehydrated(true)
-                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get))])->columns(3),
-
-                    Section::make()->schema([
-
-                        // Section::make()->schema([
-                        TextInput::make('subtotal')
-                            ->default(0.00)
-                            ->required()
-                            ->translateLabel()
-                            ->live(onBlur: true)
-                            ->inputMode('decimal')
                             ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
-                        TextInput::make('descuento')
-                            ->default(0.00)
-                            ->translateLabel()
-                            ->live(onBlur: true)
-                            ->inputMode('decimal')
-                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
-                        TextInput::make('envio')
-                            ->default(0.00)
-                            ->translateLabel()
-                            ->live(onBlur: true)
-                            ->inputMode('decimal')
-                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
-
-                        // ])->columns(3),
-
-                        TextInput::make('iva')
-                            ->required()
-                            ->translateLabel()
-                            ->inputMode('decimal')
-                            ->disabled()
-                            ->visible(fn(Get $get) => $get('require_invoice')),
-                        TextInput::make('retencion_isr')
-                            ->required()
-                            ->translateLabel()
-                            ->inputMode('decimal')
-                            ->disabled()
-                            ->visible(fn(Get $get) => $get('require_invoice')),
-                        TextInput::make('total')
-                            ->required()
-                            ->disabled()
-                            ->translateLabel()
-                            ->inputMode('decimal'),
                     ])->columns(3),
 
                     Section::make()->schema([
@@ -161,7 +122,6 @@ class CotizationResource extends Resource
                                     $component->disabled(true);
                                 }
                             }),
-
                         DatePicker::make('fecha_aprobada')
                             ->afterOrEqual('fecha')
                             ->format('Y-m-d')
@@ -169,14 +129,109 @@ class CotizationResource extends Resource
                             ->validationMessages([
                                 'required_if'    => 'Debe seleccionar fecha de aprobación si la cotización es aprobada',
                                 'after_or_equal' => 'La fecha de aprobación debe ser igual o mayor a la fecha de la cotización',
-
                             ]),
-
                         DatePicker::make('fecha_entrega')
                             ->after('fecha')
                             ->format('Y-m-d'),
+
+                        Section::make()->schema([
+                            TextInput::make('subtotal')
+                                ->default(0.00)
+                                ->required()
+                                ->translateLabel()
+                                ->live(onBlur: true)
+                                ->inputMode('decimal')
+                                ->readOnly(),
+                            TextInput::make('descuento')
+                                ->default(0.00)
+                                ->translateLabel()
+                                ->live(onBlur: true)
+                                ->inputMode('decimal')
+                                ->rules(function (Get $get): array {
+                                    return ['numeric', 'lt:' . $get('subtotal')];
+                                })
+                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+                            TextInput::make('envio')
+                                ->default(0.00)
+                                ->translateLabel()
+                                ->live(onBlur: true)
+                                ->inputMode('decimal')
+                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+                            TextInput::make('iva')
+                                ->required()
+                                ->translateLabel()
+                                ->inputMode('decimal')
+                                ->disabled()
+                                ->visible(fn(Get $get) => $get('require_invoice')),
+                            TextInput::make('retencion_isr')
+                                ->required()
+                                ->translateLabel()
+                                ->inputMode('decimal')
+                                ->disabled()
+                                ->visible(fn(Get $get) => $get('require_invoice')),
+                            TextInput::make('total')
+                                ->required()
+                                ->disabled()
+                                ->translateLabel()
+                                ->inputMode('decimal'),
+                        ])->columns(3),
                     ])->columns(3),
                 ])->columns(3),
+
+                Section::make('Partidas de la cotización')
+                    ->translateLabel()
+                    ->schema([
+                        Repeater::make('Partidas')
+                            ->relationship('details')
+                            ->label('')
+                            ->createItemButtonLabel('Añadir partida')
+                            ->schema([
+                                TextInput::make('quantity')
+                                    ->required()
+                                    ->numeric()
+                                    ->translateLabel()
+                                    ->reactive()
+                                    ->default(1)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(fn(callable $get, callable $set) => self::updateFormData($get, $set))
+                                    ->columnSpan(1),
+                                TextInput::make('price')
+                                    ->required()
+                                    ->numeric()
+                                    ->translateLabel()
+                                    ->reactive()
+                                    ->default(0.00)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(fn(callable $get, callable $set) => self::updateFormData($get, $set))
+                                    ->afterStateHydrated(fn(callable $get, callable $set) => self::updateFormData($get, $set))
+                                    ->columnSpan(1),
+                                TextInput::make('total_partida')
+                                    ->numeric()
+                                    ->translateLabel()
+                                    ->default(0.00)
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->columnSpan(1),
+                                FileUpload::make('image')
+                                    ->label('Imagen')
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('cotizations_details') // Se corrige el directorio
+                                    ->visibility('public')
+                                    ->getUploadedFileNameForStorageUsing(
+                                        fn(TemporaryUploadedFile $file): string => (string) str($file->getClientOriginalName())
+                                            ->prepend(time() . '_'),
+                                    )
+                                    ->imageResizeTargetWidth(200)  // Redimensiona la imagen a 200px de ancho
+                                    ->imageResizeTargetHeight(200) // Redimensiona la imagen a 600px de alto
+                                    ->imageCropAspectRatio('16:9') // Opcional: Define la relación de aspecto de recorte
+                                    ->columnSpan(1),          // Hace que el campo ocupe todo el ancho de la fila
+                            ])
+                            ->columns(4)
+                            ->columnSpan('full')
+                            ->live()
+                            ->itemLabel(fn(array $state): ?string => $state['name'] ?? null),
+                    ])->columnSpan('full'),
             ]);
     }
 
@@ -184,7 +239,6 @@ class CotizationResource extends Resource
     {
         return $table
             ->columns([
-
                 TextColumn::make('client.full_name')
                     ->searchable()
                     ->sortable()
@@ -199,27 +253,27 @@ class CotizationResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->date('d M y'),
-
                 TextColumn::make('vigencia')
                     ->translateLabel()
                     ->searchable()
                     ->sortable()
                     ->date('d M y')
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                IconColumn::make('aprobada')->translateLabel()->boolean(),
+                IconColumn::make('aprobada')
+                    ->translateLabel()
+                    ->boolean()
+                    ->alignCenter(),
                 TextColumn::make('fecha_aprobada')
                     ->translateLabel()
                     ->searchable()
                     ->sortable()
                     ->date('d M y')
                     ->toggleable(isToggledHiddenByDefault: true),
-                // ImageColumn::make('images.image')->circular()->stacked()->translateLabel(),
-                ImageColumn::make('images.image')
+                ImageColumn::make('details.image')
                     ->circular()
                     ->stacked()
                     ->getStateUsing(function (Cotization $record) {
-                        return $record->images->pluck('image')->toArray();
+                        return $record->details->pluck('image')->toArray();
                     })
                     ->translateLabel(),
                 TextColumn::make('subtotal')
@@ -231,7 +285,7 @@ class CotizationResource extends Resource
                 TextColumn::make('descuento')
                     ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('envio')
                     ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd(),
@@ -267,7 +321,8 @@ class CotizationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ImagesRelationManager::class,
+            // CotizationDetailsRelationManager::class,
+            // ImagesRelationManager::class,
         ];
     }
 
@@ -280,18 +335,37 @@ class CotizationResource extends Resource
         ];
     }
 
-    private static function calculateTax()
+    public static function updateFormData($get, $set)
     {
-    }
+        // Partidas
+        $partidas = $get("../..");
+        $subtotal = 0;
+        foreach ($partidas as $partida) {
+            $quantity                 = $partida['quantity'] ?? 0;
+            $price                    = $partida['price'] ?? 0;
+            $total                    = round($quantity * $price, 2);
+            $partida['total_partida'] = $total;
+            $subtotal += $total;
+        }
 
+        $quantity = $get('quantity');
+
+        $price = $get('price');
+        $total = round($quantity * $price, 2);
+        $set('total_partida', $total);
+        $set('total', $total);
+        $set("../../subtotal", round($subtotal, 2));
+        self::calculateTotals($set, $get);
+
+    }
     public static function calculateTotals(Set $set, Get $get)
     {
+        $subtotal        = $get('subtotal');
         $require_invoice = $get('require_invoice');
-        $subtotal        = round(floatval($get('subtotal')), 2);
         $descuento       = round(floatval($get('descuento')), 2);
         $envio           = round(floatval($get('envio')), 2);
-        $iva             = 00.00;
-        $retencion_isr   = 00.00;
+        $iva             = 0.00;
+        $retencion_isr   = 0.00;
 
         if ($require_invoice) {
             $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
@@ -300,10 +374,10 @@ class CotizationResource extends Resource
             $iva                  = round($base_retencion * $percentage_iva, 2);
             $retencion_isr        = round($base_retencion * ($percentage_retencion / 100), 2);
         }
+
         $set('iva', $iva);
         $set('retencion_isr', $retencion_isr);
         $total = round($subtotal + $iva - $descuento + $envio - $retencion_isr, 2);
         $set('total', $total);
-
     }
 }

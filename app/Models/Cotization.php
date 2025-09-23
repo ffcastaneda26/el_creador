@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ class Cotization extends Model
 
     protected $table = 'cotizations';
 
-    protected $fillable =  [
+    protected $fillable = [
         'client_id',
         'fecha',
         'vigencia',
@@ -29,15 +28,15 @@ class Cotization extends Model
         'converted_to_order',
         'total',
         'fecha_entrega',
-        'user_id'
+        'user_id',
     ];
     protected function casts(): array
     {
         return [
-            'fecha'         => 'datetime',
-            'vigencia'      => 'datetime',
-            'fecha_aprobada'=> 'datetime',
-            'fecha_entrega' => 'datetime',
+            'fecha'          => 'datetime',
+            'vigencia'       => 'datetime',
+            'fecha_aprobada' => 'datetime',
+            'fecha_entrega'  => 'datetime',
         ];
     }
 
@@ -50,6 +49,10 @@ class Cotization extends Model
         return $this->morphMany(Image::class, 'imageable');
     }
 
+    public function details(): HasMany
+    {
+        return $this->hasMany(CotizationDetail::class);
+    }
 
     public function user(): BelongsTo
     {
@@ -60,6 +63,5 @@ class Cotization extends Model
     {
         return $this->hasMany(Order::class);
     }
-
 
 }

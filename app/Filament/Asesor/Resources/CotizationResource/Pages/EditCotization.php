@@ -24,7 +24,17 @@ class EditCotization extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $subtotal                = round($data['subtotal'], 2);
+        $subtotal = 0;
+        if (! isset($data['client_id'])) {
+            $cotization        = $this->getRecord();
+            $data['client_id'] = $cotization->client_id;
+        }
+        if ($cotization->details) {
+            foreach ($cotization->details as $detail) {
+                $subtotal += round(floatval($detail['price'] ?? 0) * floatval($detail['quantity'] ?? 0), 2);
+            }
+        }
+
         $descuento               = round($data['descuento'], 2);
         $envio                   = round($data['envio'], 2);
         $retencion_isr           = 0;
@@ -87,6 +97,30 @@ class EditCotization extends EditRecord
         ];
 
         Order::create($orderData);
+    }
+
+    // 1. Define los listeners de eventos.
+    protected function getListeners(): array
+    {
+        return array_merge(parent::getListeners(), [
+            'recalculateTotals' => 'recalculateTotals',
+        ]);
+    }
+
+    // 2. Crea el método que se ejecutará al recibir el evento.
+    public function recalculateTotals(): void
+    {
+        // Llama al método de cálculo pasando los detalles desde la base de datos
+        // o la relación que es el origen de la información.
+        CotizationResource::calculateTotals(
+
+            app(\Filament\Forms\Set::class), // Pasa el objeto Set de Filament
+            app(\Filament\Forms\Get::class), // Pasa el objeto Get de Filament
+            $this->record->details();        // Pasa la colección actualizada de detalles
+        );
+
+        // Refresca el formulario
+        $this->form->fill();
     }
 
 }
