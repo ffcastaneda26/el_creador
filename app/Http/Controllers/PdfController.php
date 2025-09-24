@@ -60,7 +60,7 @@ class PdfController extends Controller
             $fpdi->Text(152, 23, GeneralHelp::spanish_month(now(), 's'));
 
             if ($data) {
-                $standard_name = GeneralHelp::normalize_text($data->name);
+                $standard_name = GeneralHelp::normalize_text($data->full_name);
                 $standard_name = ucwords($standard_name);
 
                 $fpdi->Text(42, 133, $standard_name);                                              // Nombre
@@ -157,8 +157,6 @@ class PdfController extends Controller
                         $posy = $posy + 25;
                     }
                 }
-
-
 
                 // Fecha de entrega
 
