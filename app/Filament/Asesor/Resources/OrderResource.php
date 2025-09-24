@@ -1,27 +1,26 @@
 <?php
-
 namespace App\Filament\Asesor\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Order;
-use App\Models\State;
-use Filament\Forms\Set;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\Group;
 use App\Filament\Asesor\Resources\OrderResource\Pages;
 use App\Models\Client;
+use App\Models\Order;
+use App\Models\State;
 use App\Models\Zipcode;
+use Filament\Forms;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+    protected static ?string $navigationIcon       = 'heroicon-o-shopping-bag';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
 
     protected static ?int $navigationSort = 32;
@@ -35,7 +34,6 @@ class OrderResource extends Resource
     {
         return __('Purchase Order');
     }
-
 
     public static function getPluralLabel(): ?string
     {
@@ -52,42 +50,74 @@ class OrderResource extends Resource
                             ->schema([
                                 Group::make()->schema([
                                     Forms\Components\Select::make('client_id')
-                                        ->relationship('client', 'name')
+                                        ->relationship(
+                                            name: 'client',
+                                            titleAttribute: 'full_name',
+                                        )
                                         ->required()
+                                        ->preload()
+                                        ->searchable(['company_name', 'name', 'last_name', 'mother_surname', 'phone', 'email'])
+                                        ->getOptionLabelFromRecordUsing(fn($record) => $record->full_name)
                                         ->translateLabel()
-                                        ->reactive()
-                                        ->live(onBlur: true)
-                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::getClient($set, $get, $get('client_id')))
-                                        ->columnSpan(2),
+                                        ->live()
+                                        ->afterStateHydrated(function (Set $set, Get $get) {
+                                            $client = $get('record')?->client;
+                                            if ($client) {
+                                                $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
+                                            }
+                                        })
+                                        ->afterStateUpdated(function (Set $set, $state) {
+                                            $clientModel = Client::find($state);
+                                            $set('require_invoice', $clientModel->type !== 'Sin Efectos Fiscales');
+                                        })
+                                        ->columnSpan(2)
+                                        ->disabled(fn(Get $get) => $get('approved')),
+
                                     Forms\Components\DatePicker::make('date')
                                         ->required()
                                         ->translateLabel()
                                         ->format('Y-m-d')
                                         ->maxDate(now())
-                                        ->disabled(fn(Get $get) => !$get('client_id')),
+                                        ->disabled(fn(Get $get) => ! $get('client_id')),
                                     Forms\Components\Toggle::make('approved')
                                         ->required()
                                         ->translateLabel()
                                         ->reactive()
-                                        ->disabled(fn(Get $get) => !$get('client_id')),
+                                        // ->disabled(fn(Get $get) => ! $get('client_id'))
+                                        ->disabled(fn($state) => $state)
+                                        ->dehydrated(true),
+
                                     Forms\Components\DatePicker::make('date_approved')
                                         ->translateLabel()
                                         ->format('Y-m-d')
                                         ->minDate(fn(Get $get) => $get('date'))
                                         ->required(fn(Get $get) => $get('approved'))
                                         ->visible(fn(Get $get) => $get('approved'))
-                                        ->disabled(fn(Get $get) => !$get('client_id') || !$get('approved')),
+                                        ->disabled(fn(Get $get) => ! $get('client_id') || ! $get('approved')),
                                 ])->columns(5),
 
                                 Group::make()->schema([
                                     Forms\Components\Toggle::make('require_invoice')
-                                        ->required()
                                         ->translateLabel()
                                         ->live(onBlur: true)
                                         ->reactive()
-                                        ->inline()
-                                        ->disabled(fn(Get $get) => !$get('client_id'))
-                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
+                                        ->afterStateHydrated(function (Set $set, Get $get) {
+                                            $client = $get('record')?->client;
+                                            if ($client) {
+                                                $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
+                                            }
+                                        })
+                                        ->disabled()
+                                        ->default(function (Get $get) {
+                                            $client = $get('record')?->client;
+                                            if ($client) {
+                                                return $client->type !== 'Sin Efectos Fiscales';
+                                            }
+                                            return true;
+                                        })
+                                        ->dehydrated(true)
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+
                                     Forms\Components\DatePicker::make('delivery_date')
                                         ->translateLabel()
                                         ->format('Y-m-d')
@@ -95,7 +125,7 @@ class OrderResource extends Resource
                                     Forms\Components\DatePicker::make('payment_promise_date')
                                         ->translateLabel()
                                         ->maxDate(fn(Get $get) => $get('delivery_date')),
-                                ])->disabled(fn(Get $get) => !$get('client_id'))
+                                ])->disabled(fn(Get $get) => ! $get('client_id'))
                                     ->inlineLabel()
                                     ->columns(3),
 
@@ -147,7 +177,7 @@ class OrderResource extends Resource
                                         ->default(0.00)
                                         ->translateLabel()
                                         ->readOnly(),
-                                ])->disabled(fn(Get $get) => !$get('client_id'))
+                                ])->disabled(fn(Get $get) => ! $get('client_id'))
                                     ->columns(7),
 
                                 // ----
@@ -159,7 +189,7 @@ class OrderResource extends Resource
                                     Forms\Components\Textarea::make('notes')
                                         ->translateLabel()
                                         ->columnSpan(2),
-                                ])->disabled(fn(Get $get) => !$get('client_id'))
+                                ])->disabled(fn(Get $get) => ! $get('client_id'))
                                     ->columns(3),
 
                             ]),
@@ -183,7 +213,7 @@ class OrderResource extends Resource
                                                 $set('state', $zipcode->state);
                                                 $set('municipality', $zipcode->municipality);
                                                 $set('city', $zipcode->city);
-                                                $colonies = OrderResource::getColonies($get('zipcode'));
+                                                $colonies    = OrderResource::getColonies($get('zipcode'));
                                                 $colonyvalue = $get('colony');
                                                 if ($colonyvalue || strlen($colonyvalue) > 0) {
                                                     if ($colonyvalue && is_array($colonies) && in_array($colonyvalue, array_keys($colonies))) {
@@ -211,7 +241,7 @@ class OrderResource extends Resource
                                         ->translateLabel()
                                         // ->required()
                                         ->searchable()
-                                        ->disabled(fn(Get $get): bool => !OrderResource::zipcodeExists($get('zipcode')))
+                                        ->disabled(fn(Get $get): bool => ! OrderResource::zipcodeExists($get('zipcode')))
                                         ->options(function (callable $get, callable $set) {
                                             $colonies = OrderResource::getColonies($get('zipcode'));
                                             if (count($colonies)) {
@@ -221,7 +251,6 @@ class OrderResource extends Resource
                                             return null;
 
                                         }),
-
 
                                 ])->columns(2),
                                 Group::make()->schema([
@@ -238,8 +267,8 @@ class OrderResource extends Resource
                                         ->columnSpanFull()
                                         ->rows(3)
                                         ->translateLabel(),
-                                ])->disabled(fn(Get $get) => !$get('client_id'))
-                                    ->inlineLabel()
+                                ])->disabled(fn(Get $get) => ! $get('client_id'))
+                                    ->inlineLabel(),
                             ])->columns(2),
                         Tabs\Tab::make(__('Datos Complementarios para Contrato'))
                             ->schema([
@@ -263,7 +292,6 @@ class OrderResource extends Resource
                                 ])->columns(3),
 
                             ])->columns(2),
-
 
                     ])->columnSpanFull()
                     ->afterStateHydrated(function (Set $set, Get $get) {
@@ -329,8 +357,6 @@ class OrderResource extends Resource
                     ->alignEnd()
                     ->label(__('Pending')),
 
-
-
                 Tables\Columns\TextColumn::make('total')
                     ->numeric()
                     ->sortable(),
@@ -391,17 +417,11 @@ class OrderResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make(__('Contrat'))
                     ->icon('heroicon-o-clipboard-document-list')
                     ->url(fn(Order $record) => route('pdf-document', [$record, 'contrato']))
-                    ->openUrlInNewTab()
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                    ->openUrlInNewTab(),
             ]);
     }
 
@@ -415,30 +435,30 @@ class OrderResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrders::route('/'),
+            'index'  => Pages\ListOrders::route('/'),
             'create' => Pages\CreateOrder::route('/create'),
-            'view' => Pages\ViewOrder::route('/{record}'),
-            'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'view'   => Pages\ViewOrder::route('/{record}'),
+            'edit'   => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
 
     public static function calculateTotals(Set $set, Get $get)
     {
         $require_invoice = $get('require_invoice');
-        $subtotal = round(floatval($get('subtotal')), 2);
-        $descuento = round(floatval($get('discount')), 2);
-        $anticipo = round(floatval($get('advance')), 2);
-        $retencion_isr = 00.00;
-        $tax = 00.00;
+        $subtotal        = round(floatval($get('subtotal')), 2);
+        $descuento       = round(floatval($get('discount')), 2);
+        $anticipo        = round(floatval($get('advance')), 2);
+        $retencion_isr   = 00.00;
+        $tax             = 00.00;
         if ($require_invoice) {
-            $percentage_iva = round(env('PERCENTAGE_IVA', 16) / 100, 2);
+            $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
             $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-            $base_retencion = round($subtotal - $descuento, 2);
-            $tax = round($base_retencion * $percentage_iva, 2);
-            $retencion_isr = round($base_retencion * ($percentage_retencion / 100), 2);
+            $base_retencion       = round($subtotal - $descuento, 2);
+            $tax                  = round($base_retencion * $percentage_iva, 2);
+            $retencion_isr        = round($base_retencion * ($percentage_retencion / 100), 2);
         }
 
-        $total = round($subtotal - $descuento + $tax - $retencion_isr, 2);
+        $total           = round($subtotal - $descuento + $tax - $retencion_isr, 2);
         $pending_balance = round($total - $anticipo, 2);
 
         $set('tax', $tax);
@@ -471,12 +491,10 @@ class OrderResource extends Resource
         return $zipcode;
     }
 
-
     public static function zipcodeExists($zipcode)
     {
         return Zipcode::where('zipcode', $zipcode)->exists();
     }
-
 
     public static function getColonies($zipcode)
     {
