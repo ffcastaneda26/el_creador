@@ -128,7 +128,7 @@ class OrderResource extends Resource
                                 ])->disabled(fn(Get $get) => ! $get('client_id'))
                                     ->inlineLabel()
                                     ->columns(3),
-
+                                // Importes
                                 Group::make()->schema([
                                     Forms\Components\TextInput::make('subtotal')
                                         ->required()
@@ -151,12 +151,20 @@ class OrderResource extends Resource
                                         ->numeric()
                                         ->default(0.00)
                                         ->translateLabel()
-                                        ->readOnly(),
+                                        ->readOnly()
+                                        ->visible(fn(Get $get) => $get('require_invoice')), // Se muestra si require_invoice es true
+                                    Forms\Components\Placeholder::make('')
+                                        ->visible(fn(Get $get) => ! $get('require_invoice')), // Placeholder si require_invoice es false
+
                                     Forms\Components\TextInput::make('retencion_isr')
                                         ->required()
                                         ->translateLabel()
                                         ->inputMode('decimal')
-                                        ->readOnly(),
+                                        ->readOnly()
+                                        ->visible(fn(Get $get) => $get('require_invoice')), // Se muestra si require_invoice es true
+                                    Forms\Components\Placeholder::make('')
+                                        ->visible(fn(Get $get) => ! $get('require_invoice')), // Placeholder si require_invoice es false
+
                                     Forms\Components\TextInput::make('total')
                                         ->required()
                                         ->numeric()
@@ -180,7 +188,7 @@ class OrderResource extends Resource
                                 ])->disabled(fn(Get $get) => ! $get('client_id'))
                                     ->columns(7),
 
-                                // ----
+                                // Nombre de la botarga y notas
                                 Group::make()->schema([
                                     Forms\Components\TextInput::make('motley_name')
                                         ->required()
