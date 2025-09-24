@@ -426,10 +426,43 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make(__('Contrat'))
-                    ->icon('heroicon-o-clipboard-document-list')
-                    ->url(fn(Order $record) => route('pdf-document', [$record, 'contrato']))
-                    ->openUrlInNewTab(),
+                // Tables\Actions\Action::make(__('Contrat'))
+                //     ->icon('heroicon-o-clipboard-document-list')
+                //     ->url(fn(Order $record) => route('pdf-document', [$record, 'contrato']))
+                //     ->openUrlInNewTab(),
+                                Tables\Actions\Action::make('view_cotization')
+                    ->button()
+                    ->label(__(''))
+                    ->size('xs')
+                    ->color('primary')
+                    ->icon('heroicon-o-document')
+                    ->url(fn(Order $record) => route('pdf-document', [$record, 'contrato', 'view']))
+                    ->openUrlInNewTab()
+                    ->tooltip(__('View Purchase Order in browser')),
+                Tables\Actions\Action::make('mail_cotization')
+                    ->button()
+                    ->label(__(''))
+                    ->size('xs')
+                    ->color('warning')
+                    ->icon('heroicon-o-envelope')
+                    ->tooltip(__('Send Purchase Order by email'))
+                    ->action(function (Order $record) {
+                        $pdfContent = (new \App\Http\Controllers\PdfController())->contrato($record->id);
+                        try {
+                            \Illuminate\Support\Facades\Mail::to(\Illuminate\Support\Facades\Auth::user()->email)->send(new \App\Mail\DocumentEmail(ucfirst('contrato'), $pdfContent));
+                            \Filament\Notifications\Notification::make()
+                                ->title('Documento enviado')
+                                ->body('La Órden de compra ha sido enviada por correo electrónico.')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error')
+                                ->body('Ocurrió un error al enviar la Órden de Compra.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ]);
     }
 

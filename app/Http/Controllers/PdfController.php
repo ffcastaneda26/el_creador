@@ -2,32 +2,49 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\GeneralHelp;
+use App\Mail\DocumentEmail;
 use App\Models\Client;
 use App\Models\Cotization;
 use App\Models\Order;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use setasign\Fpdi\Fpdi;
 
 class PdfController extends Controller
 {
 
-    public function index($record, string $document = "aviso")
+    public function index($record, string $document, string $output = "view")
     {
         switch ($document) {
             case 'aviso':
-                $this->aviso_pricacidad($record);
+                $pdfContent = $this->aviso_pricacidad($record);
+                $fileName   = 'aviso_de_privacidad.pdf';
                 break;
             case 'cotizacion':
-                $this->cotizacion($record);
+                $pdfContent = $this->cotizacion($record);
+                $fileName   = 'cotizacion.pdf';
                 break;
             case 'contrato':
-                $this->contrato($record);
+                $pdfContent = $this->contrato($record);
+                $fileName   = 'contrato.pdf';
                 break;
             default:
-                dd('Otro Documento:' . $document);
-                break;
+                abort(404, 'Tipo de documento no válido.');
         }
-        return true;
+
+        if ($output === 'view') {
+            return response($pdfContent, 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
+        } elseif ($output === 'mail') {
+            try {
+                Mail::to(Auth::user()->email)->send(new DocumentEmail(ucfirst($document), $pdfContent));
+                return response()->json(['message' => 'El documento ha sido enviado por correo electrónico.']);
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Error al enviar el correo electrónico: ' . $e->getMessage()], 500);
+            }
+        }
     }
 
     /**
@@ -38,7 +55,6 @@ class PdfController extends Controller
      */
     public function aviso_pricacidad($record)
     {
-
         $data = Client::findOrFail($record);
 
         $filePath       = public_path('pdfs/aviso de privacidad.pdf');
@@ -77,7 +93,7 @@ class PdfController extends Controller
                 $fpdi->Text(40, 265, $standard_name); // Nombre para firmar
             }
         }
-        return $fpdi->Output($outputFilePath, 'I');
+        return $fpdi->Output('S');
     }
 
     /**
@@ -139,10 +155,8 @@ class PdfController extends Controller
                 $partidas = $data->details()->get();
 
                 if ($partidas->count() > 0) {
-
-                    $partida_numero = 1;
-                    $posx           = 38;
-                    $posy           = 90;
+                    $posx = 38;
+                    $posy = 90;
                     foreach ($partidas as $partida) {
                         $fpdi->Text($posx, $posy, $partida->quantity);
 
@@ -163,7 +177,6 @@ class PdfController extends Controller
                 if ($data->fecha_entrega) {
                     $fpdi->SetFontSize(14);
                     $fecha_entrega_espanol = GeneralHelp::normalize_text(GeneralHelp::spanish_date($data->fecha_entrega, 'n', 'n', 'dmy'));
-
                     $fpdi->text(95, 185, 'Fecha de Entrega: ' . $fecha_entrega_espanol);
                 }
 
@@ -195,7 +208,7 @@ class PdfController extends Controller
                 $fpdi->text(191 - strlen(number_format($data->total)), 218, number_format($data->total, 2));
             }
         }
-        return $fpdi->Output($outputFilePath, 'I');
+        return $fpdi->Output('S');
     }
 
     /**
@@ -207,7 +220,6 @@ class PdfController extends Controller
     {
         $data = null;
         $data = Order::where('id', $record)->with('client')->first();
-        // dd($data);
 
         $filePath       = public_path('pdfs/contrato.pdf');
         $outputFilePath = public_path("output.pdf");
@@ -238,7 +250,7 @@ class PdfController extends Controller
             }
 
         }
-        return $fpdi->Output($outputFilePath, 'I');
+        return $fpdi->Output('S');
     }
 
     private function contrato_pagina_1($fpdi, $data)
@@ -553,4 +565,6 @@ class PdfController extends Controller
         }
 
     }
+
+
 }

@@ -307,15 +307,43 @@ class CotizationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make(__('Cotization'))
-                    ->icon('heroicon-o-document-currency-dollar')
-                    ->url(fn(Cotization $record) => route('pdf-document', [$record, 'cotizacion']))
-                    ->openUrlInNewTab(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // Tables\Actions\Action::make(__('Cotization'))
+                //     ->icon('heroicon-o-document-currency-dollar')
+                //     ->url(fn(Cotization $record) => route('pdf-document', [$record, 'cotizacion']))
+                //     ->openUrlInNewTab(),
+                Tables\Actions\Action::make('view_cotization')
+                    ->button()
+                    ->label(__(''))
+                    ->size('xs')
+                    ->color('primary')
+                    ->icon('heroicon-o-document')
+                    ->url(fn(Cotization $record) => route('pdf-document', [$record, 'cotizacion', 'view']))
+                    ->openUrlInNewTab()
+                    ->tooltip(__('View quote in browser')),
+                Tables\Actions\Action::make('mail_cotization')
+                    ->button()
+                    ->label(__(''))
+                    ->size('xs')
+                    ->color('warning')
+                    ->icon('heroicon-o-envelope')
+                    ->tooltip(__('Send quote by email'))
+                    ->action(function (Cotization $record) {
+                        $pdfContent = (new \App\Http\Controllers\PdfController())->cotizacion($record->id);
+                        try {
+                            \Illuminate\Support\Facades\Mail::to(\Illuminate\Support\Facades\Auth::user()->email)->send(new \App\Mail\DocumentEmail(ucfirst('cotizacion'), $pdfContent));
+                            \Filament\Notifications\Notification::make()
+                                ->title('Documento enviado')
+                                ->body('La Cotización ha sido enviada por correo electrónico.')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error')
+                                ->body('Ocurrió un error al enviar la cotización.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ]);
     }
 

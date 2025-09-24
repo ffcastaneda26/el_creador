@@ -1,6 +1,6 @@
 <?php
-
 namespace App\Filament\Resources;
+
 /**
  * +-------------+---------+--------------------------------------------------------------------------------------------+
  * |  Fecha      | Author  | Descripción                                                                                |
@@ -8,33 +8,25 @@ namespace App\Filament\Resources;
  * | 17-Sep-2025 | FCO     | Se agrega el campo para correo electrónico en el formulario                                |
  * +-------------+---------+--------------------------------------------------------------------------------------------+
  */
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\State;
+use App\Filament\Resources\ClientResource\Pages;
 use App\Models\Client;
 use App\Models\Country;
-use App\Models\Zipcode;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
 use App\Models\Municipality;
-use Filament\Resources\Resource;
-use Illuminate\Support\HtmlString;
+use App\Models\State;
+use App\Models\Zipcode;
 use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
-use Illuminate\Support\Facades\Blade;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Checkbox;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\MarkdownEditor;
-use App\Filament\Resources\ClientResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\ClientResource\RelationManagers;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Symfony\Contracts\Service\Attribute\Required;
 
 class ClientResource extends Resource
@@ -44,7 +36,7 @@ class ClientResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort          = 30;
 
     // protected static ?string $cluster = Geographics::class;
     public static function getNavigationGroup(): string
@@ -55,7 +47,6 @@ class ClientResource extends Resource
     {
         return __('Client');
     }
-
 
     public static function getPluralLabel(): ?string
     {
@@ -72,9 +63,9 @@ class ClientResource extends Resource
                             ->inline()
                             ->reactive()
                             ->options([
-                                'Física' => 'Física',
-                                'Moral' => 'Moral',
-                                'Sin Efectos Fiscales' => 'Sin Efectos'
+                                'Física'               => 'Física',
+                                'Moral'                => 'Moral',
+                                'Sin Efectos Fiscales' => 'Sin Efectos',
                             ])->label(__('Type Person'))
                             ->default('Física'),
                     ])->columnSpanFull(),
@@ -85,7 +76,7 @@ class ClientResource extends Resource
                             ->label(__('Name'))
                             ->maxLength(100),
                         TextInput::make('last_name')
-                            ->required(fn(Get $get): bool => $get('type') === 'Física' ||  $get('type') === 'Sin Efectos Fiscales')
+                            ->required(fn(Get $get): bool => $get('type') === 'Física' || $get('type') === 'Sin Efectos Fiscales')
                             ->label(__('Last Name'))
                             ->maxLength(100),
                         TextInput::make('mother_surname')
@@ -97,7 +88,7 @@ class ClientResource extends Resource
                             ->maxLength(100)
                             ->columnSpanFull(),
 
-                    ])->visible(fn(Get $get): bool => $get('type') === 'Física' ||  $get('type') === 'Sin Efectos Fiscales')
+                    ])->visible(fn(Get $get): bool => $get('type') === 'Física' || $get('type') === 'Sin Efectos Fiscales')
                         ->columns(3),
 
                     Section::make()->schema([
@@ -128,7 +119,7 @@ class ClientResource extends Resource
                             ->translateLabel()
                             ->maxLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)
                             ->minLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)
-                            ->required(fn(Get $get): bool => $get('type') === 'Física' ||  $get('type') === 'Moral'),
+                            ->required(fn(Get $get): bool => $get('type') === 'Física' || $get('type') === 'Moral'),
                         TextInput::make('curp')
                             ->translateLabel()
                             ->nullable()
@@ -149,7 +140,6 @@ class ClientResource extends Resource
                     ])->columns(2),
 
                 ])->columns(2),
-
 
                 Group::make()->schema([
                     Section::make()->schema([
@@ -180,7 +170,7 @@ class ClientResource extends Resource
                                     $set('state_id', $zipcode->state_id);
                                     $set('municipality_id', $zipcode->municipality_id);
                                     $set('city_id', $zipcode->city_id);
-                                    $colonies = ClientResource::getColonies($get('zipcode'));
+                                    $colonies    = ClientResource::getColonies($get('zipcode'));
                                     $colonyvalue = $get('colony');
                                     if ($colonyvalue || strlen($colonyvalue) > 0) {
                                         if ($colonyvalue && is_array($colonies) && in_array($colonyvalue, array_keys($colonies))) {
@@ -190,7 +180,7 @@ class ClientResource extends Resource
                                         }
                                     }
                                 }
-                            })
+                            }),
                     ])->columns(3),
 
                     Section::make()->schema([
@@ -208,14 +198,14 @@ class ClientResource extends Resource
                                     }
                                 }
                                 $country = Country::find($get('country_id'));
-                                if (!$country) {
+                                if (! $country) {
                                     return;
                                 }
                                 return $country->states->pluck('name', 'id');
                             }),
 
                         Select::make('municipality_id')
-                            // ->translateLabel()
+                        // ->translateLabel()
                             ->label(function (Get $get) {
                                 return $get('state_id') === 9 ? __('Delegation') : __('Municipality');
                             })
@@ -229,7 +219,7 @@ class ClientResource extends Resource
                                     }
                                 }
                                 $state = State::find($get('state_id'));
-                                if (!$state) {
+                                if (! $state) {
                                     return;
                                 }
                                 return $state->municipalities->sortby('name')->pluck('name', 'id');
@@ -247,35 +237,33 @@ class ClientResource extends Resource
                                     }
                                 }
                                 $municipality = Municipality::find($get('municipality_id'));
-                                if (!$municipality) {
+                                if (! $municipality) {
                                     return;
                                 }
 
                                 return $municipality->cities->pluck('name', 'id');
                             })->afterStateUpdated(function ($operation, $state, callable $set, callable $get) {
-                                $colonies = ClientResource::getColonies($get('zipcode'));
-                                $colonyValue = $get('colony');
-                                if ($get('colony') || strlen($get('colony') > 0)) {
-                                    if ($colonyValue && is_array($colonies) && in_array($colonyValue, array_keys($colonies))) {
-                                        return;
-                                    } else {
-                                        $set('colony', null);
-                                    }
+                            $colonies    = ClientResource::getColonies($get('zipcode'));
+                            $colonyValue = $get('colony');
+                            if ($get('colony') || strlen($get('colony') > 0)) {
+                                if ($colonyValue && is_array($colonies) && in_array($colonyValue, array_keys($colonies))) {
+                                    return;
+                                } else {
+                                    $set('colony', null);
                                 }
-                            }),
+                            }
+                        }),
                         Select::make('colony')
                             ->translateLabel()
                             ->required()
                             ->searchable()
-                            ->disabled(fn(Get $get): bool => !ClientResource::existsZipcode($get('zipcode')))
+                            ->disabled(fn(Get $get): bool => ! ClientResource::existsZipcode($get('zipcode')))
                             ->options(function (callable $get, callable $set) {
                                 return ClientResource::getColonies($get('zipcode'));
                             })->columnSpanFull(),
 
                     ])->visible(fn(Get $get): bool => $get('zipcode') != null && strlen($get('zipcode')) == 5)
                         ->columns(3),
-
-
 
                     Section::make()->schema([
                         TextInput::make('colony')
@@ -299,8 +287,6 @@ class ClientResource extends Resource
                             ->translateLabel(),
                     ])->columns(3),
 
-
-
                 ])->columns(2),
 
                 Group::make()->schema([
@@ -312,7 +298,7 @@ class ClientResource extends Resource
                     MarkdownEditor::make('references')
                         ->translateLabel()
                         ->columnSpan(2),
-                ])
+                ]),
             ]);
     }
 
@@ -361,7 +347,6 @@ class ClientResource extends Resource
                     ->label('INE')
                     ->toggleable(isToggledHiddenByDefault: true),
 
-
             ])
             // TODO:: Hacer los select depndientes
             ->filters([
@@ -373,20 +358,46 @@ class ClientResource extends Resource
                     ->relationship('state', 'name'),
                 SelectFilter::make('municipality')
                     ->translateLabel()
-                    ->relationship('municipality', 'name')
+                    ->relationship('municipality', 'name'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->button()
                     ->color('warning')
                     ->size('xs'),
-                Tables\Actions\Action::make(__('Notice'))
+                Tables\Actions\Action::make('view_aviso')
                     ->button()
+                    ->label(__(''))
                     ->size('xs')
                     ->color('primary')
                     ->icon('heroicon-o-document')
-                    ->url(fn(Client $record) => route('pdf-document', [$record, 'aviso']))
-                    ->openUrlInNewTab(),
+                    ->url(fn(Client $record) => route('pdf-document', [$record, 'aviso', 'view']))
+                    ->openUrlInNewTab()
+                    ->tooltip(__('View Privacy Notice in browser')),
+                Tables\Actions\Action::make('mail_aviso')
+                    ->button()
+                    ->label(__(''))
+                    ->size('xs')
+                    ->color('warning')
+                    ->icon('heroicon-o-envelope')
+                    ->tooltip(__('Send Privacy Notice by email'))
+                    ->action(function (Client $record) {
+                        $pdfContent = (new \App\Http\Controllers\PdfController())->aviso_pricacidad($record->id);
+                        try {
+                            \Illuminate\Support\Facades\Mail::to(\Illuminate\Support\Facades\Auth::user()->email)->send(new \App\Mail\DocumentEmail(ucfirst('aviso'), $pdfContent));
+                            \Filament\Notifications\Notification::make()
+                                ->title('Documento enviado')
+                                ->body('El aviso de privacidad ha sido enviado por correo electrónico.')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error')
+                                ->body('Ocurrió un error al enviar el correo electrónico.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\DeleteAction::make()
                     ->button()
                     ->size('xs')
@@ -407,9 +418,9 @@ class ClientResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListClients::route('/'),
+            'index'  => Pages\ListClients::route('/'),
             'create' => Pages\CreateClient::route('/create'),
-            'edit' => Pages\EditClient::route('/{record}/edit'),
+            'edit'   => Pages\EditClient::route('/{record}/edit'),
         ];
     }
 
