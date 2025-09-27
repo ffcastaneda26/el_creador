@@ -8,7 +8,7 @@ use TCPDF;
 use Livewire\Component;
 use setasign\Fpdi\Fpdi;
 
-class PrivateNotice extends Controller
+class BKPrivateNotice extends Controller
 {
     public function download(Client $record)
     {

@@ -1,9 +1,11 @@
 <?php
 namespace App\Filament\Asesor\Resources\CotizationResource\RelationManagers;
 
+use App\Filament\Asesor\Resources\CotizationResource;
 use App\Rules\ValidImageExtension;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -11,9 +13,9 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
-class ImagesRelationManager extends RelationManager
+class CotizationDetailsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'Images';
+    protected static string $relationship = 'details';
 
     public function form(Form $form): Form
     {
@@ -21,6 +23,7 @@ class ImagesRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Group::make()->schema([
                     Forms\Components\TextInput::make('name')
+                        ->label('Nombre')
                         ->required()
                         ->maxLength(255)
                         ->live(onBlur: true)
@@ -31,6 +34,22 @@ class ImagesRelationManager extends RelationManager
                             }
 
                         }),
+                    Forms\Components\Section::make()->schema([
+                        Forms\Components\TextInput::make('quantity')
+                            ->label('Cantidad')
+
+                            ->numeric()
+                            ->required()
+                            ->default(1)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get, $this->ownerRecord->details)),
+                        Forms\Components\TextInput::make('price')
+                            ->label('Precio Unitario')
+
+                            ->numeric()
+                            ->required()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get, $this->ownerRecord->details))])->columns(2),
                     Forms\Components\FileUpload::make('image')
                         ->required()
                         ->translateLabel()
@@ -40,6 +59,7 @@ class ImagesRelationManager extends RelationManager
                         )
                         ->directory('cotizations')
                         ->rules([new ValidImageExtension]), // Aquí añades la validación de tipos,
+
                 ]),
                 Forms\Components\Group::make()->schema([
                     Forms\Components\MarkdownEditor::make('description')
@@ -52,32 +72,36 @@ class ImagesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->heading(__('Images'))
+            ->heading(__('Cotization Items'))
             ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')->translateLabel(),
+                Tables\Columns\TextColumn::make('quantity')->translateLabel(),
+                Tables\Columns\TextColumn::make('price')->translateLabel(),
                 Tables\Columns\ImageColumn::make('image')->circular()->translateLabel(),
-                Tables\Columns\TextColumn::make('description')->limit(80)->translateLabel(),
-
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label(__('Add Image')),
+                Tables\Actions\CreateAction::make()
+                    ->label(__('Add Item'))
+                    ->after(function () {
+                        $this->dispatch('recalculateTotals');
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->after(function () {
+                        // Después de editar un detalle, forzamos la recarga del formulario principal
+                        $this->dispatch('recalculateTotals');
+                    }),
                 Tables\Actions\DeleteAction::make()->after(
                     function ($record) {
                         Storage::disk('public')->delete($record->image);
+                        $this->dispatch('recalculateTotals');
                     }
                 ),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

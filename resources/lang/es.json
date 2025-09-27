@@ -37,6 +37,8 @@
     "Receiving Material": "Recibiendo Material",
     "Verify Amount": "Verifique Importes",
     "Add Items": "Agregue Partidas",
+    "Cotization Items": "Partidas",
+    "Add Item": "Agregar Partida",
     "Total": "Total",
     "Folio": "Folio",
     "All Status": "Todos",
@@ -194,6 +196,10 @@
 
     "Add Image": "Agregar Imagen",
     "Notice": "Aviso",
+    "View Notice": "Ver Aviso",
+    "View Privacy Notice in browser": "Ver aviso de privacidad en el navegador",
+    "Send Privacy Notice by email": "Enviar aviso de privacidad por correo",
+    "Mail Notice": "Enviar Aviso",
     "Yes": "Si",
     "Images": "Imágenes",
     "Cotization": "Cotización",
@@ -338,6 +344,12 @@
     "Create Role": "Crear Rol",
     "Attach Role": "Asignar Rol",
     "You are not authorized to create new records, please consult your administrator": "No está autorizado a crear nuevos registros, consulte a su administrador",
-    "Restricted Action": "Acción Restringida"
+    "Restricted Action": "Acción Restringida",
+    "View quote in browser": "Ver cotización en el navegador",
+    "Send quote by email": "Enviar cotización por correo",
+    "View Purchase Order in browser": "Ver Órden de Compra en naver",
+    "Send Purchase Order by email": "Enviar Órden de Compra por correo"
+
+
 
 }

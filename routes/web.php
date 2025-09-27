@@ -17,22 +17,8 @@ Route::get('/probando',function(){
     dd($purchase->pendings_to_receive);
 })->name('probando');
 
-Route::get('/{record}/pdf/download', [PrivateNotice::class, 'download'])->name('student.pdf.download');
-Route::get('pdf/download/{record}/{document}', [PdfController::class, 'index'])->name('pdf-document');
-
-// Route::get('/', function () {
-//     if (auth()->check()) {
-//         if(Auth::user()->hasRole('Administrador')){
-//             return redirect()->route('/admin');
-//         }
-//         if(Auth::user()->hasRole('Asesor')){
-//             return redirect()->route('/asesor');
-//         }
-//     } else {
-//         return view('welcome');
-//     }
-//     return view('welcome');
-// });
+// Route::get('pdf/download/{record}/{document}', [PdfController::class, 'index'])->name('pdf-document');
+Route::get('pdf/download/{record}/{document}/{output?}', [PdfController::class, 'index'])->name('pdf-document');
 
 Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])->group(function () {
     Route::get('/', function () {

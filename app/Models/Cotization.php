@@ -1,9 +1,9 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Cotization extends Model
@@ -11,13 +11,15 @@ class Cotization extends Model
 
     protected $table = 'cotizations';
 
-    protected $fillable =  [
+    protected $fillable = [
         'client_id',
         'fecha',
         'vigencia',
         'aprobada',
         'fecha_aprobada',
         'description',
+        'require_invoice',
+        'tax',
         'subtotal',
         'iva',
         'descuento',
@@ -26,15 +28,15 @@ class Cotization extends Model
         'converted_to_order',
         'total',
         'fecha_entrega',
-        'user_id'
+        'user_id',
     ];
     protected function casts(): array
     {
         return [
-            'fecha'         => 'datetime',
-            'vigencia'      => 'datetime',
-            'fecha_aprobada'=> 'datetime',
-            'fecha_entrega' => 'datetime',
+            'fecha'          => 'datetime',
+            'vigencia'       => 'datetime',
+            'fecha_aprobada' => 'datetime',
+            'fecha_entrega'  => 'datetime',
         ];
     }
 
@@ -47,11 +49,19 @@ class Cotization extends Model
         return $this->morphMany(Image::class, 'imageable');
     }
 
+    public function details(): HasMany
+    {
+        return $this->hasMany(CotizationDetail::class);
+    }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 
 }

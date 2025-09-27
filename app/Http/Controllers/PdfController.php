@@ -1,36 +1,50 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Helpers\GeneralHelp;
+use App\Mail\DocumentEmail;
 use App\Models\Client;
 use App\Models\Cotization;
 use App\Models\Order;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use setasign\Fpdi\Fpdi;
 
 class PdfController extends Controller
 {
 
-    public function index($record, string $document = "aviso")
+    public function index($record, string $document, string $output = "view")
     {
         switch ($document) {
             case 'aviso':
-                $this->aviso_pricacidad($record);
+                $pdfContent = $this->aviso_pricacidad($record);
+                $fileName   = 'aviso_de_privacidad.pdf';
                 break;
             case 'cotizacion':
-                $this->cotizacion($record);
+                $pdfContent = $this->cotizacion($record);
+                $fileName   = 'cotizacion.pdf';
                 break;
             case 'contrato':
-                $this->contrato($record);
+                $pdfContent = $this->contrato($record);
+                $fileName   = 'contrato.pdf';
                 break;
             default:
-                dd('Otro Documento:' . $document);
-                break;
+                abort(404, 'Tipo de documento no válido.');
         }
-        return true;
+
+        if ($output === 'view') {
+            return response($pdfContent, 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
+        } elseif ($output === 'mail') {
+            try {
+                Mail::to(Auth::user()->email)->send(new DocumentEmail(ucfirst($document), $pdfContent));
+                return response()->json(['message' => 'El documento ha sido enviado por correo electrónico.']);
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Error al enviar el correo electrónico: ' . $e->getMessage()], 500);
+            }
+        }
     }
 
     /**
@@ -41,22 +55,20 @@ class PdfController extends Controller
      */
     public function aviso_pricacidad($record)
     {
-
         $data = Client::findOrFail($record);
 
-        $filePath = public_path('pdfs/aviso de privacidad.pdf');
+        $filePath       = public_path('pdfs/aviso de privacidad.pdf');
         $outputFilePath = public_path("sample_output.pdf");
-        $fpdi = new FPDI;
+        $fpdi           = new FPDI;
         $fpdi->SetFont("arial");
         $fpdi->SetFontSize(11);
         $fpdi->SetTextColor(0, 0, 185);
         $count = $fpdi->setSourceFile($filePath);
 
-
         for ($i = 1; $i <= $count; $i++) {
             $template = $fpdi->importPage($i);
-            $size = $fpdi->getTemplateSize($template);
-            $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
+            $size     = $fpdi->getTemplateSize($template);
+            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
             $fpdi->useTemplate($template);
             $fpdi->SetXY(134, 22);
 
@@ -64,24 +76,24 @@ class PdfController extends Controller
             $fpdi->Text(152, 23, GeneralHelp::spanish_month(now(), 's'));
 
             if ($data) {
-                $standard_name = GeneralHelp::normalize_text($data->name);
+                $standard_name = GeneralHelp::normalize_text($data->full_name);
                 $standard_name = ucwords($standard_name);
 
-                $fpdi->Text(42, 133, $standard_name);    // Nombre
-                $fpdi->Text(44, 145, $data->phone);   // Teléfono
-                $fpdi->Text(61, 157, strtolower($data->email)); // Correo
+                $fpdi->Text(42, 133, $standard_name);                                              // Nombre
+                $fpdi->Text(44, 145, $data->phone);                                                // Teléfono
+                $fpdi->Text(61, 157, strtolower($data->email));                                    // Correo
                 $address = $data->address . ' Col: ' . $data->colony . ' en ' . $data->city->name; // Calle y número
-                // $address = strtr($address, array_combine($buscar, $reemplazar));
+                                                                                                   // $address = strtr($address, array_combine($buscar, $reemplazar));
                 $address = GeneralHelp::normalize_text($address);
                 $fpdi->Text(44, 170, $address);
                 $municipality_state = $data->municipality->name . ',' . $data->state->abbreviated . '   C.P. ' . $data->zipcode;
                 $fpdi->Text(44, 175, $municipality_state);
-                $fpdi->Text(90, 183, $data->rfc); // RFC
-                $fpdi->Text(64, 195, $data->ine); // INE
+                $fpdi->Text(90, 183, $data->rfc);     // RFC
+                $fpdi->Text(64, 195, $data->ine);     // INE
                 $fpdi->Text(40, 265, $standard_name); // Nombre para firmar
             }
         }
-        return $fpdi->Output($outputFilePath, 'I');
+        return $fpdi->Output('S');
     }
 
     /**
@@ -93,44 +105,46 @@ class PdfController extends Controller
     public function cotizacion($record)
     {
         // TODO: ¿Se va agregar en algun lado la retención ISR?
-        $data = Cotization::findOrFail($record);
-        $filePath = public_path('pdfs/cotizacion formal.pdf');
+        $data           = Cotization::findOrFail($record);
+        $filePath       = public_path('pdfs/cotizacion formal.pdf');
         $outputFilePath = public_path("output.pdf");
-        $fpdi = new FPDI;
+        $fpdi           = new FPDI;
         $fpdi->SetFont("arial");
         $fpdi->SetFontSize(8);
         $fpdi->SetTextColor(0, 0, 0);
         $count = $fpdi->setSourceFile($filePath);
 
-
-
         for ($i = 1; $i <= $count; $i++) {
 
             $template = $fpdi->importPage($i);
-            $size = $fpdi->getTemplateSize($template);
-            $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
+            $size     = $fpdi->getTemplateSize($template);
+            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
             $fpdi->useTemplate($template);
 
             if ($data && $i == 1) {
                 $fpdi->SetXY(164, 27);
 
                 $fecha_dia = $data->fecha->format('d');
-                $fpdi->Text(166, 28, $fecha_dia);
+                $fpdi->Text(165.5, 28.1, $fecha_dia);
 
-                $fpdi->Text(175, 28, strtoupper(GeneralHelp::spanish_month($data->fecha, 's')));
-                $standard_name = GeneralHelp::normalize_text($data->client->name);
+                $fpdi->Text(175, 28.1, strtoupper(GeneralHelp::spanish_month($data->fecha, 's')));
+                $standard_name = GeneralHelp::normalize_text($data->client->full_name);
                 $standard_name = ucwords($standard_name);
-                $fpdi->Text(43, 64, $standard_name);                          // Nombre
+                $fpdi->Text(43, 64.5, $standard_name); // Nombre completo del cliente
+
+                // Partida
+                $posx = 20;
+                $posy = 90;
+                $fpdi->Text($posx, $posy, 1); // Partida
 
                 $standar_description = GeneralHelp::normalize_text($data->description);
-                $arrayDescripcion = explode("\n", $standar_description);
-                $posx = 104;
-                $posy = 90;
+                $arrayDescripcion    = explode("\n", $standar_description);
+                $posx                = 104;
+                $posy                = 90;
 
                 // Descripción
-
                 foreach ($arrayDescripcion as $linea) {
-                    $palabras = wordwrap($linea, 40, "\n", true);
+                    $palabras        = wordwrap($linea, 40, "\n", true);
                     $lineasSeparadas = explode("\n", $palabras);
                     foreach ($lineasSeparadas as $linea_separada) {
                         $fpdi->text($posx, $posy, $linea_separada);
@@ -138,60 +152,31 @@ class PdfController extends Controller
                     }
                 }
 
-                $totImagesCotization = $data->images->count();
+                $partidas = $data->details()->get();
 
-                if ($totImagesCotization) {
-                    // switch ($totImagesCotization) {
-                    //     case 1:
-                    //         $posx = 105;
-                    //         break;
-                    //     case 2:
-                    //         $posx = 85;
-                    //         break;
-                    //     case 3:
-                    //         $posx = 65;
-                    //         break;
-                    //     case 4:
-                    //         $posx = 45;
-                    //         break;
-                    //     case 5:
-                    //         $posx = 25;
-                    //         break;
-                    //     default:
-                    //         $posx = 32;
-                    //         break;
-                    // }
-                    $posx = 15;
-
+                if ($partidas->count() > 0) {
+                    $posx = 38;
                     $posy = 90;
-                    foreach ($data->images->sortBy('id') as $image) {
+                    foreach ($partidas as $partida) {
+                        $fpdi->Text($posx, $posy, $partida->quantity);
 
-                        $imageUrl = storage_path('app/public/' . $image->image);
-                        $fpdi->Image($imageUrl, $posx, $posy, 15, 15);
-                        $image_description = GeneralHelp::normalize_text($image->description);
-                        $image_description_array = explode("\n", $image_description);
-
-                        foreach ($image_description_array as $linea) {
-                            $palabras = wordwrap($linea, 40, "\n", true);
-                            $lineasSeparadas = explode("\n", $palabras);
-                            foreach ($lineasSeparadas as $linea_separada) {
-                                $fpdi->text($posx + 18, $posy, $linea_separada);
-                                $posy = $posy + 5;
-                            }
+                        if ($partida->image) {
+                            $imageUrl = storage_path('app/public/' . $partida->image);
+                            $fpdi->Image($imageUrl, $posx + 25, $posy, 25, 25);
                         }
+                        $fpdi->text(168, $posy, number_format($partida->price, 2, '.', ','));
+                        $monto = round($partida->quantity * $partida->price, 2);
+                        $fpdi->text(190, $posy, number_format($monto, 2, '.', ','));
 
-                        $posy = $posy + 10;
+                        $posy = $posy + 25;
                     }
-
                 }
-
 
                 // Fecha de entrega
 
                 if ($data->fecha_entrega) {
                     $fpdi->SetFontSize(14);
                     $fecha_entrega_espanol = GeneralHelp::normalize_text(GeneralHelp::spanish_date($data->fecha_entrega, 'n', 'n', 'dmy'));
-
                     $fpdi->text(95, 185, 'Fecha de Entrega: ' . $fecha_entrega_espanol);
                 }
 
@@ -210,8 +195,6 @@ class PdfController extends Controller
                     $fpdi->Text(105, 212, 'NO INCLUYE IVA');
                 }
 
-
-
                 if ($data->retencion_isr > 0) {
                     $texto_retencion_isr = 'RETENCION ISR $' . number_format($data->retencion_isr, 2);
                     $fpdi->text(104, 218, $texto_retencion_isr);
@@ -222,11 +205,10 @@ class PdfController extends Controller
                     $fpdi->text(192 - strlen(number_format($data->descuento)), 212, number_format($data->descuento, 2));
                 }
 
-
                 $fpdi->text(191 - strlen(number_format($data->total)), 218, number_format($data->total, 2));
             }
         }
-        return $fpdi->Output($outputFilePath, 'I');
+        return $fpdi->Output('S');
     }
 
     /**
@@ -238,9 +220,8 @@ class PdfController extends Controller
     {
         $data = null;
         $data = Order::where('id', $record)->with('client')->first();
-        // dd($data);
 
-        $filePath = public_path('pdfs/contrato.pdf');
+        $filePath       = public_path('pdfs/contrato.pdf');
         $outputFilePath = public_path("output.pdf");
 
         $fpdi = new FPDI;
@@ -253,8 +234,8 @@ class PdfController extends Controller
 
         for ($i = 1; $i <= $count; $i++) {
             $template = $fpdi->importPage($i);
-            $size = $fpdi->getTemplateSize($template);
-            $fpdi->AddPage($size['orientation'], array($size['width'], $size['height']));
+            $size     = $fpdi->getTemplateSize($template);
+            $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
             $fpdi->useTemplate($template);
 
             if ($data && $i == 1) {
@@ -269,7 +250,7 @@ class PdfController extends Controller
             }
 
         }
-        return $fpdi->Output($outputFilePath, 'I');
+        return $fpdi->Output('S');
     }
 
     private function contrato_pagina_1($fpdi, $data)
@@ -287,16 +268,15 @@ class PdfController extends Controller
             $direccion = "Calle " . $data->client->street . ' No. ' . $data->client->number . ' Col: ' . $data->client->colony . ' en ' . $data->client->city->name . ',' . $data->client->state->abbreviated;
         }
 
-
         $fpdi->text(50, 100.5, GeneralHelp::normalize_text($direccion));
         $fpdi->text(45, 107, $data->client->phone);
         $fpdi->text(105, 107, $data->client->email);
 
         $fpdi->text(30, 129, $data->motley_name);
         // Fecha de la orden de compra
-        $orden_dia = $data->date->format('d');
-        $orden_mes = GeneralHelp::spanish_month($data->date, 's');
-        $order_axo = $data->date->format('Y');
+        $orden_dia   = $data->date->format('d');
+        $orden_mes   = GeneralHelp::spanish_month($data->date, 's');
+        $order_axo   = $data->date->format('Y');
         $fecha_orden = $orden_dia . '-' . $orden_mes . '-' . $order_axo;
         $fpdi->SetFont("arial", "", size: 10);
         $fpdi->Text(104, 133.5, $fecha_orden);
@@ -306,7 +286,7 @@ class PdfController extends Controller
             $fpdi->Text(144, 133.5, $data->id);
         }
 
-        $fontSize = 11; // Tamaño por defecto
+        $fontSize = 11;                          // Tamaño por defecto
         $fpdi->SetFont("arial", "B", $fontSize); // Negritas
 
         $fontSizes = [
@@ -314,11 +294,11 @@ class PdfController extends Controller
             50 => 7,
             45 => 8,  // Largo > 45:Tamaño 7
             35 => 9,  // Largo > 35:Tamaño 9
-            0 => 11  // Defecto (Largo <= 35):Tamaño 11
+            0  => 11, // Defecto (Largo <= 35):Tamaño 11
         ];
 
-        $total_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->total));
-        $anticipo_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->advance));
+        $total_letras     = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->total));
+        $anticipo_letras  = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->advance));
         $pendiente_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->pending_balance));
 
         // Total
@@ -343,13 +323,12 @@ class PdfController extends Controller
 
         $fpdi->Text(105, 150, $anticipo_letras);
 
-
         $fontSizes = [
             60 => 5,
             50 => 6,
             45 => 7,  // Largo > 45:Tamaño 7
             35 => 8,  // Largo > 35:Tamaño 9
-            0 => 10 // Defecto (Largo <= 35):Tamaño 10
+            0  => 10, // Defecto (Largo <= 35):Tamaño 10
         ];
         // Pendiente
         foreach ($fontSizes as $lengthThreshold => $size) {
@@ -360,7 +339,6 @@ class PdfController extends Controller
         }
         $fpdi->SetFont("arial", "B", $fontSize);
         $fpdi->Text(118, 161, $pendiente_letras);
-
 
         $fpdi->SetFont("arial", "", 10);
         // Fecha de promeso ee pago
@@ -402,8 +380,8 @@ class PdfController extends Controller
     {
         $fpdi->SetFont("arial", "", 11);
         // Plazo de Entrega
-        $deliveryDate = Carbon::parse($data->delivery_date);
-        $date = Carbon::parse($data->date);
+        $deliveryDate   = Carbon::parse($data->delivery_date);
+        $date           = Carbon::parse($data->date);
         $daysDifference = $date->diffInDays($deliveryDate);
 
         if ($data->days_term) {
@@ -435,7 +413,7 @@ class PdfController extends Controller
                 50 => 7,
                 45 => 8,  // Largo > 45:Tamaño 7
                 35 => 9,  // Largo > 35:Tamaño 9
-                0 => 11  // Defecto (Largo <= 35):Tamaño 11
+                0  => 11, // Defecto (Largo <= 35):Tamaño 11
             ];
             $costo_letras = GeneralHelp::normalize_text(GeneralHelp::to_letters($data->shipping_cost));
 
@@ -444,14 +422,10 @@ class PdfController extends Controller
                     $fontSize = $size;
                     break;
                 }
+            }
+            $fpdi->SetFont("arial", "B", $fontSize);
+            $fpdi->Text(62, 113, $costo_letras);
         }
-        $fpdi->SetFont("arial", "B", $fontSize);
-        $fpdi->Text(62, 113, $costo_letras);
-        }
-
-
-
-
 
         // Fecha de Firma
         $fpdi->Text(113, 257.25, $data->date_approved->format('d'));
@@ -540,13 +514,13 @@ class PdfController extends Controller
         $fpdi->text(153.5, 99.5, $data->client->email);
         // Notas de la orden de compra
         if ($data->notes) {
-             $fpdi->SetFont("arial", "", 10);
-            $notes = GeneralHelp::normalize_text($data->notes);
+            $fpdi->SetFont("arial", "", 10);
+            $notes      = GeneralHelp::normalize_text($data->notes);
             $arrayNotes = explode("\n", $notes);
-            $posx = 27;
-            $posy = 110;
+            $posx       = 27;
+            $posy       = 110;
             foreach ($arrayNotes as $linea) {
-                $palabras = wordwrap($linea, 50, "\n", true);
+                $palabras        = wordwrap($linea, 50, "\n", true);
                 $lineasSeparadas = explode("\n", $palabras);
                 foreach ($lineasSeparadas as $linea_separada) {
                     $fpdi->text($posx, $posy, $linea_separada);
@@ -590,6 +564,7 @@ class PdfController extends Controller
             $fpdi->Text(83.5, 257, $delivery_date->format('Y'));
         }
 
-
     }
+
+
 }
