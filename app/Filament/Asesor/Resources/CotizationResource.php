@@ -145,7 +145,7 @@ class CotizationResource extends Resource
                                 ->translateLabel()
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
-                                ->minValue(1.00)
+                                ->minValue(0.00)
                                 ->rules(function (Get $get): array {
                                     return ['numeric', 'lt:' . $get('subtotal')];
                                 })
