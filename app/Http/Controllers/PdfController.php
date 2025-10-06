@@ -258,7 +258,7 @@ class PdfController extends Controller
     private function contrato_pagina_1($fpdi, $data)
     {
         $fpdi->SetFont("arial", "B", 12);
-        $fpdi->text(20, 52, $data->client->full_name);
+        $fpdi->text(20, 52, GeneralHelp::normalize_text($data->client->full_name));
         $fpdi->SetFont("arial", "", size: 9);
         // Dirección del cliente
         if ($data->client->interior_number) {
@@ -272,29 +272,29 @@ class PdfController extends Controller
 
         //
         if ($data->client->rfc) {
-            $fpdi->text(100, 115, $data->client->rfc);
+            $fpdi->text(125, 123.5, $data->client->rfc);
         }
 
         $fpdi->text(50, 133.3, $data->client->phone);
         $fpdi->text(140, 133.3, $data->client->email);
 
+        // Nombre de la botarga
         $fpdi->text(25, 158, $data->motley_name);
         // Fecha de la orden de compra
         $orden_dia   = $data->date->format('d');
         $orden_mes   = GeneralHelp::spanish_month($data->date, 's');
         $order_axo   = $data->date->format('Y');
         $fecha_orden = $orden_dia . '-' . $orden_mes . '-' . $order_axo;
-        $fpdi->SetFont("arial", "", size: 10);
-        $fpdi->Text(140, 164, $fecha_orden);
+
+        $fpdi->Text(145, 163, $fecha_orden);
 
         if ($data->folio) {
-            $fpdi->Text(144, 133.5, $data->folio);
+            $fpdi->Text(18, 168, $data->folio);
         } else {
-            $fpdi->Text(144, 133.5, $data->id);
+            $fpdi->Text(18, 168, $data->id);
         }
         $fontSize = 11;                          // Tamaño por defecto
         $fpdi->SetFont("arial", "B", $fontSize); // Negritas
-
         $fontSizes = [
             60 => 6,
             50 => 7,
@@ -315,7 +315,6 @@ class PdfController extends Controller
             }
         }
         $fpdi->SetFont("arial", "B", $fontSize); // Negritas
-                                                 // $fpdi->Text(27, 142, $total_letras);
         $fpdi->Text(130, 178, ucfirst(strtolower($total_letras)));
 
         // Anticipo
@@ -350,18 +349,20 @@ class PdfController extends Controller
         $fpdi->SetFont("arial", "", 10);
         // Fecha de promeso ee pago
         // // Se revisa si tiene fecha de promesa
-        if ($data->payment_promise_date) {
-            $payment_promise_date = Carbon::parse($data->payment_promise_date);
-            $fpdi->Text(50, 168, $payment_promise_date->format('d'));
-            $nombre_mes = GeneralHelp::spanish_month($payment_promise_date, 'l');
-            if (strlen($nombre_mes) > 7) {
-                $fpdi->SetFont("arial", "B", 7);
-            }
-            $fpdi->Text(82, 167.5, $nombre_mes);
-            $fpdi->SetFont("arial", "", 10);
 
-            $fpdi->Text(107, 168, $payment_promise_date->format('Y'));
-        }
+        // Fecha promesa de pago se bloquea
+        // if ($data->payment_promise_date) {
+        //     $payment_promise_date = Carbon::parse($data->payment_promise_date);
+        //     $fpdi->Text(50, 168, $payment_promise_date->format('d'));
+        //     $nombre_mes = GeneralHelp::spanish_month($payment_promise_date, 'l');
+        //     if (strlen($nombre_mes) > 7) {
+        //         $fpdi->SetFont("arial", "B", 7);
+        //     }
+        //     $fpdi->Text(82, 167.5, $nombre_mes);
+        //     $fpdi->SetFont("arial", "", 10);
+
+        //     $fpdi->Text(107, 168, $payment_promise_date->format('Y'));
+        // }
 
         // Whats App
         if ($data->phone_whatsApp) {
@@ -464,11 +465,11 @@ class PdfController extends Controller
         // Nombre del Comprador
         $fpdi->SetFont("arial", "B", 12);
 
-        $fpdi->text(38,270, $data->client->full_name);
+        $fpdi->text(38,270, GeneralHelp::normalize_text($data->client->full_name));
 
         // Nombre del Vendedor
 
-        $fpdi->text(125,270, $data->user->name);
+        $fpdi->text(125,270,  GeneralHelp::normalize_text($data->user->name));
 
     }
 
