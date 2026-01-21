@@ -3,16 +3,9 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Event;
-use Forms\Components\Group;
-use Filament\Widgets\Widget;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
+use App\Models\Manufacturing;
 use App\Filament\Resources\EventResource;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Group as ComponentsGroup;
-use Saade\FilamentFullCalendar\Data\EventData;
+use App\Filament\Resources\ManufacturingResource;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class CalendarWidget extends FullCalendarWidget
@@ -20,25 +13,35 @@ class CalendarWidget extends FullCalendarWidget
     // protected static string $view = 'filament.widgets.calendar-widget';
     public function fetchEvents(array $fetchInfo): array
     {
-        // dd($fetchInfo);
-        return Event::query()
-            // ->where('starts_at', '>=', $fetchInfo['start'])
-            // ->where('ends_at', '<=', $fetchInfo['end'])
+        $events = Event::query()
             ->get()
-            ->map(
-                fn(Event $event) => EventData::make()
-                    ->id($event->id)
-                    ->title($event->title)
-                    ->end($event->ends_at)
-                    ->backgroundColor($event->color)
-                    ->start($event->starts_at)
-                    ->end($event->ends_at)
-                    ->url(
-                        url: EventResource::getUrl(name: 'edit', parameters: ['record' => $event]),
-                        shouldOpenUrlInNewTab: false
-                    )
-            )
-            ->toArray();
+            ->map(fn (Event $event) => [
+                'id' => 'event-' . $event->id,
+                'title' => $event->title,
+                'backgroundColor' => $event->color,
+                'start' => $event->starts_at,
+                'end' => $event->ends_at,
+                'url' => EventResource::getUrl(name: 'edit', parameters: ['record' => $event]),
+                'shouldOpenUrlInNewTab' => false,
+            ])
+            ->all();
+
+        $manufacturings = Manufacturing::query()
+            ->whereNotNull('fecha_inicio')
+            ->whereNotNull('fecha_fin')
+            ->get()
+            ->map(fn (Manufacturing $manufacturing) => [
+                'id' => 'manufacturing-' . $manufacturing->id,
+                'title' => 'Orden de Fabricacion #' . $manufacturing->folio,
+                'backgroundColor' => '#fb8c00',
+                'start' => $manufacturing->fecha_inicio,
+                'end' => $manufacturing->fecha_fin,
+                'url' => ManufacturingResource::getUrl(name: 'edit', parameters: ['record' => $manufacturing]),
+                'shouldOpenUrlInNewTab' => false,
+            ])
+            ->all();
+
+        return array_merge($events, $manufacturings);
     }
     public function config(): array
     {
@@ -82,3 +85,4 @@ class CalendarWidget extends FullCalendarWidget
     //     ];
     // }
 }
+

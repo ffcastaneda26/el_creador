@@ -79,11 +79,45 @@ class User extends Authenticatable implements FilamentUser
         if ($panel->getId() === 'admin') {
             return $this->hasRole('Administrador')
                 || $this->hasRole('Super Admin')
-                || $this->hasRole('Gerente');
+                || $this->hasRole('Gerente')
+                || $this->hasRole('Direccion')
+                || $this->hasRole('Dirección');
+        }
+
+        if ($panel->getId() === 'portal') {
+            return true;
+        }
+
+        if ($panel->getId() === 'gerente') {
+            return $this->hasRole('Gerente');
+        }
+
+        if ($panel->getId() === 'direccion') {
+            return $this->hasRole('Direccion') || $this->hasRole('Dirección');
         }
 
         if ($panel->getId() === 'asesor') {
-            return $this->hasRole('Asesor') || $this->hasRole('Asesor');
+            return $this->hasRole('Asesor');
+        }
+
+        if ($panel->getId() === 'vendedor') {
+            return $this->hasRole('Vendedor');
+        }
+
+        if ($panel->getId() === 'capturista') {
+            return $this->hasRole('Capturista');
+        }
+
+        if ($panel->getId() === 'produccion') {
+            return $this->hasRole('Produccion') || $this->hasRole('Producción');
+        }
+
+        if ($panel->getId() === 'envios') {
+            return $this->hasRole('Envios') || $this->hasRole('Envíos');
+        }
+
+        if ($panel->getId() === 'almacen') {
+            return $this->hasRole('Almacen') || $this->hasRole('Almacén');
         }
 
         return false;

@@ -3,15 +3,14 @@
 namespace App\Providers\Filament;
 
 use Filament\Pages;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use App\Filament\Resources\ClientResource;
-use App\Filament\Resources\ManufacturingResource;
 use Filament\Http\Middleware\Authenticate;
-use App\Filament\Resources\ProductResource;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -29,6 +28,7 @@ class AsesorPanelProvider extends PanelProvider
         return $panel
             ->id('asesor')
             ->path('asesor')
+            ->login()
             ->colors([
                 'primary' => Color::Lime,
             ])
@@ -47,9 +47,7 @@ class AsesorPanelProvider extends PanelProvider
                 Widgets\FilamentInfoWidget::class,
             ])
             ->resources([
-                ProductResource::class,
                 ClientResource::class,
-                ManufacturingResource::class,
             ])
             ->brandLogo(fn () => view('filament.admin.logo'))
             ->brandLogoHeight('3rem')
@@ -64,6 +62,10 @@ class AsesorPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->plugins([
+                FilamentShieldPlugin::make(),
+            ])
+            ->databaseNotifications()
             ->authMiddleware([
                 Authenticate::class,
             ])

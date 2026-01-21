@@ -39,7 +39,9 @@ class ProductWarehouseResource extends Resource
     protected static ?int $navigationSort = 22;
     public static function shouldRegisterNavigation(): bool
     {
-        return (Auth::user()->hasRole('Administrador') || Auth::user()->hasRole('Gerente')) && Warehouse::hasRecords() &&  Product::hasRecords();
+        return static::canViewAny()
+            && Warehouse::hasRecords()
+            && Product::hasRecords();
     }
 
     // public static function getNavigationParentItem(): ?string

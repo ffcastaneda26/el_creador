@@ -3,9 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoleResource\Pages;
-use App\Filament\Resources\RoleResource\RelationManagers;
+use BezhanSalleh\FilamentShield\Forms\ShieldSelectAllToggle;
+use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
 use Filament\Forms;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,17 +16,19 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 
 class RoleResource extends Resource
 {
+    use HasShieldFormComponents;
+
     protected static ?string $model = Role::class;
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     protected static ?int $navigationSort = 2;
     // protected static ?string $cluster = Security::class;
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function getNavigationGroup(): string
     {
@@ -75,12 +79,26 @@ class RoleResource extends Resource
             ->schema([
                 Group::make()
                     ->schema([
-                        TextInput::make('name')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->minLength(5)
-                            ->translateLabel(),
-                    ])->columns(2)
+                        Section::make()
+                            ->schema([
+                                TextInput::make('name')
+                                    ->required()
+                                    ->unique(ignoreRecord: true)
+                                    ->minLength(5)
+                                    ->translateLabel(),
+                                TextInput::make('guard_name')
+                                    ->maxLength(255)
+                                    ->default(config('auth.defaults.guard'))
+                                    ->translateLabel(),
+                                ShieldSelectAllToggle::make('select_all')
+                                    ->onIcon('heroicon-s-shield-check')
+                                    ->offIcon('heroicon-s-shield-exclamation')
+                                    ->label(__('Select all permissions'))
+                                    ->dehydrated(fn (bool $state): bool => $state),
+                            ])
+                            ->columns(2),
+                    ])->columns(1),
+                static::getShieldFormComponents(),
             ]);
     }
 
@@ -115,7 +133,7 @@ class RoleResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\PermissionsRelationManager::class,
+            //
         ];
     }
 

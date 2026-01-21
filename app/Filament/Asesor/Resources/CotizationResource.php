@@ -49,6 +49,12 @@ class CotizationResource extends Resource
         return __('Cotizations');
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Cotization::query()->where('aprobada', false)->count();
+        return $count ? (string) $count : null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form

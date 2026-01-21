@@ -40,6 +40,12 @@ class OrderResource extends Resource
         return __('Purchase Orders');
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Order::query()->where('approved', false)->count();
+        return $count ? (string) $count : null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form

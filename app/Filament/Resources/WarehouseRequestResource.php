@@ -29,7 +29,7 @@ class WarehouseRequestResource extends Resource
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('Administrador') || Auth::user()->hasRole('Gerente');
+        return static::canViewAny();
     }
 
     protected static ?int $navigationSort = 61;
@@ -50,6 +50,14 @@ class WarehouseRequestResource extends Resource
     public static function getNavigationGroup(): string
     {
         return __('Inventory');
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = WarehouseRequest::query()
+            ->where('status', StatusWarehouseRequestEnum::abierto)
+            ->count();
+        return $count ? (string) $count : null;
     }
 
 
@@ -155,7 +163,7 @@ class WarehouseRequestResource extends Resource
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalIconColor('danger')
-                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::abierto)
+                    ->visible(fn(WarehouseRequest $record): bool => $record->status === StatusWarehouseRequestEnum::abierto && ! Auth::user()?->hasRole('Produccion') && ! Auth::user()?->hasRole('Producción'))
                     ->action(action: function (WarehouseRequest $record) {
                         $record->status = StatusWarehouseRequestEnum::autorizado;
                         $record->user_auhtorizer_id = Auth::user()->id;
@@ -197,6 +205,16 @@ class WarehouseRequestResource extends Resource
         return [
             DetailsRelationManager::class
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = Auth::user();
+        if ($user && ($user->hasRole('Produccion') || $user->hasRole('Producción'))) {
+            $query->where('user_id', $user->id);
+        }
+        return $query;
     }
 
     public static function getPages(): array

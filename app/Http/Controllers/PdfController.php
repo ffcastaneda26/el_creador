@@ -340,7 +340,7 @@ class PdfController extends Controller
     private function contrato_pagina_1($fpdi, $data)
     {
         $fpdi->SetFont("arial", "B", 12);
-        $fpdi->text(20, 58, GeneralHelp::normalize_text($data->client->full_name));
+        $fpdi->text(20, 52, GeneralHelp::normalize_text($data->client->full_name));
         // Nombre del cliente en negritas
         $fpdi->SetFont("arial", "", size: 9);
         // Dirección del cliente
@@ -362,14 +362,14 @@ class PdfController extends Controller
         $fpdi->text(140, 133.3, $data->client->email);
 
         // Nombre de la botarga
-        $fpdi->text(25, 158, $data->motley_name);
+        $fpdi->text(25, 159, $data->motley_name);
         // Fecha de la orden de compra
         $orden_dia   = $data->date->format('d');
         $orden_mes   = GeneralHelp::spanish_month($data->date, 'l');
         $order_axo   = $data->date->format('Y');
-        $fecha_orden = 'México a ' . $orden_dia . ' de ' . ucfirst($orden_mes) . ' del ' . $order_axo;
+        $fecha_orden = 'Mexico a ' . $orden_dia . ' de ' . ucfirst($orden_mes) . ' del ' . $order_axo;
 
-        $fpdi->Text(120, 163, $fecha_orden);
+        $fpdi->Text(141, 164, $fecha_orden);
 
         if ($data->folio) {
             $fpdi->Text(18, 168, $data->folio);
@@ -477,7 +477,7 @@ class PdfController extends Controller
         $daysDifference = $date->diffInDays($deliveryDate);
 
         if ($data->days_term) {
-            $fpdi->Text(115, 22.5, $data->days_term);
+            $fpdi->Text(120, 22.5, $data->days_term);
 
         } else {
             $fpdi->Text(83, 50, $daysDifference);
@@ -490,7 +490,7 @@ class PdfController extends Controller
             } else {
                 $fpdi->SetFont("arial", "", 9);
             }
-            $fpdi->Text(16, 59, $data->shipping_company);
+            $fpdi->Text(18, 59, $data->shipping_company);
         }
 
         // Domicilio empresa envío
@@ -508,7 +508,7 @@ class PdfController extends Controller
                 $fpdi->Text(135, 59, GeneralHelp::normalize_text($primera_linea));
 
                 if ($segunda_linea) {
-                    $fpdi->Text(17, 63.5, GeneralHelp::normalize_text($segunda_linea));
+                    $fpdi->Text(18, 63.5, GeneralHelp::normalize_text($segunda_linea));
                 }
             } else {
                 $fpdi->Text(17, 63.5, GeneralHelp::normalize_text($primera_linea));
@@ -544,7 +544,7 @@ class PdfController extends Controller
             $fpdi->Text(85, 225, $approvedDate->format('d'));
             $nombre_mes = GeneralHelp::spanish_month($approvedDate, 'l');
             $fpdi->Text(117, 225, $nombre_mes);
-            $fpdi->SetFont("arial", "", 11);
+            $fpdi->SetFont("arial", "B", 11);
             $fpdi->Text(156, 225, $approvedDate->format('Y'));
         }
 
@@ -556,16 +556,6 @@ class PdfController extends Controller
         // Nombre del Vendedor
 
         $fpdi->text(125,270,  GeneralHelp::normalize_text($data->user->name));
-        // Anticipo 80% del total
-        if (! is_null($data->total)) {
-            $fpdi->SetFont("arial", "B", 12);
-            $fpdi->SetTextColor(0, 0, 0);
-            $anticipo80 = round($data->total * 0.80, 2);
-            // Posición cercana al texto “EL ANTICIPO DEL 80%...”
-            $fpdi->Text(100, 191, '$ ' . number_format($anticipo80, 2, '.', ','));
-            $fpdi->SetFont("arial", "", 11);
-        }
-
     }
 
     /**
@@ -585,28 +575,28 @@ class PdfController extends Controller
         }
 
         if ($data->folio) {
-            $fpdi->Text(192, 15, $data->folio);
+            $fpdi->Text(192, 14, $data->folio);
         } else {
             $fpdi->Text(192, 15, $data->id);
         }
 
         // Vendedor
         $fpdi->SetFont("arial", "B", 12);
-        $fpdi->Text(90, 55, $data->user->name);
+        $fpdi->Text(90, 54.5, $data->user->name);
 
         // Fecha del pedido
         $fpdi->SetFont("arial", "", 12);
-        $fpdi->Text(15, 73.5, $data->date->format('d'));
+        $fpdi->Text(15, 73, $data->date->format('d'));
         $nombre_mes = GeneralHelp::spanish_month($data->date, 's');
-        $fpdi->Text(32, 73.5, $nombre_mes);
+        $fpdi->Text(32, 73, $nombre_mes);
         $fpdi->SetFont("arial", "", 11);
-        $fpdi->Text(54, 73.5, $data->date->format('Y'));
+        $fpdi->Text(54, 73, $data->date->format('Y'));
 
         // Nombre del cliente
         $fpdi->SetFont("arial", "B", 12);
-        $fpdi->text(48, 80, $data->client->full_name);
+        $fpdi->text(48, 79.5, $data->client->full_name);
         // Rfc
-        $fpdi->text(162, 80.5, $data->client->rfc);
+        $fpdi->text(162, 80, $data->client->rfc);
         // Direccion
         $address = $data->street . ' ' . $data->number;
         if ($data->interior_number) {
@@ -616,15 +606,15 @@ class PdfController extends Controller
         $address .= ' Col: ' . $data->colony;
         $address = GeneralHelp::normalize_text($address);
 
-        $fpdi->text(30, 87, $address);
+        $fpdi->text(30, 86.5, $address);
 
         // Ciudad
-        $fpdi->text(24, 93.5, $data->city?->name ?? '');
+        $fpdi->text(24, 93, $data->city?->name ?? '');
 
         // Código postal - Teléfono y Celular
-        $fpdi->text(78, 93.5, $data->zipcode);
-        $fpdi->text(105, 93.5, $data->client->phone);
-        $fpdi->text(165, 93.5, $data->client->mobile);
+        $fpdi->text(78, 93, $data->zipcode);
+        $fpdi->text(105, 93, $data->client->phone);
+        $fpdi->text(165, 93, $data->client->mobile);
 
         // Correo Electrónico
         if ($data->client->email && strlen($data->client->email) > 23) {
@@ -634,7 +624,7 @@ class PdfController extends Controller
         if ($data->client->email && strlen($data->client->email) > 30) {
             $fpdi->SetFont("arial", "", 9);
         }
-        $fpdi->text(153.5, 99.5, $data->client->email);
+        $fpdi->text(153.5, 99, $data->client->email);
         // Notas de la orden de compra
         if ($data->notes) {
             $fpdi->SetFont("arial", "", 10);

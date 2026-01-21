@@ -26,6 +26,7 @@ use App\Filament\Resources\ManufacturingResource\RelationManagers\PartsRelationM
 use App\Filament\Resources\ManufacturingResource\RelationManagers\ImagesRelationManager;
 use App\Filament\Resources\ManufacturingResource\RelationManagers\ProductsRelationManager;
 use App\Filament\Resources\ManufacturingResource\RelationManagers\LogotiposRelationManager;
+use Illuminate\Support\Carbon;
 
 class ManufacturingResource extends Resource
 {
@@ -48,6 +49,14 @@ class ManufacturingResource extends Resource
     public static function getPluralLabel(): ?string
     {
         return __('Manufacturing Orders');
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Manufacturing::query()
+            ->whereDate('fecha_fin', '>=', Carbon::today())
+            ->count();
+        return $count ? (string) $count : null;
     }
     public static function form(Form $form): Form
     {

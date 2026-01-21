@@ -46,7 +46,7 @@ class MovementResource extends Resource
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('Administrador');
+        return static::canViewAny();
     }
 
     protected static ?int $navigationSort = 60;

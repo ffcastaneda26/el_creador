@@ -28,7 +28,7 @@ class PermissionsRelationManager extends RelationManager
     {
         return $table
             ->heading(__('Permissions'))
-            ->recordTitleAttribute(__('Permission'))
+            ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label(__('Permission')),
