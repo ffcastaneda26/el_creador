@@ -99,45 +99,86 @@ class PdfController extends Controller
     }
 
     /**
-     * Crea cotización formal
-     *
-     * @param [model] $data: Cotización
-     * @return void
-     */
+ * Crea cotización formal
+ *
+ * @param [model] $record: Cotización (ID)
+ * @return string
+ */
     public function cotizacion($record)
     {
-        // TODO: ¿Se va agregar en algun lado la retención ISR?
-        $data           = Cotization::findOrFail($record);
-        $filePath       = public_path('pdfs/cotizacion formal.pdf');
-        $outputFilePath = public_path("output.pdf");
-        $fpdi           = new FPDI;
-        $fpdi->SetFont("arial");
+        $data     = Cotization::findOrFail($record);
+        $filePath = public_path('pdfs/cotizacion formal.pdf');
+
+        // ✅ Validación de existencia del PDF
+        if (!file_exists($filePath)) {
+            abort(404, 'No existe el PDF base en: ' . $filePath);
+        }
+
+        $fpdi = new FPDI;
+
+        // ✅ Evita problemas de fuente (FPDF normalmente trae Arial por default)
+        // Si tu versión no soporta SetFont("arial") sin estilo, usa "Arial"
+        $fpdi->SetFont("Arial");
         $fpdi->SetFontSize(8);
         $fpdi->SetTextColor(0, 0, 0);
-        $count = $fpdi->setSourceFile($filePath);
+
+        /**
+         * ✅ FIX CLAVE:
+         * Muchos PDFs (Canva/Word/firmados/optimizados) a veces FPDI los cuenta mal.
+         * Cargarlo por StreamReader suele hacer que detecte bien las páginas.
+         */
+        $count = null;
+        try {
+            // Si tienes instalado setasign/fpdi-fpdf y setasign/fpdi
+            // StreamReader está en: setasign\Fpdi\PdfParser\StreamReader
+            $pdfContent = file_get_contents($filePath);
+            $count = $fpdi->setSourceFile(\setasign\Fpdi\PdfParser\StreamReader::createByString($pdfContent));
+        } catch (\Throwable $e) {
+            // Fallback: método clásico
+            $count = $fpdi->setSourceFile($filePath);
+        }
+
+        // ✅ Si por alguna razón el conteo regresa 0
+        if (!$count || $count < 1) {
+            abort(500, 'FPDI no pudo leer páginas del PDF base. Revisa el archivo o conviértelo/imprímelo a PDF nuevamente.');
+        }
 
         for ($i = 1; $i <= $count; $i++) {
-
             $template = $fpdi->importPage($i);
             $size     = $fpdi->getTemplateSize($template);
+
             $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
             $fpdi->useTemplate($template);
 
+            // ✅ (Opcional) DEBUG para confirmar que sí recorre la página 3
+            // Descomenta para ver "PAGINA: X" impreso en cada página
+            /*
+            $fpdi->SetFont("Arial", "B", 16);
+            $fpdi->Text(10, 15, "PAGINA: " . $i . " / " . $count);
+            $fpdi->SetFont("Arial", "", 8);
+            */
+
             if ($data && $i == 1) {
-                $fpdi->SetXY(164, 27);
 
-                $fecha_dia = $data->fecha->format('d');
-                $fpdi->Text(165.5, 28.1, $fecha_dia);
+                // Fecha completa: México a 21 de Enero del 2026
+                $fpdi->SetFont("Arial", "B", 10);
+                $fechaCompleta = 'Mexico a ' . $data->fecha->format('d') . ' de ' . ucfirst(GeneralHelp::spanish_month($data->fecha, 'l')) . ' del ' . $data->fecha->format('Y');
+                $fpdi->Text(150, 10, $fechaCompleta);
 
-                $fpdi->Text(175, 28.1, strtoupper(GeneralHelp::spanish_month($data->fecha, 's')));
+                // Nombre del cliente en negritas
                 $standard_name = GeneralHelp::normalize_text($data->client->full_name);
                 $standard_name = ucwords($standard_name);
-                $fpdi->Text(43, 64.5, $standard_name); // Nombre completo del cliente
+                $fpdi->Text(39, 63, $standard_name); // Nombre completo del cliente
 
                 // Partida
                 $posx = 20;
                 $posy = 90;
+                $fpdi->SetFont("Arial", "B", 11);
                 $fpdi->Text($posx, $posy, 1); // Partida
+                $fpdi->SetFont("Arial", "", 8);
+
+                $fpdi->SetFont("Arial", "B", 6);
+                $fpdi->text(81 - strlen(number_format($data->total)), 203, number_format($data->total, 2));
 
                 $standar_description = GeneralHelp::normalize_text($data->description);
                 $arrayDescripcion    = explode("\n", $standar_description);
@@ -154,31 +195,60 @@ class PdfController extends Controller
                     }
                 }
 
+                // Unidad de medida: texto justificado que ocupa la columna
+                $unidadX     = 53;
+                $unidadY     = 90;
+                $unidadWidth = 55;
+                $fpdi->SetXY($unidadX, $unidadY);
+                $fpdi->SetFont("Arial", "", 8);
+                $textoUnidad = "EL PESO APROXIMADO DE LA BOTARGA ES DE 12 KG\n"
+                    . "- MEDIDA ESTANDAR PARA PERSONAS DE HASTA 1.75 CM DE ALTO ACOPLADO A LA HERGONOMIA HUMANA\n"
+                    . "- SE PUEDE ADAPTAR A LA MEDIDA SOLICITADA POR EL CLIENTE\n"
+                    . "- EL SISTEMA DE VENTILACION ES PREMIUM DE 12V CON PILA RECARGABLE\n\n"
+                    . "TODOS LOS MATERIALES SON DE EXCELENTE CALIDAD, LA MAYORIA SON DE IMPORTACION, LA CABEZA ESTA HECHA DE STL, ES UN MATERIAL SUSTENTABLE Y ES EN IMPRESION 3D, ES DURABLE, NO OCASIONA ALERGIAS, LIGERO Y MAS RESISTENTE.\n\n"
+                    . "EL PRECIO REAL ES DE $ " . number_format($data->total, 2, '.', ',');
+                $fpdi->MultiCell($unidadWidth, 4, $textoUnidad, 0, 'J');
+
+                $fpdi->SetFont("Arial", "B", 9);
+                $fpdi->MultiCell($unidadWidth, 4, "ESTA SEMANA CONTAMOS CON EL 15% DE DESCUENTO VALIDO HASTA AGOTAR FECHAS\nINCLUYE SISTEMA DE VENTILACION PREMIUM DE REGALO CON BATERIA INCLUIDA Y BOLSA DE TRASLADO", 0, 'J');
+
+                $fpdi->SetFont("Arial", "B", 8);
+                $fpdi->MultiCell($unidadWidth, 4, "TOTAL: $ " . number_format($data->total, 2, '.', ','), 0, 'J');
+
                 $partidas = $data->details()->get();
 
                 if ($partidas->count() > 0) {
                     $posx = 38;
                     $posy = 90;
+
                     foreach ($partidas as $partida) {
+                        $fpdi->SetFont("Arial", "B", 11);
                         $fpdi->Text($posx, $posy, $partida->quantity);
 
                         if ($partida->image) {
                             $imageUrl = storage_path('app/public/' . $partida->image);
-                            $fpdi->Image($imageUrl, $posx + 25, $posy, 25, 25);
+                            if (file_exists($imageUrl)) {
+                                $fpdi->Image($imageUrl, $posx + 19, $posy, 40, 40);
+                            }
                         }
-                        $fpdi->text(168, $posy, number_format($partida->price, 2, '.', ','));
-                        $monto = round($partida->quantity * $partida->price, 2);
-                        $fpdi->text(190, $posy, number_format($monto, 2, '.', ','));
 
+                        $fpdi->SetFont("Arial", "B", 11);
+                        $fpdi->text(160, $posy, number_format($partida->price, 2, '.', ','));
+
+                        $monto = round($partida->quantity * $partida->price, 2);
+                        $fpdi->text(182, $posy, number_format($monto, 2, '.', ','));
+
+                        $fpdi->SetFont("Arial", "", 8);
                         $posy = $posy + 25;
                     }
                 }
 
                 // Fecha de entrega
-
                 if ($data->fecha_entrega) {
                     $fpdi->SetFontSize(14);
-                    $fecha_entrega_espanol = GeneralHelp::normalize_text(GeneralHelp::spanish_date($data->fecha_entrega, 'n', 'n', 'dmy'));
+                    $fecha_entrega_espanol = GeneralHelp::normalize_text(
+                        GeneralHelp::spanish_date($data->fecha_entrega, 'n', 'n', 'dmy')
+                    );
                     $fpdi->text(95, 185, 'Fecha de Entrega: ' . $fecha_entrega_espanol);
                 }
 
@@ -189,29 +259,61 @@ class PdfController extends Controller
                     $fpdi->text(194 - strlen(number_format($data->envio, 2, '.', ',')), 195, number_format($data->envio, 2, '.', ','));
                 }
 
-                $fpdi->text(194 - strlen(number_format($data->subtotal, 2, '.', ',')), 200, number_format($data->subtotal, 2, '.', ','));
+                // Subtotal
+                $fpdi->SetFont("Arial", "B", 11);
+                $fpdi->text(195 - strlen(number_format($data->subtotal, 2, '.', ',')), 225, number_format($data->subtotal, 2, '.', ','));
+                $fpdi->SetFont("Arial", "", 11);
 
                 if ($data->iva > 0) {
-                    $fpdi->text(195 - strlen(number_format($data->iva, 2)), 205, number_format($data->iva, 2));
+                    $fpdi->SetFont("Arial", "B", 11);
+                    $fpdi->text(193 - strlen(number_format($data->iva, 2)), 232.5, number_format($data->iva, 2));
+                    $fpdi->SetFont("Arial", "", 11);
                 } else {
-                    $fpdi->Text(105, 212, 'NO INCLUYE IVA');
+                    $fpdi->Text(105, 226, 'NO INCLUYE IVA');
                 }
 
                 if ($data->retencion_isr > 0) {
-                    $texto_retencion_isr = 'RETENCION ISR $' . number_format($data->retencion_isr, 2);
-                    $fpdi->text(104, 218, $texto_retencion_isr);
+                    // Texto
+                    $fpdi->SetFont("Arial", "B", 11);
+                    $fpdi->Text(125, 238, 'RETENCION ISR');
 
+                    // Monto (alineado a la derecha, más separado)
+                    $fpdi->SetFont("Arial", "B", 11);
+                    $fpdi->Text(185.5, 238, number_format($data->retencion_isr, 2, '.', ','));
+
+                    $fpdi->SetFont("Arial", "", 11);
                 }
+
 
                 if ($data->descuento > 0) {
                     $fpdi->text(192 - strlen(number_format($data->descuento)), 212, number_format($data->descuento, 2));
                 }
 
-                $fpdi->text(191 - strlen(number_format($data->total)), 218, number_format($data->total, 2));
+                // Total en negritas y más abajo
+                $fpdi->SetFont("Arial", "B", 12);
+                $fpdi->text(191 - strlen(number_format($data->total)), 245, number_format($data->total, 2));
+                $fpdi->SetFont("Arial", "", 11);
+            }
+
+            if ($data && $i == 2) {
+                // Anticipo del 80% en hoja 2 (ajusta coordenadas si el template cambia)
+                $fpdi->SetFont("Arial", "B", 11);
+                $anticipo80 = round($data->total * 0.80, 2);
+                $fpdi->Text(120, 190, '$ ' . number_format($anticipo80, 2, '.', ','));
+                $fpdi->SetFont("Arial", "", 11);
+            }
+
+            // ✅ NUEVO: HOJA 3 (para que “sí la reconozca” y puedas imprimir algo)
+            // Aunque tu PDF ya tenga la página 3, aquí puedes poner lo que necesites.
+            if ($data && $i == 3) {
+                // Ejemplo: imprimir total en la página 3 o cualquier texto legal.
+                // Ajusta coordenadas según tu template.
             }
         }
+
         return $fpdi->Output('S');
     }
+
 
     /**
      * Contrato en base a una orden de compra
@@ -258,7 +360,8 @@ class PdfController extends Controller
     private function contrato_pagina_1($fpdi, $data)
     {
         $fpdi->SetFont("arial", "B", 12);
-        $fpdi->text(20, 52, GeneralHelp::normalize_text($data->client->full_name));
+        $fpdi->text(20, 58, GeneralHelp::normalize_text($data->client->full_name));
+        // Nombre del cliente en negritas
         $fpdi->SetFont("arial", "", size: 9);
         // Dirección del cliente
         if ($data->client->interior_number) {
@@ -282,11 +385,11 @@ class PdfController extends Controller
         $fpdi->text(25, 158, $data->motley_name);
         // Fecha de la orden de compra
         $orden_dia   = $data->date->format('d');
-        $orden_mes   = GeneralHelp::spanish_month($data->date, 's');
+        $orden_mes   = GeneralHelp::spanish_month($data->date, 'l');
         $order_axo   = $data->date->format('Y');
-        $fecha_orden = $orden_dia . '-' . $orden_mes . '-' . $order_axo;
+        $fecha_orden = 'México a ' . $orden_dia . ' de ' . ucfirst($orden_mes) . ' del ' . $order_axo;
 
-        $fpdi->Text(145, 163, $fecha_orden);
+        $fpdi->Text(120, 163, $fecha_orden);
 
         if ($data->folio) {
             $fpdi->Text(18, 168, $data->folio);
@@ -455,12 +558,15 @@ class PdfController extends Controller
             $fpdi->Text(120, 73, $costo_letras);
         }
 
-        // Fecha de Firma
-        $fpdi->Text(85, 225, $data->date_approved->format('d'));
-        $nombre_mes = GeneralHelp::spanish_month($data->date_approved, 'l');
-        $fpdi->Text(117, 225, $nombre_mes);
-        $fpdi->SetFont("arial", "", 11);
-        $fpdi->Text(156, 225, $data->date_approved->format('Y'));
+        // Fecha de Firma (usa date_approved si existe, si no usa date)
+        $approvedDate = $data->date_approved ?? $data->date;
+        if ($approvedDate) {
+            $fpdi->Text(85, 225, $approvedDate->format('d'));
+            $nombre_mes = GeneralHelp::spanish_month($approvedDate, 'l');
+            $fpdi->Text(117, 225, $nombre_mes);
+            $fpdi->SetFont("arial", "", 11);
+            $fpdi->Text(156, 225, $approvedDate->format('Y'));
+        }
 
         // Nombre del Comprador
         $fpdi->SetFont("arial", "B", 12);
@@ -470,6 +576,15 @@ class PdfController extends Controller
         // Nombre del Vendedor
 
         $fpdi->text(125,270,  GeneralHelp::normalize_text($data->user->name));
+        // Anticipo 80% del total
+        if (! is_null($data->total)) {
+            $fpdi->SetFont("arial", "B", 12);
+            $fpdi->SetTextColor(0, 0, 0);
+            $anticipo80 = round($data->total * 0.80, 2);
+            // Posición cercana al texto “EL ANTICIPO DEL 80%...”
+            $fpdi->Text(100, 191, '$ ' . number_format($anticipo80, 2, '.', ','));
+            $fpdi->SetFont("arial", "", 11);
+        }
 
     }
 
@@ -523,8 +638,11 @@ class PdfController extends Controller
 
         $fpdi->text(30, 87, $address);
 
-        // Ciudad
-        $fpdi->text(24, 93.5, $data->city->name);
+        // Ciudad (protege nulos)
+        $cityName = $data->city?->name ?? ($data->client?->city?->name ?? '');
+        if ($cityName) {
+            $fpdi->text(24, 93.5, $cityName);
+        }
 
         // Código postal - Teléfono y Celular
         $fpdi->text(78, 93.5, $data->zipcode);

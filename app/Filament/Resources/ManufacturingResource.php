@@ -154,7 +154,15 @@ class ManufacturingResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->getStateUsing(function (Manufacturing $record) {
-                        return 'No.' . ' ' . $record->order->id . ' ' . $record->order->client->name;
+                        $orderId   = $record->order?->id;
+                        $clientName = $record->order?->client?->name;
+                        if ($orderId && $clientName) {
+                            return 'No. ' . $orderId . ' ' . $clientName;
+                        }
+                        if ($orderId) {
+                            return 'No. ' . $orderId;
+                        }
+                        return '-';
                     }),
                 Tables\Columns\TextColumn::make('asesor.name')
                     ->label('Asesor'),

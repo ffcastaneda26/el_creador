@@ -1,13 +1,6 @@
 <?php
 namespace App\Filament\Resources;
 
-/**
- * +-------------+---------+--------------------------------------------------------------------------------------------+
- * |  Fecha      | Author  | Descripción                                                                                |
- * +-------------+---------+--------------------------------------------------------------------------------------------+
- * | 17-Sep-2025 | FCO     | Se agrega el campo para correo electrónico en el formulario                                |
- * +-------------+---------+--------------------------------------------------------------------------------------------+
- */
 use App\Filament\Resources\ClientResource\Pages;
 use App\Models\Client;
 use App\Models\Country;
@@ -27,7 +20,6 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Symfony\Contracts\Service\Attribute\Required;
 
 class ClientResource extends Resource
 {
@@ -38,7 +30,6 @@ class ClientResource extends Resource
     protected static ?string $activeNavigationIcon = 'heroicon-s-shield-check';
     protected static ?int $navigationSort          = 30;
 
-    // protected static ?string $cluster = Geographics::class;
     public static function getNavigationGroup(): string
     {
         return __('Sales');
@@ -63,11 +54,11 @@ class ClientResource extends Resource
                             ->inline()
                             ->reactive()
                             ->options([
-                                'Física'               => 'Física',
+                                'Fisica'               => 'Fisica',
                                 'Moral'                => 'Moral',
-                                'Sin Efectos Fiscales' => 'Sin Efectos',
+                                'Sin Efectos Fiscales' => 'Sin Efectos Fiscales',
                             ])->label(__('Type Person'))
-                            ->default('Física'),
+                            ->default('Fisica'),
                     ])->columnSpanFull(),
 
                     Section::make()->schema([
@@ -76,29 +67,31 @@ class ClientResource extends Resource
                             ->label(__('Name'))
                             ->maxLength(100),
                         TextInput::make('last_name')
-                            ->required(fn(Get $get): bool => $get('type') === 'Física' || $get('type') === 'Sin Efectos Fiscales')
+                            ->required(fn(Get $get): bool => in_array($get('type'), ['Fisica', 'Sin Efectos Fiscales']))
                             ->label(__('Last Name'))
                             ->maxLength(100),
                         TextInput::make('mother_surname')
                             ->label(__('Mother Surname'))
+                            ->required(fn(Get $get): bool => in_array($get('type'), ['Fisica', 'Sin Efectos Fiscales']))
                             ->maxLength(100),
                         TextInput::make('company_name')
-                            ->required(fn(Get $get): bool => $get('type') === 'Moral')
+                            ->required(fn(Get $get): bool => $get('type') === 'Fisica')
                             ->label(__('Company Name'))
                             ->maxLength(100)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->visible(fn(Get $get): bool => $get('type') === 'Fisica'),
 
-                    ])->visible(fn(Get $get): bool => $get('type') === 'Física' || $get('type') === 'Sin Efectos Fiscales')
+                    ])->visible(fn(Get $get): bool => in_array($get('type'), ['Fisica', 'Sin Efectos Fiscales']))
                         ->columns(3),
 
                     Section::make()->schema([
                         TextInput::make('name')
-                            ->required()
+                            ->required(fn(Get $get): bool => $get('type') === 'Moral')
                             ->label(__('Full Name'))
                             ->maxLength(100)
                             ->columnSpanFull(),
                         TextInput::make('company_name')
-                            ->required()
+                            ->required(fn(Get $get): bool => $get('type') === 'Moral')
                             ->label(__('Company Name'))
                             ->maxLength(100)
                             ->columnSpanFull(),
@@ -106,32 +99,26 @@ class ClientResource extends Resource
                         ->columnSpanFull(),
 
                     Section::make()->schema([
-                        // Radio::make('tax_type')
-                        //     ->options([
-                        //         'Iva' => 'Iva',
-                        //         'Retención' => 'Retención',
-                        //     ])
-                        //     ->translateLabel(),
-                        //    Toggle::make('iva')->inline(),
-                        //    Toggle::make('retencion')->inline(),
-
                         TextInput::make('rfc')
                             ->translateLabel()
-                            ->maxLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)
-                            ->minLength(fn(Get $get) => $get('type') === 'Física' ? 13 : 12)
-                            ->required(fn(Get $get): bool => $get('type') === 'Física' || $get('type') === 'Moral'),
+                            ->maxLength(fn(Get $get) => $get('type') === 'Fisica' ? 13 : 12)
+                            ->minLength(fn(Get $get) => $get('type') === 'Fisica' ? 13 : 12)
+                            ->required(fn(Get $get): bool => in_array($get('type'), ['Fisica', 'Moral']))
+                            ->visible(fn(Get $get): bool => $get('type') !== 'Sin Efectos Fiscales'),
                         TextInput::make('curp')
                             ->translateLabel()
                             ->nullable()
                             ->minLength(18)
                             ->maxLength(18)
                             ->alphaNum()
-                            ->regex('/^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$/'),
+                            ->regex('/^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$/')
+                            ->visible(fn(Get $get): bool => $get('type') === 'Fisica'),
                         TextInput::make('ine')
                             ->translateLabel()
                             ->nullable()
                             ->minLength(13)
-                            ->maxLength(13),
+                            ->maxLength(13)
+                            ->visible(fn(Get $get): bool => $get('type') === 'Fisica'),
                         TextInput::make('email')
                             ->translateLabel()
                             ->nullable()
@@ -348,7 +335,6 @@ class ClientResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
 
             ])
-            // TODO:: Hacer los select depndientes
             ->filters([
                 SelectFilter::make('country')
                     ->translateLabel()
@@ -387,13 +373,13 @@ class ClientResource extends Resource
                             \Illuminate\Support\Facades\Mail::to(\Illuminate\Support\Facades\Auth::user()->email)->send(new \App\Mail\DocumentEmail(ucfirst('aviso'), $pdfContent));
                             \Filament\Notifications\Notification::make()
                                 ->title('Documento enviado')
-                                ->body('El aviso de privacidad ha sido enviado por correo electrónico.')
+                                ->body('El aviso de privacidad ha sido enviado por correo electronico.')
                                 ->success()
                                 ->send();
                         } catch (\Exception $e) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Error')
-                                ->body('Ocurrió un error al enviar el correo electrónico.')
+                                ->body('Ocurrio un error al enviar el correo electronico.')
                                 ->danger()
                                 ->send();
                         }
@@ -441,3 +427,4 @@ class ClientResource extends Resource
         return Zipcode::where('zipcode', $zipcode)->exists();
     }
 }
+

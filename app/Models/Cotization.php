@@ -37,6 +37,7 @@ class Cotization extends Model
             'vigencia'       => 'datetime',
             'fecha_aprobada' => 'datetime',
             'fecha_entrega'  => 'datetime',
+            'tax'            => 'array',
         ];
     }
 

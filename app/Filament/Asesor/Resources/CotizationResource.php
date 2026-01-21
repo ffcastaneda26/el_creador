@@ -112,8 +112,40 @@ class CotizationResource extends Resource
                                 return true;
                             })
                             ->dehydrated(true)
-                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+                            ->afterStateUpdated(function (Set $set, Get $get) {
+                                $set('tax', []);
+                                CotizationResource::calculateTotals($set, $get);
+                            }),
                     ])->columns(3),
+
+                    Section::make('Impuestos')->schema([
+                        Select::make('tax')
+                            ->label('Impuestos')
+                            ->multiple()
+                            ->preload()
+                            ->options(fn() => array_column(self::getTaxesConfig(), 'label', 'key'))
+                            ->live()
+                            ->reactive()
+                            ->default([])
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get))
+                            ->visible(fn(Get $get) => $get('require_invoice')),
+                        TextInput::make('iva')
+                            ->required()
+                            ->translateLabel()
+                            ->inputMode('decimal')
+                            ->readOnly()
+                            ->disabled()
+                            ->dehydrated()
+                            ->visible(fn(Get $get) => $get('require_invoice')),
+                        TextInput::make('retencion_isr')
+                            ->required()
+                            ->translateLabel()
+                            ->inputMode('decimal')
+                            ->readOnly()
+                            ->disabled()
+                            ->dehydrated()
+                            ->visible(fn(Get $get) => $get('require_invoice')),
+                    ])->columns(3)->visible(fn(Get $get) => $get('require_invoice')),
 
                     Section::make()->schema([
                         Toggle::make('aprobada')
@@ -139,39 +171,31 @@ class CotizationResource extends Resource
                                 ->translateLabel()
                                 ->live(onBlur: true)
                                 ->inputMode('decimal')
-                                ->readOnly(),
-                            TextInput::make('descuento')
-                                ->default(0.00)
-                                ->translateLabel()
-                                ->live(onBlur: true)
-                                ->inputMode('decimal')
-                                ->minValue(0.00)
-                                ->rules(function (Get $get): array {
-                                    return ['numeric', 'lt:' . $get('subtotal')];
-                                })
-                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
-                            TextInput::make('envio')
-                                ->default(0.00)
-                                ->translateLabel()
-                                ->live(onBlur: true)
-                                ->inputMode('decimal')
-                                ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
-                            TextInput::make('iva')
-                                ->required()
-                                ->translateLabel()
-                                ->inputMode('decimal')
+                                ->readOnly()
                                 ->disabled()
-                                ->visible(fn(Get $get) => $get('require_invoice')),
-                            TextInput::make('retencion_isr')
-                                ->required()
-                                ->translateLabel()
-                                ->inputMode('decimal')
-                                ->disabled()
-                                ->visible(fn(Get $get) => $get('require_invoice')),
+                                ->dehydrated(),
+                        TextInput::make('descuento')
+                            ->default(0.00)
+                            ->translateLabel()
+                            ->live(onBlur: true)
+                            ->inputMode('decimal')
+                            ->minValue(0.00)
+                            ->maxValue(fn(Get $get) => $get('subtotal') ?? null)
+                            ->dehydrateStateUsing(fn($state) => $state === null ? 0 : $state)
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
+                        TextInput::make('envio')
+                            ->default(0.00)
+                            ->translateLabel()
+                            ->live(onBlur: true)
+                            ->inputMode('decimal')
+                            ->minValue(0.00)
+                            ->dehydrateStateUsing(fn($state) => $state === null ? 0 : $state)
+                            ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get)),
                             TextInput::make('total')
                                 ->required()
                                 ->disabled()
                                 ->translateLabel()
+                                ->readOnly()
                                 ->inputMode('decimal'),
                         ])->columns(3),
                     ])->columns(3),
@@ -231,6 +255,7 @@ class CotizationResource extends Resource
                             ->columns(4)
                             ->columnSpan('full')
                             ->live()
+                            ->afterStateUpdated(fn(callable $set, callable $get) => self::updateFormData($get, $set))
                             ->itemLabel(fn(array $state): ?string => $state['name'] ?? null),
                     ])->columnSpan('full'),
             ]);
@@ -367,7 +392,7 @@ class CotizationResource extends Resource
     public static function updateFormData($get, $set)
     {
         // Partidas
-        $partidas = $get("../..");
+        $partidas = $get("../..") ?? [];
         $subtotal = 0;
         foreach ($partidas as $partida) {
             $quantity                 = $partida['quantity'] ?? 0;
@@ -389,24 +414,48 @@ class CotizationResource extends Resource
     }
     public static function calculateTotals(Set $set, Get $get)
     {
-        $subtotal        = $get('subtotal');
-        $require_invoice = $get('require_invoice');
-        $descuento       = round(floatval($get('descuento')), 2);
-        $envio           = round(floatval($get('envio')), 2);
-        $iva             = 0.00;
-        $retencion_isr   = 0.00;
+        $subtotal       = round(floatval($get('subtotal')), 2);
+        $requireInvoice = $get('require_invoice');
+        $descuento      = round(floatval($get('descuento')), 2);
+        $envio          = round(floatval($get('envio')), 2);
 
-        if ($require_invoice) {
-            $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
-            $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-            $base_retencion       = round($subtotal - $descuento + $envio, 2);
-            $iva                  = round($base_retencion * $percentage_iva, 2);
-            $retencion_isr        = round($base_retencion * ($percentage_retencion / 100), 2);
+        // El descuento aplica sobre el subtotal y afecta el IVA/retenciones. El envío se suma antes de calcular impuestos.
+        $base        = round($subtotal - $descuento + $envio, 2);
+        $base        = max($base, 0); // Evita bases negativas.
+        $iva         = 0.00;
+        $retenciones = 0.00;
+
+        if ($requireInvoice) {
+            $taxSelections = $get('tax') ?? [];
+            $taxConfig     = collect(self::getTaxesConfig())->keyBy('key');
+            foreach ($taxSelections as $taxKey) {
+                if (! $taxConfig->has($taxKey)) {
+                    continue;
+                }
+                $tax    = $taxConfig[$taxKey];
+                $amount = round($base * ($tax['percent'] / 100), 2);
+                if ($tax['type'] === 'add') {
+                    $iva += $amount;
+                }
+                if ($tax['type'] === 'retention') {
+                    $retenciones += $amount;
+                }
+            }
+        } else {
+            $set('tax', []);
         }
 
-        $set('iva', $iva);
-        $set('retencion_isr', $retencion_isr);
-        $total = round($subtotal + $iva - $descuento + $envio - $retencion_isr, 2);
+        $set('iva', round($iva, 2));
+        $set('retencion_isr', round($retenciones, 2));
+        $total = round($base + $iva - $retenciones, 2);
         $set('total', $total);
+    }
+
+    public static function getTaxesConfig(): array
+    {
+        return [
+            ['key' => 'iva_16', 'label' => 'IVA 16%', 'percent' => 16.00, 'type' => 'add'],
+            ['key' => 'ret_iva_1_25', 'label' => 'Ret. IVA 1.25%', 'percent' => 1.25, 'type' => 'retention'],
+        ];
     }
 }

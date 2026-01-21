@@ -12,10 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('clients', 'type')) {
+            return;
+        }
         Schema::table('clients', function (Blueprint $table) {
-                   $table->enum('type', array_column(ClientTypeEnum::cases(), 'value'))
-                  ->default(ClientTypeEnum::Fisica->value)
-                  ->comment('Régimen Fiscal');
+            $table->enum('type', array_column(ClientTypeEnum::cases(), 'value'))
+                ->default(ClientTypeEnum::fisica->value)
+                ->comment('Regimen Fiscal');
         });
     }
 
@@ -24,8 +27,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('clients', function (Blueprint $table) {
-            $table->dropColumn('type');
-        });
+        if (Schema::hasColumn('clients', 'type')) {
+            Schema::table('clients', function (Blueprint $table) {
+                $table->dropColumn('type');
+            });
+        }
     }
 };
