@@ -194,27 +194,7 @@ class PdfController extends Controller
                         $posy = $posy + 5;
                     }
                 }
-
-                // Unidad de medida: texto justificado que ocupa la columna
-                $unidadX     = 53;
-                $unidadY     = 90;
-                $unidadWidth = 55;
-                $fpdi->SetXY($unidadX, $unidadY);
-                $fpdi->SetFont("Arial", "", 8);
-                $textoUnidad = "EL PESO APROXIMADO DE LA BOTARGA ES DE 12 KG\n"
-                    . "- MEDIDA ESTANDAR PARA PERSONAS DE HASTA 1.75 CM DE ALTO ACOPLADO A LA HERGONOMIA HUMANA\n"
-                    . "- SE PUEDE ADAPTAR A LA MEDIDA SOLICITADA POR EL CLIENTE\n"
-                    . "- EL SISTEMA DE VENTILACION ES PREMIUM DE 12V CON PILA RECARGABLE\n\n"
-                    . "TODOS LOS MATERIALES SON DE EXCELENTE CALIDAD, LA MAYORIA SON DE IMPORTACION, LA CABEZA ESTA HECHA DE STL, ES UN MATERIAL SUSTENTABLE Y ES EN IMPRESION 3D, ES DURABLE, NO OCASIONA ALERGIAS, LIGERO Y MAS RESISTENTE.\n\n"
-                    . "EL PRECIO REAL ES DE $ " . number_format($data->total, 2, '.', ',');
-                $fpdi->MultiCell($unidadWidth, 4, $textoUnidad, 0, 'J');
-
-                $fpdi->SetFont("Arial", "B", 9);
-                $fpdi->MultiCell($unidadWidth, 4, "ESTA SEMANA CONTAMOS CON EL 15% DE DESCUENTO VALIDO HASTA AGOTAR FECHAS\nINCLUYE SISTEMA DE VENTILACION PREMIUM DE REGALO CON BATERIA INCLUIDA Y BOLSA DE TRASLADO", 0, 'J');
-
-                $fpdi->SetFont("Arial", "B", 8);
-                $fpdi->MultiCell($unidadWidth, 4, "TOTAL: $ " . number_format($data->total, 2, '.', ','), 0, 'J');
-
+                // Detalles de la cotización
                 $partidas = $data->details()->get();
 
                 if ($partidas->count() > 0) {
@@ -299,7 +279,7 @@ class PdfController extends Controller
                 // Anticipo del 80% en hoja 2 (ajusta coordenadas si el template cambia)
                 $fpdi->SetFont("Arial", "B", 11);
                 $anticipo80 = round($data->total * 0.80, 2);
-                $fpdi->Text(120, 190, '$ ' . number_format($anticipo80, 2, '.', ','));
+                $fpdi->Text(69.2, 130.2, '$ ' . number_format($anticipo80, 2, '.', ','));
                 $fpdi->SetFont("Arial", "", 11);
             }
 
@@ -558,15 +538,12 @@ class PdfController extends Controller
             $fpdi->Text(120, 73, $costo_letras);
         }
 
-        // Fecha de Firma (usa date_approved si existe, si no usa date)
-        $approvedDate = $data->date_approved ?? $data->date;
-        if ($approvedDate) {
-            $fpdi->Text(85, 225, $approvedDate->format('d'));
-            $nombre_mes = GeneralHelp::spanish_month($approvedDate, 'l');
-            $fpdi->Text(117, 225, $nombre_mes);
-            $fpdi->SetFont("arial", "", 11);
-            $fpdi->Text(156, 225, $approvedDate->format('Y'));
-        }
+        // Fecha de Firma
+        $fpdi->Text(85, 225, $data->date_approved->format('d'));
+        $nombre_mes = GeneralHelp::spanish_month($data->date_approved, 'l');
+        $fpdi->Text(117, 225, $nombre_mes);
+        $fpdi->SetFont("arial", "", 11);
+        $fpdi->Text(156, 225, $data->date_approved->format('Y'));
 
         // Nombre del Comprador
         $fpdi->SetFont("arial", "B", 12);
@@ -638,11 +615,8 @@ class PdfController extends Controller
 
         $fpdi->text(30, 87, $address);
 
-        // Ciudad (protege nulos)
-        $cityName = $data->city?->name ?? ($data->client?->city?->name ?? '');
-        if ($cityName) {
-            $fpdi->text(24, 93.5, $cityName);
-        }
+        // Ciudad
+        $fpdi->text(24, 93.5, $data->city->name);
 
         // Código postal - Teléfono y Celular
         $fpdi->text(78, 93.5, $data->zipcode);
