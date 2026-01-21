@@ -24,15 +24,16 @@ class EditCotization extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $subtotal = 0;
-        if (! isset($data['client_id'])) {
-            $cotization        = $this->getRecord();
+        $subtotal   = 0;
+        $cotization = $this->getRecord();
+
+        if (! isset($data['client_id']) && $cotization) {
             $data['client_id'] = $cotization->client_id;
         }
-        if ($cotization->details) {
-            foreach ($cotization->details as $detail) {
-                $subtotal += round(floatval($detail['price'] ?? 0) * floatval($detail['quantity'] ?? 0), 2);
-            }
+
+        $details = $cotization?->details ?? [];
+        foreach ($details as $detail) {
+            $subtotal += round(floatval($detail['price'] ?? 0) * floatval($detail['quantity'] ?? 0), 2);
         }
 
         $descuento               = round($data['descuento'], 2);
