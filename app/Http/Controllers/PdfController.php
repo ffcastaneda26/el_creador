@@ -229,7 +229,7 @@ class PdfController extends Controller
                     $fecha_entrega_espanol = GeneralHelp::normalize_text(
                         GeneralHelp::spanish_date($data->fecha_entrega, 'n', 'n', 'dmy')
                     );
-                    $fpdi->text(95, 185, 'Fecha de Entrega: ' . $fecha_entrega_espanol);
+                    $fpdi->text(95, 255, 'Fecha de Entrega: ' . $fecha_entrega_espanol);
                 }
 
                 // Totales
@@ -539,11 +539,14 @@ class PdfController extends Controller
         }
 
         // Fecha de Firma
-        $fpdi->Text(85, 225, $data->date_approved->format('d'));
-        $nombre_mes = GeneralHelp::spanish_month($data->date_approved, 'l');
-        $fpdi->Text(117, 225, $nombre_mes);
-        $fpdi->SetFont("arial", "", 11);
-        $fpdi->Text(156, 225, $data->date_approved->format('Y'));
+        $approvedDate = $data->date_approved ?? $data->date;
+        if ($approvedDate) {
+            $fpdi->Text(85, 225, $approvedDate->format('d'));
+            $nombre_mes = GeneralHelp::spanish_month($approvedDate, 'l');
+            $fpdi->Text(117, 225, $nombre_mes);
+            $fpdi->SetFont("arial", "", 11);
+            $fpdi->Text(156, 225, $approvedDate->format('Y'));
+        }
 
         // Nombre del Comprador
         $fpdi->SetFont("arial", "B", 12);
@@ -616,7 +619,7 @@ class PdfController extends Controller
         $fpdi->text(30, 87, $address);
 
         // Ciudad
-        $fpdi->text(24, 93.5, $data->city->name);
+        $fpdi->text(24, 93.5, $data->city?->name ?? '');
 
         // Código postal - Teléfono y Celular
         $fpdi->text(78, 93.5, $data->zipcode);

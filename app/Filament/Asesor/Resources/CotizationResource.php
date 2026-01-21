@@ -455,7 +455,7 @@ class CotizationResource extends Resource
     {
         return [
             ['key' => 'iva_16', 'label' => 'IVA 16%', 'percent' => 16.00, 'type' => 'add'],
-            ['key' => 'ret_iva_1_25', 'label' => 'Ret. IVA 1.25%', 'percent' => 1.25, 'type' => 'retention'],
+            ['key' => 'ret_iva_1_25', 'label' => 'Ret. ISR 1.25%', 'percent' => 1.25, 'type' => 'retention'],
         ];
     }
 }

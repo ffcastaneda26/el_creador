@@ -84,7 +84,11 @@ class OrderResource extends Resource
                                         ->translateLabel()
                                         ->reactive()
                                         // ->disabled(fn(Get $get) => ! $get('client_id'))
-                                        ->disabled(fn($state) => $state)
+                                        ->afterStateUpdated(function (Set $set, $state) {
+                                            if (! $state) {
+                                                $set('date_approved', null);
+                                            }
+                                        })
                                         ->dehydrated(true),
 
                                     Forms\Components\DatePicker::make('date_approved')
@@ -152,6 +156,8 @@ class OrderResource extends Resource
                                         ->default(0.00)
                                         ->translateLabel()
                                         ->readOnly()
+                                        ->disabled()
+                                        ->dehydrated()
                                         ->visible(fn(Get $get) => $get('require_invoice')), // Se muestra si require_invoice es true
                                     Forms\Components\Placeholder::make('')
                                         ->visible(fn(Get $get) => ! $get('require_invoice')), // Placeholder si require_invoice es false
@@ -161,6 +167,8 @@ class OrderResource extends Resource
                                         ->translateLabel()
                                         ->inputMode('decimal')
                                         ->readOnly()
+                                        ->disabled()
+                                        ->dehydrated()
                                         ->visible(fn(Get $get) => $get('require_invoice')), // Se muestra si require_invoice es true
                                     Forms\Components\Placeholder::make('')
                                         ->visible(fn(Get $get) => ! $get('require_invoice')), // Placeholder si require_invoice es false
@@ -171,6 +179,8 @@ class OrderResource extends Resource
                                         ->default(0.00)
                                         ->translateLabel()
                                         ->readOnly()
+                                        ->disabled()
+                                        ->dehydrated()
                                         ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
                                     Forms\Components\TextInput::make('advance')
                                         ->required()
@@ -184,7 +194,9 @@ class OrderResource extends Resource
                                         ->numeric()
                                         ->default(0.00)
                                         ->translateLabel()
-                                        ->readOnly(),
+                                        ->readOnly()
+                                        ->disabled()
+                                        ->dehydrated(),
                                 ])->disabled(fn(Get $get) => ! $get('client_id'))
                                     ->columns(7),
 
@@ -292,6 +304,10 @@ class OrderResource extends Resource
                                         ->columnSpan(2),
                                     Forms\Components\TextInput::make('shipping_cost')
                                         ->label('Costo Envío')
+                                        ->numeric()
+                                        ->default(0.00)
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get))
                                         ->required(fn(Get $get): bool => filled($get('shipping_company'))),
                                     Forms\Components\TextInput::make('shipping_company_address')
                                         ->label('Dirección Empresa de Envío')
@@ -488,18 +504,20 @@ class OrderResource extends Resource
         $require_invoice = $get('require_invoice');
         $subtotal        = round(floatval($get('subtotal')), 2);
         $descuento       = round(floatval($get('discount')), 2);
+        $shipping_cost   = round(floatval($get('shipping_cost')), 2);
         $anticipo        = round(floatval($get('advance')), 2);
         $retencion_isr   = 00.00;
         $tax             = 00.00;
+        $base            = round($subtotal - $descuento + $shipping_cost, 2);
+        $base            = max($base, 0);
         if ($require_invoice) {
             $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
             $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-            $base_retencion       = round($subtotal - $descuento, 2);
-            $tax                  = round($base_retencion * $percentage_iva, 2);
-            $retencion_isr        = round($base_retencion * ($percentage_retencion / 100), 2);
+            $tax                  = round($base * $percentage_iva, 2);
+            $retencion_isr        = round($base * ($percentage_retencion / 100), 2);
         }
 
-        $total           = round($subtotal - $descuento + $tax - $retencion_isr, 2);
+        $total           = round($base + $tax - $retencion_isr, 2);
         $pending_balance = round($total - $anticipo, 2);
 
         $set('tax', $tax);
