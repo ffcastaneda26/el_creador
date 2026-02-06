@@ -10,6 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class EditCotization extends EditRecord
 {
@@ -31,17 +32,25 @@ class EditCotization extends EditRecord
             $data['client_id'] = $cotization->client_id;
         }
 
+        if (empty($data['client_id'])) {
+            throw ValidationException::withMessages([
+                'client_id' => 'Debes seleccionar un cliente.',
+            ]);
+        }
+
         $details = $cotization?->details ?? [];
         foreach ($details as $detail) {
             $subtotal += round(floatval($detail['price'] ?? 0) * floatval($detail['quantity'] ?? 0), 2);
         }
 
-        $descuento               = round($data['descuento'], 2);
-        $envio                   = round($data['envio'], 2);
+        $descuento               = round((float) ($data['descuento'] ?? 0), 2);
+        $envio                   = round((float) ($data['envio'] ?? 0), 2);
         $retencion_isr           = 0;
         $iva                     = 0;
         $client                  = Client::find($data['client_id']);
-        $data['require_invoice'] = $client && $client->type !== 'Sin Efectos Fiscales';
+        $data['require_invoice'] = $client
+            ? $client->type !== 'Sin Efectos Fiscales'
+            : (bool) ($data['require_invoice'] ?? true);
         if ($data['require_invoice']) {
             $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
             $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);

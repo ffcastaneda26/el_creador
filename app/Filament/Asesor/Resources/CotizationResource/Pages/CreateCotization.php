@@ -8,6 +8,7 @@ use App\Models\Order;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Illuminate\Validation\ValidationException;
 
 class CreateCotization extends CreateRecord
 {
@@ -15,13 +16,21 @@ class CreateCotization extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $subtotal                = round($data['subtotal'], 2);
-        $descuento               = round($data['descuento'], 2);
-        $envio                   = round($data['envio'], 2);
+        if (empty($data['client_id'])) {
+            throw ValidationException::withMessages([
+                'client_id' => 'Debes seleccionar un cliente.',
+            ]);
+        }
+
+        $subtotal                = round((float) ($data['subtotal'] ?? 0), 2);
+        $descuento               = round((float) ($data['descuento'] ?? 0), 2);
+        $envio                   = round((float) ($data['envio'] ?? 0), 2);
         $retencion_isr           = 0;
         $iva                     = 0;
         $client                  = Client::find($data['client_id']);
-        $data['require_invoice'] = $client && $client->type !== 'Sin Efectos Fiscales';
+        $data['require_invoice'] = $client
+            ? $client->type !== 'Sin Efectos Fiscales'
+            : (bool) ($data['require_invoice'] ?? true);
 
         if ($data['require_invoice']) {
             $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);

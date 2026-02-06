@@ -81,7 +81,7 @@ class CotizationResource extends Resource
                             $clientModel = Client::find($state);
                             $set('require_invoice', $clientModel->type !== 'Sin Efectos Fiscales');
                         })
-                        ->disabled(fn(Get $get) => $get('aprobada')),
+                        ->disabled(fn(Get $get, string $operation) => $operation === 'edit' && (bool) $get('aprobada')),
                     MarkdownEditor::make('description')
                         ->required()
                         ->translateLabel()
