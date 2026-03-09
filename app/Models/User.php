@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
@@ -76,51 +77,87 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        if ($panel->getId() === 'admin') {
-            return $this->hasRole('Administrador')
-                || $this->hasRole('Super Admin')
-                || $this->hasRole('Gerente')
-                || $this->hasRole('Direccion')
-                || $this->hasRole('Dirección');
-        }
+        $panelId = $panel->getId();
 
-        if ($panel->getId() === 'portal') {
+        if ($panelId === 'portal') {
             return true;
         }
 
-        if ($panel->getId() === 'gerente') {
-            return $this->hasRole('Gerente');
+        if ($panelId === 'admin') {
+            return $this->hasAnyNormalizedRole([
+                'Super Admin',
+                'super_admin',
+                'Dueno CEO',
+                'Direccion',
+                'Administrador',
+                'Administrador Contador',
+            ]);
         }
 
-        if ($panel->getId() === 'direccion') {
-            return $this->hasRole('Direccion') || $this->hasRole('Dirección');
+        if ($panelId === 'direccion') {
+            return $this->hasAnyNormalizedRole([
+                'Dueno CEO',
+                'Direccion',
+            ]);
         }
 
-        if ($panel->getId() === 'asesor') {
-            return $this->hasRole('Asesor');
+        if ($panelId === 'gerente') {
+            return $this->hasAnyNormalizedRole([
+                'Gerente',
+                'Director Ventas',
+                'Gerente Ventas',
+            ]);
         }
 
-        if ($panel->getId() === 'vendedor') {
-            return $this->hasRole('Vendedor');
+        if ($panelId === 'asesor') {
+            return $this->hasAnyNormalizedRole(['Asesor']);
         }
 
-        if ($panel->getId() === 'capturista') {
-            return $this->hasRole('Capturista');
+        if ($panelId === 'vendedor') {
+            return $this->hasAnyNormalizedRole(['Vendedor']);
         }
 
-        if ($panel->getId() === 'produccion') {
-            return $this->hasRole('Produccion') || $this->hasRole('Producción');
+        if ($panelId === 'capturista') {
+            return $this->hasAnyNormalizedRole(['Capturista']);
         }
 
-        if ($panel->getId() === 'envios') {
-            return $this->hasRole('Envios') || $this->hasRole('Envíos');
+        if ($panelId === 'produccion') {
+            return $this->hasAnyNormalizedRole([
+                'Produccion',
+                'Director Produccion',
+                'Gerente Produccion',
+                'Operativo Produccion',
+            ]);
         }
 
-        if ($panel->getId() === 'almacen') {
-            return $this->hasRole('Almacen') || $this->hasRole('Almacén');
+        if ($panelId === 'almacen') {
+            return $this->hasAnyNormalizedRole([
+                'Almacen',
+                'Gerente CAE',
+            ]);
+        }
+
+        if ($panelId === 'envios') {
+            return $this->hasAnyNormalizedRole([
+                'Envios',
+                'Chofer Entrega',
+            ]);
         }
 
         return false;
+    }
+
+    private function hasAnyNormalizedRole(array $roles): bool
+    {
+        $normalizedTargets = collect($roles)
+            ->map(fn (string $role): string => Str::of($role)->ascii()->lower()->toString())
+            ->unique();
+
+        $normalizedUserRoles = $this->getRoleNames()
+            ->map(fn (string $role): string => Str::of($role)->ascii()->lower()->toString())
+            ->unique();
+
+        return $normalizedUserRoles->intersect($normalizedTargets)->isNotEmpty();
     }
 
     public function cotizations(): HasMany
@@ -183,3 +220,5 @@ class User extends Authenticatable implements FilamentUser
     }
 
 }
+
+

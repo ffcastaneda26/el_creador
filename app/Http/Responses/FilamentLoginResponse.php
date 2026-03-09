@@ -6,6 +6,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse as LoginResponseContract;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
 use Livewire\Features\SupportRedirects\Redirector;
 
 class FilamentLoginResponse implements LoginResponseContract
@@ -27,25 +28,33 @@ class FilamentLoginResponse implements LoginResponseContract
         }
 
         $roleToPanel = [
-            'Super Admin' => 'admin',
-            'Administrador' => 'admin',
-            'Direccion' => 'direccion',
-            'Dirección' => 'direccion',
-            'Gerente' => 'gerente',
-            'Produccion' => 'produccion',
-            'Producción' => 'produccion',
-            'Envios' => 'envios',
-            'Envíos' => 'envios',
-            'Almacen' => 'almacen',
-            'Almacén' => 'almacen',
-            'Asesor' => 'asesor',
-            'Vendedor' => 'vendedor',
-            'Capturista' => 'capturista',
+            'super admin' => 'admin',
+            'super_admin' => 'admin',
+            'dueno ceo' => 'direccion',
+            'direccion' => 'direccion',
+            'administrador contador' => 'admin',
+            'administrador' => 'admin',
+            'director ventas' => 'gerente',
+            'gerente ventas' => 'gerente',
+            'gerente' => 'gerente',
+            'asesor' => 'asesor',
+            'vendedor' => 'vendedor',
+            'capturista' => 'capturista',
+            'director produccion' => 'produccion',
+            'gerente produccion' => 'produccion',
+            'operativo produccion' => 'produccion',
+            'produccion' => 'produccion',
+            'gerente cae' => 'almacen',
+            'almacen' => 'almacen',
+            'chofer entrega' => 'envios',
+            'envios' => 'envios',
         ];
 
-        foreach ($roleToPanel as $role => $panelId) {
-            if ($user->hasRole($role)) {
-                return $panelId;
+        foreach ($user->getRoleNames() as $roleName) {
+            $normalizedRole = Str::of($roleName)->ascii()->lower()->toString();
+
+            if (array_key_exists($normalizedRole, $roleToPanel)) {
+                return $roleToPanel[$normalizedRole];
             }
         }
 

@@ -83,6 +83,11 @@ class Order extends Model
         return $this->hasOne(Manufacturing::class);
     }
 
+    public function event(): HasOne
+    {
+        return $this->hasOne(Event::class);
+    }
+
     public function municipality(): BelongsTo
     {
         return $this->belongsTo(Municipality::class);

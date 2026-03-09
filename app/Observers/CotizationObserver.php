@@ -10,9 +10,9 @@ class CotizationObserver
     public function created(Cotization $cotization): void
     {
         RoleNotifier::notify(
-            ['Administrador', 'Direccion', 'Dirección', 'Gerente', 'Asesor'],
-            'Nueva cotización',
-            'Se creó la cotización #' . $cotization->id
+            ['Administrador', 'Administrador Contador', 'Dueno CEO', 'Direccion', 'Gerente', 'Director Ventas', 'Gerente Ventas', 'Asesor'],
+            'Nueva cotizacion',
+            'Se creo la cotizacion #' . $cotization->id
         );
     }
 }

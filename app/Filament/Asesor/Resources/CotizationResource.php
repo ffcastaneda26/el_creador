@@ -73,57 +73,45 @@ class CotizationResource extends Resource
                         ->live()
                         ->afterStateHydrated(function (Set $set, Get $get) {
                             $client = $get('record')?->client;
-                            if ($client) {
-                                $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
+
+                            if (! $client) {
+                                return;
                             }
+
+                            $canInvoice = $client->type !== 'Sin Efectos Fiscales';
+
+                            if (! $canInvoice) {
+                                $set('require_invoice', false);
+                                $set('tax', []);
+
+                                return;
+                            }
+
+                            $set('require_invoice', (bool) ($get('require_invoice') ?? true));
+
+                            $currentTaxes = $get('tax') ?? [];
+                            $set('tax', empty($currentTaxes) ? CotizationResource::defaultTaxKeys() : $currentTaxes);
                         })
-                        ->afterStateUpdated(function (Set $set, $state) {
+                        ->afterStateUpdated(function (Set $set, Get $get, $state) {
                             $clientModel = Client::find($state);
-                            $set('require_invoice', $clientModel->type !== 'Sin Efectos Fiscales');
+
+                            if (! $clientModel || $clientModel->type === 'Sin Efectos Fiscales') {
+                                $set('require_invoice', false);
+                                $set('tax', []);
+                                CotizationResource::calculateTotals($set, $get);
+
+                                return;
+                            }
+
+                            $set('require_invoice', true);
+                            $set('tax', CotizationResource::defaultTaxKeys());
+                            CotizationResource::calculateTotals($set, $get);
                         })
                         ->disabled(fn(Get $get, string $operation) => $operation === 'edit' && (bool) $get('aprobada')),
                     MarkdownEditor::make('description')
                         ->required()
                         ->translateLabel()
                         ->columnSpan(2),
-                ]),
-
-                Group::make()->schema([
-                    Section::make()->schema([
-                        DatePicker::make('fecha')
-                            ->required()
-                            ->default(now())
-                            ->format('Y-m-d'),
-                        DatePicker::make('vigencia')
-                            ->required()
-                            ->format('Y-m-d')
-                            ->after('fecha'),
-
-                        Toggle::make('require_invoice')
-                            ->translateLabel()
-                            ->live(onBlur: true)
-                            ->reactive()
-                            ->afterStateHydrated(function (Set $set, Get $get) {
-                                $client = $get('record')?->client;
-                                if ($client) {
-                                    $set('require_invoice', $client->type !== 'Sin Efectos Fiscales');
-                                }
-                            })
-                            ->disabled()
-                            ->default(function (Get $get) {
-                                $client = $get('record')?->client;
-                                if ($client) {
-                                    return $client->type !== 'Sin Efectos Fiscales';
-                                }
-                                return true;
-                            })
-                            ->dehydrated(true)
-                            ->afterStateUpdated(function (Set $set, Get $get) {
-                                $set('tax', []);
-                                CotizationResource::calculateTotals($set, $get);
-                            }),
-                    ])->columns(3),
-
                     Section::make('Impuestos')->schema([
                         Select::make('tax')
                             ->label('Impuestos')
@@ -132,7 +120,7 @@ class CotizationResource extends Resource
                             ->options(fn() => array_column(self::getTaxesConfig(), 'label', 'key'))
                             ->live()
                             ->reactive()
-                            ->default([])
+                            ->default(fn(Get $get) => $get('require_invoice') ? self::defaultTaxKeys() : [])
                             ->afterStateUpdated(fn(Set $set, Get $get) => CotizationResource::calculateTotals($set, $get))
                             ->visible(fn(Get $get) => $get('require_invoice')),
                         TextInput::make('iva')
@@ -152,6 +140,47 @@ class CotizationResource extends Resource
                             ->dehydrated()
                             ->visible(fn(Get $get) => $get('require_invoice')),
                     ])->columns(3)->visible(fn(Get $get) => $get('require_invoice')),
+                ]),
+
+                Group::make()->schema([
+                    Section::make()->schema([
+                        DatePicker::make('fecha')
+                            ->required()
+                            ->default(now())
+                            ->format('Y-m-d'),
+                        DatePicker::make('vigencia')
+                            ->required()
+                            ->format('Y-m-d')
+                            ->after('fecha'),
+
+                        Toggle::make('require_invoice')
+                            ->translateLabel()
+                            ->live(onBlur: true)
+                            ->reactive()
+                            ->default(true)
+                            ->disabled(function (Get $get): bool {
+                                $clientId = $get('client_id');
+
+                                if (! $clientId) {
+                                    return false;
+                                }
+
+                                $client = Client::find($clientId);
+
+                                return $client?->type === 'Sin Efectos Fiscales';
+                            })
+                            ->dehydrated(true)
+                            ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                                if (! $state) {
+                                    $set('tax', []);
+                                } elseif (empty($get('tax'))) {
+                                    $set('tax', CotizationResource::defaultTaxKeys());
+                                }
+
+                                CotizationResource::calculateTotals($set, $get);
+                            }),
+                    ])->columns(3),
+
 
                     Section::make()->schema([
                         Toggle::make('aprobada')
@@ -457,6 +486,11 @@ class CotizationResource extends Resource
         $set('total', $total);
     }
 
+    public static function defaultTaxKeys(): array
+    {
+        return ['iva_16', 'ret_iva_1_25'];
+    }
+
     public static function getTaxesConfig(): array
     {
         return [
@@ -465,3 +499,4 @@ class CotizationResource extends Resource
         ];
     }
 }
+

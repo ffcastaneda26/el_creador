@@ -5,9 +5,9 @@ use App\Filament\Asesor\Resources\CotizationResource;
 use App\Models\Client;
 use App\Models\Cotization;
 use App\Models\Order;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
-use Filament\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
 
 class CreateCotization extends CreateRecord
@@ -22,70 +22,99 @@ class CreateCotization extends CreateRecord
             ]);
         }
 
-        $subtotal                = round((float) ($data['subtotal'] ?? 0), 2);
-        $descuento               = round((float) ($data['descuento'] ?? 0), 2);
-        $envio                   = round((float) ($data['envio'] ?? 0), 2);
-        $retencion_isr           = 0;
-        $iva                     = 0;
-        $client                  = Client::find($data['client_id']);
-        $data['require_invoice'] = $client
-            ? $client->type !== 'Sin Efectos Fiscales'
-            : (bool) ($data['require_invoice'] ?? true);
+        $subtotal = round((float) ($data['subtotal'] ?? 0), 2);
+        $descuento = round((float) ($data['descuento'] ?? 0), 2);
+        $envio = round((float) ($data['envio'] ?? 0), 2);
 
-        if ($data['require_invoice']) {
-            $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
-            $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
-            $base_retencion       = round($subtotal - $descuento + $envio, 2);
-            $iva                  = round($base_retencion * $percentage_iva, 2);
-            $retencion_isr        = round($base_retencion * ($percentage_retencion / 100), 2);
+        $iva = 0.00;
+        $retencionIsr = 0.00;
+
+        $client = Client::find($data['client_id']);
+        $isNoFiscal = $client && $client->type === 'Sin Efectos Fiscales';
+
+        if ($isNoFiscal) {
+            $data['require_invoice'] = false;
+        } else {
+            $data['require_invoice'] = (bool) ($data['require_invoice'] ?? true);
         }
 
-        $total                 = round($subtotal + $iva - $descuento + $envio - $retencion_isr, 2);
-        $data['subtotal']      = $subtotal;
-        $data['descuento']     = $descuento;
-        $data['iva']           = $iva;
-        $data['retencion_isr'] = $retencion_isr;
-        $data['total']         = $total;
-        $data['user_id']       = Auth::user()->id;
+        $taxSelections = collect($data['tax'] ?? []);
+
+        if ($data['require_invoice'] && $taxSelections->isEmpty()) {
+            $taxSelections = collect(CotizationResource::defaultTaxKeys());
+        }
+
+        $data['tax'] = $data['require_invoice'] ? $taxSelections->values()->all() : [];
+
+        $base = max(round($subtotal - $descuento + $envio, 2), 0);
+
+        if ($data['require_invoice']) {
+            $taxConfig = collect(CotizationResource::getTaxesConfig())->keyBy('key');
+
+            foreach ($taxSelections as $taxKey) {
+                $tax = $taxConfig->get($taxKey);
+
+                if (! $tax) {
+                    continue;
+                }
+
+                $amount = round($base * ($tax['percent'] / 100), 2);
+
+                if ($tax['type'] === 'add') {
+                    $iva += $amount;
+                }
+
+                if ($tax['type'] === 'retention') {
+                    $retencionIsr += $amount;
+                }
+            }
+        }
+
+        $total = round($base + $iva - $retencionIsr, 2);
+
+        $data['subtotal'] = $subtotal;
+        $data['descuento'] = $descuento;
+        $data['iva'] = round($iva, 2);
+        $data['retencion_isr'] = round($retencionIsr, 2);
+        $data['total'] = $total;
+        $data['user_id'] = Auth::id();
+
         return $data;
     }
 
     protected function handleRecordCreation(array $data): Cotization
     {
-        // Crea la cotización
         $cotization = Cotization::create($data);
 
-        // Si la cotización está aprobada, crea la orden de compra
         if ($cotization->aprobada) {
             $this->createOrderFromCotization($cotization);
-            Notification::make()->title('Se creó la cotización y la orden de compra')->success()->send();
+            Notification::make()->title('Se creo la cotizacion y la orden de compra')->success()->send();
+
             return $cotization;
         }
 
-        Notification::make()->title('Se creó Cotización')->success()->send();
+        Notification::make()->title('Se creo cotizacion')->success()->send();
+
         return $cotization;
     }
 
-    protected function createOrderFromCotization(Cotization $cotization)
+    protected function createOrderFromCotization(Cotization $cotization): void
     {
-        // Lógica para mapear los campos de la cotización a la orden
         $orderData = [
-            'client_id'     => $cotization->client_id,
-            'date'          => now(),
-            'approved'      => false,
-            'subtotal'      => $cotization->subtotal,
-            'tax'           => $cotization->iva,
+            'client_id' => $cotization->client_id,
+            'date' => now(),
+            'approved' => false,
+            'subtotal' => $cotization->subtotal,
+            'tax' => $cotization->iva,
             'retencion_isr' => $cotization->retencion_isr,
-            'discount'      => $cotization->descuento,
-            'total'         => $cotization->total,
+            'discount' => $cotization->descuento,
+            'total' => $cotization->total,
             'shipping_cost' => $cotization->envio,
-            'cotization_id' => $cotization->id, // Asigna el ID de la cotización
-            'user_id'       => $cotization->user_id,
+            'cotization_id' => $cotization->id,
+            'user_id' => $cotization->user_id,
             'require_invoice' => $cotization->require_invoice,
-            // Agrega otros campos de la cotización que necesites mapear a la orden.
         ];
 
         Order::create($orderData);
     }
-
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Event extends Model
 {
@@ -11,6 +12,7 @@ class Event extends Model
 
     protected $guarded = [];
     protected $fillable = [
+        'order_id',
         'title',
         'description',
         'color',
@@ -18,4 +20,8 @@ class Event extends Model
         'ends_at',
     ];
 
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
 }
