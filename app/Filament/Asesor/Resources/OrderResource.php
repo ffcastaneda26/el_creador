@@ -390,6 +390,19 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('total')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\IconColumn::make('delivered')
+                    ->label('Entregada')
+                    ->boolean()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('delivered_at')
+                    ->label('Fecha entrega')
+                    ->dateTime('d M y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('deliveredBy.name')
+                    ->label('Entregada por')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('delivery_date')
                     ->translateLabel()
                     ->searchable()
@@ -448,6 +461,31 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('mark_delivered')
+                    ->button()
+                    ->label('Entregado')
+                    ->size('xs')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(function (Order $record): bool {
+                        return \Filament\Facades\Filament::getCurrentPanel()?->getId() === 'envios'
+                            && ! $record->delivered
+                            && auth()->user()?->can('update_order');
+                    })
+                    ->action(function (Order $record): void {
+                        $record->update([
+                            'delivered' => true,
+                            'delivered_at' => now(),
+                            'delivered_by' => auth()->id(),
+                        ]);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Entrega confirmada')
+                            ->body('La botarga se marco como entregada.')
+                            ->success()
+                            ->send();
+                    }),
                 // Tables\Actions\Action::make(__('Contrat'))
                 //     ->icon('heroicon-o-clipboard-document-list')
                 //     ->url(fn(Order $record) => route('pdf-document', [$record, 'contrato']))
@@ -567,3 +605,5 @@ class OrderResource extends Resource
         return $zipcode;
     }
 }
+
+

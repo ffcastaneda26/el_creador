@@ -23,6 +23,9 @@ class Order extends Model
         'discount',
         'total',
         'delivery_date',
+        'delivered',
+        'delivered_at',
+        'delivered_by',
         'address',
         'street',
         'number',
@@ -54,6 +57,8 @@ class Order extends Model
             'date'                 => 'datetime:Y-m-d',
             'date_approved'        => 'datetime:Y-m-d',
             'delivery_date'        => 'datetime:Y-m-d',
+            'delivered'            => 'boolean',
+            'delivered_at'         => 'datetime:Y-m-d H:i:s',
             'payment_promise_date' => 'datetime:Y-m-d',
         ];
     }
@@ -101,6 +106,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function deliveredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'delivered_by');
     }
 
     public function zipcode(): BelongsTo
