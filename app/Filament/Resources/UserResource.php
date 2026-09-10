@@ -134,7 +134,9 @@ class UserResource extends Resource
                         ->translateLabel()
                         ->preload()
                         ->required(fn($state, $record) => $record ? false : true)
-                        ->visible(fn($state, $record) => $record ? false : true),
+                        // Visible siempre: al editar se muestra para poder consultar y cambiar
+                        // los roles, pero solo lo puede modificar quien tenga 'update_user'.
+                        ->disabled(fn($state, $record) => $record && ! Auth::user()->can('update_user')),
 
                     // CheckboxList::make('permissions')
                     //     ->relationship(name: 'rolpermissionses', titleAttribute: 'name')
@@ -145,6 +147,7 @@ class UserResource extends Resource
                         ->label('Permisos')->translateLabel()
                         ->multiple()
                         ->preload()
+                        ->disabled(fn($state, $record) => $record && ! Auth::user()->can('update_user'))
                         ->visible(fn() => Permission::count()),
 
                 ]),

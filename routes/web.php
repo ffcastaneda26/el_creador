@@ -7,23 +7,19 @@ use App\Livewire\Clients\Clients;
 use App\Livewire\Receipts\Receipts;
 use App\Livewire\TestingPdfs;
 use App\Livewire\WarehouseRequests\WarehouseRequests;
-use App\Models\Purchase;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-Route::get('/probando',function(){
-    $records = Purchase::status('pendiente')->get();
-    $purchase = Purchase::findOrFail(2);
-
-    dd($purchase->pendings_to_receive);
-})->name('probando');
-
-// Route::get('pdf/download/{record}/{document}', [PdfController::class, 'index'])->name('pdf-document');
-Route::get('pdf/download/{record}/{document}/{output?}', [PdfController::class, 'index'])->name('pdf-document');
 
 Route::get('/login', function () {
     return redirect()->to('/portal/login');
 })->name('login');
+
+// Los documentos se generan a partir de registros de clientes, cotizaciones y pedidos:
+// requieren sesión y el propio controlador autoriza el registro contra su policy.
+Route::middleware('auth')->group(function () {
+    Route::get('pdf/download/{record}/{document}/{output?}', [PdfController::class, 'index'])->name('pdf-document');
+});
 
 Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])->group(function () {
     Route::get('/', function () {

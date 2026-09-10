@@ -8,6 +8,7 @@ use App\Models\Cotization;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use setasign\Fpdi\Fpdi;
 
@@ -16,6 +17,8 @@ class PdfController extends Controller
 
     public function index($record, string $document, string $output = "view")
     {
+        $this->authorizeDocument($record, $document);
+
         switch ($document) {
             case 'aviso':
                 $pdfContent = $this->aviso_pricacidad($record);
@@ -45,6 +48,24 @@ class PdfController extends Controller
                 return response()->json(['message' => 'Error al enviar el correo electrónico: ' . $e->getMessage()], 500);
             }
         }
+    }
+
+    /**
+     * Autoriza el documento contra la policy del registro que lo origina, para que
+     * nadie pueda descargar documentos de otros registros cambiando el ID en la URL.
+     */
+    private function authorizeDocument($record, string $document): void
+    {
+        $model = match ($document) {
+            'aviso'      => Client::find($record),
+            'cotizacion' => Cotization::find($record),
+            'contrato'   => Order::find($record),
+            default      => abort(404, 'Tipo de documento no válido.'),
+        };
+
+        abort_if($model === null, 404);
+
+        Gate::authorize('view', $model);
     }
 
     /**
