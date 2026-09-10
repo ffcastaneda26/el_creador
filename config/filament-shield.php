@@ -23,7 +23,9 @@ return [
     'super_admin' => [
         'enabled' => true,
         'name' => 'Super Admin',
-        'define_via_gate' => false,
+        // Via gate: el Super Admin pasa cualquier policy sin depender de que existan
+        // las filas de permisos en la BD, para que no quede bloqueado tras un deploy.
+        'define_via_gate' => true,
         'intercept_gate' => 'before', // after
     ],
 

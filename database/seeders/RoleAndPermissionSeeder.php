@@ -41,9 +41,20 @@ class RoleAndPermissionSeeder extends Seeder
             'Chofer Entrega',
         ];
 
-        $roleModels = collect($roleNames)->mapWithKeys(function (string $roleName): array {
+        $normalize = fn (string $roleName): string => Str::of($roleName)->ascii()->lower()->toString();
+
+        $existingRoles = Role::query()
+            ->where('guard_name', 'web')
+            ->get()
+            ->keyBy(fn (Role $role): string => $normalize($role->name));
+
+        // Reutiliza el rol que ya exista aunque difiera en acentos o mayusculas
+        // ("Produccion" aqui vs "Produccion" con tilde en produccion, igual que
+        // "Envios" y "Almacen"). Si no, se crearian roles duplicados y las
+        // asignaciones de usuarios se quedarian apuntando al rol sin permisos.
+        $roleModels = collect($roleNames)->mapWithKeys(function (string $roleName) use ($existingRoles, $normalize): array {
             return [
-                $roleName => Role::firstOrCreate([
+                $roleName => $existingRoles->get($normalize($roleName)) ?? Role::create([
                     'name' => $roleName,
                     'guard_name' => 'web',
                 ]),
