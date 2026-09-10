@@ -4,6 +4,7 @@ namespace App\Filament\Asesor\Resources;
 use App\Filament\Asesor\Resources\OrderResource\Pages;
 use App\Filament\Asesor\Resources\OrderResource\RelationManagers;
 use App\Models\Client;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\Order;
 use App\Models\State;
 use App\Models\Zipcode;
@@ -391,6 +392,13 @@ class OrderResource extends Resource
                     ->formatStateUsing(fn(string $state): string => number_format($state, 2))
                     ->alignEnd()
                     ->label(__('Pending')),
+                // Distingue lo cobrado de lo unicamente prometido.
+                Tables\Columns\TextColumn::make('payment_promise_status')
+                    ->label('Cobranza')
+                    ->badge()
+                    ->description(fn (Order $record): ?string => $record->days_overdue > 0
+                        ? $record->days_overdue . ' dias de atraso'
+                        : null),
 
                 Tables\Columns\TextColumn::make('total')
                     ->numeric()
@@ -443,11 +451,12 @@ class OrderResource extends Resource
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('payment_promise_date')
-                    ->translateLabel()
+                    ->label('Se compromete a pagar')
                     ->searchable()
                     ->sortable()
                     ->date('d M y')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->placeholder('sin compromiso')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('user.name')
                     ->numeric()
                     ->sortable()
@@ -462,7 +471,14 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('overdue')
+                    ->label('Solo saldos vencidos')
+                    ->query(fn (Builder $query): Builder => $query->overdue())
+                    ->toggle(),
+                Tables\Filters\Filter::make('with_balance')
+                    ->label('Con saldo pendiente')
+                    ->query(fn (Builder $query): Builder => $query->where('pending_balance', '>', 0))
+                    ->toggle(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

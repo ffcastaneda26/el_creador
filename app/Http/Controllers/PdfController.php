@@ -104,13 +104,17 @@ class PdfController extends Controller
                 $fpdi->Text(50, 121, $standard_name);                                              // Nombre
                                                                                                    // Nombre
                 $fpdi->Text(52, 132, $data->phone);                                                // Teléfono
-                $fpdi->Text(66, 143.1, strtolower($data->email));                                  // Correo
-                $address = $data->address . ' Col: ' . $data->colony . ' en ' . $data->city->name; // Calle y número
+                $fpdi->Text(66, 143.1, strtolower((string) $data->email));                          // Correo
+                // La calle y el numero viven en street/number, no en address (que suele venir
+                // vacio). Se arma igual que en el contrato para no imprimir la colonia sola.
+                $calle = trim('Calle ' . $data->street . ' No. ' . $data->number
+                    . ($data->interior_number ? ' Int: ' . $data->interior_number : ''));
+                $address = $calle . ' Col: ' . $data->colony . ' en ' . $data->city->name;
                                                                                                    // $address = strtr($address, array_combine($buscar, $reemplazar));
                 $address = GeneralHelp::normalize_text($address);
                 $fpdi->Text(50, 155, $address);
                 $municipality_state = $data->municipality->name . ',' . $data->state->abbreviated . '   C.P. ' . $data->zipcode;
-                $fpdi->Text(50, 160, $municipality_state);
+                $fpdi->Text(50, 160, GeneralHelp::normalize_text($municipality_state));
                 $fpdi->Text(92, 166.1, $data->rfc);   // RFC
                 $fpdi->Text(68, 177.5, $data->ine);   // INE
                 $fpdi->Text(30, 226, $standard_name); // Nombre para firmar
@@ -199,7 +203,10 @@ class PdfController extends Controller
                 $fpdi->SetFont("Arial", "", 8);
 
                 $fpdi->SetFont("Arial", "B", 6);
-                $fpdi->text(81 - strlen(number_format($data->total)), 203, number_format($data->total, 2));
+                // Se alinea a la derecha midiendo la MISMA cadena que se imprime: antes se medía
+                // sin decimales y sobraban 3 caracteres de corrimiento.
+                $total_txt = number_format($data->total, 2);
+                $fpdi->text(81 - strlen($total_txt), 203, $total_txt);
 
                 $standar_description = GeneralHelp::normalize_text($data->description);
                 $arrayDescripcion    = explode("\n", $standar_description);
@@ -419,7 +426,7 @@ class PdfController extends Controller
             }
         }
         $fpdi->SetFont("arial", "B", $fontSize); // Negritas
-        $fpdi->Text(130, 178, ucfirst(strtolower($total_letras)));
+        $fpdi->Text(130, 178, $total_letras);
 
         // Anticipo
         // foreach ($fontSizes as $lengthThreshold => $size) {

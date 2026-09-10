@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use Filament\Pages;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Panel;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -28,6 +29,9 @@ class AsesorPanelProvider extends PanelProvider
         return $panel
             ->id('asesor')
             ->path('asesor')
+            // Las tablas de este ERP tienen muchas columnas: sin esto Filament
+            // limita el contenido a 7xl y se ven cortadas a lo ancho.
+            ->maxContentWidth(MaxWidth::Full)
             ->login()
             ->colors([
                 'primary' => Color::Lime,
