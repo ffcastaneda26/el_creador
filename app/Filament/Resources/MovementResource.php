@@ -203,7 +203,7 @@ class MovementResource extends Resource
                         ->preserveFilenames()
                         ->columnSpanFull()
                         ->visible(function (callable $get): bool {
-                            return env('USE_VOUCHER_IMAGE', false);
+                            return config('creador.use_voucher_image');
                             // return $get('cost') ? false : true;
                         })
                         ->disabled(function (callable $get): bool {
@@ -216,7 +216,7 @@ class MovementResource extends Resource
                     ->translateLabel()
                     ->columnSpanFull()
                     ->visible(function (callable $get): bool {
-                        return env('USE_MOVEMENT_NOTES', false);
+                        return config('creador.use_movement_notes');
                         return $get('cost') ? false : true;
                     })
                     ->disabled(function (callable $get): bool {

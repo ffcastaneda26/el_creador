@@ -50,11 +50,16 @@ class FilamentLoginResponse implements LoginResponseContract
             'envios' => 'envios',
         ];
 
-        foreach ($user->getRoleNames() as $roleName) {
-            $normalizedRole = Str::of($roleName)->ascii()->lower()->toString();
+        $userRoles = $user->getRoleNames()
+            ->map(fn (string $roleName): string => Str::of($roleName)->ascii()->lower()->toString());
 
-            if (array_key_exists($normalizedRole, $roleToPanel)) {
-                return $roleToPanel[$normalizedRole];
+        // Se recorre el mapa, no los roles del usuario: el mapa esta ordenado de mayor
+        // a menor privilegio, asi quien tiene varios roles aterriza en el panel mas
+        // completo (Direccion antes que Asesor, Almacen antes que Envios) y no en el
+        // que la base de datos devuelva primero.
+        foreach ($roleToPanel as $normalizedRole => $panelId) {
+            if ($userRoles->contains($normalizedRole)) {
+                return $panelId;
             }
         }
 

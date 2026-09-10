@@ -10,7 +10,7 @@ class ManufacturingObserver
     public function created(Manufacturing $manufacturing): void
     {
         RoleNotifier::notify(
-            ['Administrador', 'Administrador Contador', 'Dueno CEO', 'Direccion', 'Gerente', 'Director Produccion', 'Gerente Produccion', 'Produccion', 'Producción'],
+            ['Administrador', 'Administrador Contador', 'Dueno CEO', 'Direccion', 'Gerente', 'Director Produccion', 'Gerente Produccion', 'Produccion'],
             'Nueva orden de fabricacion',
             'Se creo la orden de fabricacion #' . $manufacturing->folio
         );

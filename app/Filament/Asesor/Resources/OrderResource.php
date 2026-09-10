@@ -2,6 +2,7 @@
 namespace App\Filament\Asesor\Resources;
 
 use App\Filament\Asesor\Resources\OrderResource\Pages;
+use App\Filament\Asesor\Resources\OrderResource\RelationManagers;
 use App\Models\Client;
 use App\Models\Order;
 use App\Models\State;
@@ -188,13 +189,17 @@ class OrderResource extends Resource
                                         ->disabled()
                                         ->dehydrated()
                                         ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
+                                    // El anticipo ya no se captura: es la suma de los pagos
+                                    // registrados en el pedido y se recalcula solo.
                                     Forms\Components\TextInput::make('advance')
                                         ->required()
                                         ->numeric()
                                         ->default(0.00)
                                         ->translateLabel()
-                                        ->live(onBlur: true)
-                                        ->afterStateUpdated(fn(Set $set, Get $get) => OrderResource::calculateTotals($set, $get)),
+                                        ->readOnly()
+                                        ->disabled()
+                                        ->dehydrated()
+                                        ->helperText('Suma de los pagos registrados'),
                                     Forms\Components\TextInput::make('pending_balance')
                                         ->required()
                                         ->numeric()
@@ -529,7 +534,7 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\PaymentsRelationManager::class,
         ];
     }
 
@@ -555,8 +560,8 @@ class OrderResource extends Resource
         $base            = round($subtotal - $descuento + $shipping_cost, 2);
         $base            = max($base, 0);
         if ($require_invoice) {
-            $percentage_iva       = round(env('PERCENTAGE_IVA', 16) / 100, 2);
-            $percentage_retencion = env('PERCENTAGE_RETENCION_ISR', 1.25);
+            $percentage_iva       = round(config('creador.percentage_iva') / 100, 2);
+            $percentage_retencion = config('creador.percentage_retencion_isr');
             $tax                  = round($base * $percentage_iva, 2);
             $retencion_isr        = round($base * ($percentage_retencion / 100), 2);
         }

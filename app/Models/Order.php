@@ -118,6 +118,23 @@ class Order extends Model
         return $this->belongsTo(Zipcode::class, 'zipcode');
     }
 
+    /**
+     * Recalcula el anticipo y el saldo a partir de los pagos realmente registrados.
+     *
+     * Los pagos son la unica fuente de verdad del dinero cobrado: `advance` es la
+     * suma de los pagos y `pending_balance` lo que falta contra el total. Se guarda
+     * en silencio para no volver a disparar los observers del pedido.
+     */
+    public function recalculateBalance(): void
+    {
+        $paid = (float) $this->payments()->sum('amount');
+
+        $this->advance = round($paid, 2);
+        $this->pending_balance = round(((float) $this->total) - $paid, 2);
+
+        $this->saveQuietly();
+    }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

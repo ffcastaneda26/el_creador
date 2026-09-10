@@ -10,6 +10,17 @@ class GeneralHelp
      * @param string $original_text
      * @return string
      */
+    /**
+     * Pone en mayuscula inicial cada palabra respetando acentos.
+     *
+     * ucwords() y strtolower() trabajan byte a byte: con texto UTF-8 dejaban
+     * cantidades como "DiecisEis" en los contratos impresos.
+     */
+    static public function title_case(?string $text): string
+    {
+        return mb_convert_case(mb_strtolower((string) $text, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+    }
+
     static public function normalize_text(string $original_text)
     {
         $search = ['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ', 'ñ'];
@@ -93,7 +104,7 @@ class GeneralHelp
         }
         $converter = new NumerosALetras();
         // $converter->anexar = null;
-        return ucwords(strtolower($converter->toInvoice($number, $decimals, $text))) . ' M/N';
+        return self::title_case($converter->toInvoice($number, $decimals, $text)) . ' M/N';
     }
 
     /**
@@ -110,7 +121,7 @@ class GeneralHelp
         }
         $converter = new NumerosALetras();
         $converter->anexar = null;
-        return ucwords(strtolower($converter->toInvoice($number, $decimals, $text))) . ' M/N';
+        return self::title_case($converter->toInvoice($number, $decimals, $text)) . ' M/N';
     }
 
     static public function to_letters_whitout_text($number, $decimals = 2)
@@ -120,7 +131,7 @@ class GeneralHelp
         }
         $converter = new NumerosALetras();
         $converter->anexar = null;
-        return ucwords(strtolower($converter->toInvoice($number, $decimals)));
+        return self::title_case($converter->toInvoice($number, $decimals));
     }
 
     static public function to_letters_rounded($number)
@@ -130,7 +141,7 @@ class GeneralHelp
         }
         $converter = new \jmencoder\NumerosALetras\NumerosALetras();
         $converter->anexar = null;
-        return ucwords(strtolower($converter->toWords($number)));
+        return self::title_case($converter->toWords($number));
     }
 
 
@@ -161,6 +172,6 @@ class GeneralHelp
         // Formatear decimales como fracción
         $fraction_text = $decimal_part . '/100';
 
-        return ucwords(strtolower($integer_text)) . ' ' . $fraction_text . ' M/N';
+        return self::title_case($integer_text) . ' ' . $fraction_text . ' M/N';
     }
 }

@@ -16,7 +16,7 @@ class InventoryManagement
             $product = self::getProduct($movement);
 
             if ($movement->key_movement->require_cost) {
-                $product->average_cost = self::calculateAverageCost($product,$movement,$type);
+                $product->average_cost = self::calculateAverageCost($movement,$type);
             }
 
             $newStock = self::calculateNewStock($movement->key_movement,$product->stock,$movement->quantity,$type);
@@ -63,11 +63,19 @@ class InventoryManagement
 
         if($type == 'normal'){
             $newStock = self::getNewStock($product->stock,$movement->quantity);
-            return ( $currentTotalCost + $amountMovement ) / $newStock;
+
+            // Si el movimiento deja la existencia en cero no hay costo que promediar:
+            // se conserva el ultimo costo conocido en lugar de dividir entre cero.
+            return $newStock == 0
+                ? $product->average_cost
+                : ( $currentTotalCost + $amountMovement ) / $newStock;
         }
         if($type == 'delete'){
             $newStock = self::getNewStock($product->stock,$movement->quantity*-1);
-            return ( $currentTotalCost - $amountMovement ) / $newStock;
+
+            return $newStock == 0
+                ? $product->average_cost
+                : ( $currentTotalCost - $amountMovement ) / $newStock;
         }
     }
 

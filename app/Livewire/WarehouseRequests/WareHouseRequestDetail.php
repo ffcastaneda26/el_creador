@@ -60,7 +60,18 @@ class WareHouseRequestDetail extends Component
     public function validate_quantity(): bool
     {
         $this->reset('quantity_error');
-        return $this->quantity <= $this->ware_request_detail->getPending() == 0 || $this->ware_request_detail->quantity - $this->ware_request_detail->quantity_delivered;
+        // Por precedencia de operadores, la version anterior evaluaba
+        // (($quantity <= $pending) == 0) || ($quantity - $delivered), que era
+        // justo lo contrario y dejaba surtir mas material del solicitado.
+        $pending = $this->ware_request_detail->getPending();
+
+        if ($this->quantity > $pending) {
+            $this->quantity_error = 'No puedes surtir mas de ' . $pending . ' pendientes.';
+
+            return false;
+        }
+
+        return true;
     }
 
      /**

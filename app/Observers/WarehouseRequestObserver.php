@@ -10,7 +10,7 @@ class WarehouseRequestObserver
     public function created(WarehouseRequest $request): void
     {
         RoleNotifier::notify(
-            ['Administrador', 'Administrador Contador', 'Dueno CEO', 'Direccion', 'Gerente', 'Almacen', 'Almacén', 'Gerente CAE'],
+            ['Administrador', 'Administrador Contador', 'Dueno CEO', 'Direccion', 'Gerente', 'Almacen', 'Gerente CAE'],
             'Nueva solicitud de almacen',
             'Se creo la solicitud #' . $request->folio
         );

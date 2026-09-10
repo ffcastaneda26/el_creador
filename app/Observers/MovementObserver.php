@@ -11,7 +11,6 @@ class MovementObserver
     public function created(Movement $movement): void
     {
         InventoryManagement::updateStock($movement,'normal');
-        InventoryManagement::calculateAverageCost($movement,'normal');
         if($movement->key_movement->is_purchase){
             $this->setLastPurchasePrice($movement);
         }
@@ -30,7 +29,8 @@ class MovementObserver
     private  function setLastPurchasePrice($movement)
     {
         $product = InventoryManagement::getProduct($movement);
-        $product->last_purchase_price = round($movement->quantity * $movement->cost,6);
+        // Es el precio UNITARIO de la ultima compra, no el importe de la partida.
+        $product->last_purchase_price = round($movement->cost, 6);
         $product->save();
     }
 }
